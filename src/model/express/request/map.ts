@@ -1,3 +1,0 @@
-interface IGetCountriesRequest { }
-
-export { IGetCountriesRequest };

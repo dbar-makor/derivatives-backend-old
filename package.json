@@ -1,7 +1,7 @@
 {
-  "name": "world-map-backend",
+  "name": "derivatives-backend",
   "version": "1.0.0",
-  "description": "App for displaying countries data",
+  "description": "App for comparing derivatives data",
   "main": "index.js",
   "scripts": {
     "start": "node ./dist/server.js",
@@ -10,16 +10,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/dbar-makor/world-map-backend.git"
+    "url": "git+ssh://git@github.com/dbar-makor/derivatives-backend.git"
   },
   "author": "daniel bar",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dbar-makor/world-map-backend/issues"
+    "url": "https://github.com/dbar-makor/derivatives-backend/issues"
   },
-  "homepage": "https://github.com/dbar-makor/world-map-backend#readme",
+  "homepage": "https://github.com/dbar-makor/derivatives-backend#readme",
   "dependencies": {
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "debug": "^4.3.3",
     "express": "^4.17.1",
     "winston": "^3.3.3"
