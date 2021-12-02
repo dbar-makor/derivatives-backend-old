@@ -1,6 +1,10 @@
+export type IWEXInterfaceArrayOfArrays = {
+  [key: string]: IWEXInterface[];
+};
+
 export interface IWEXInterface {
-  readonly Date?: Date;
   readonly User?: string;
+  readonly Date?: string;
   readonly Route?: string;
   readonly Side?: string;
   readonly "Exec Qty"?: string;
@@ -18,7 +22,7 @@ export interface IWEXInterface {
   readonly "Total Charge"?: string;
 }
 
-export interface IDVRInterface {
+export interface IDRVInterface {
   readonly drv_trade_id?: string;
   readonly drv_trade_client_trader_id?: string;
   readonly drv_trade_client_account_execution_id?: string;

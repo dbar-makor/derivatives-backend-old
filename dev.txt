@@ -1,0 +1,7 @@
+Get array first value
+
+check equals to him
+
+get the rows
+
+compare rows 
