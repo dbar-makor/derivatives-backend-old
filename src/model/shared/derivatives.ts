@@ -1,6 +1,6 @@
-export type IWEXInterfaceArrayOfArrays = {
+export interface IWEXInterfaceArrayOfArrays {
   [key: string]: IWEXInterface[];
-};
+}
 
 export interface IWEXInterface {
   readonly User?: string;
@@ -20,6 +20,7 @@ export interface IWEXInterface {
   readonly "Exch. Fee Rate"?: string;
   readonly "Clearing Fee"?: string;
   readonly "Total Charge"?: string;
+  removed?: boolean;
 }
 
 export interface IDRVInterface {

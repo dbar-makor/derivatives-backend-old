@@ -20,10 +20,10 @@ import {
 
 const addDerivativesData = async (
   req: IaddDerivativesDataRequest,
-  res: IaddDerivativesDataResponse
+  res: IaddDerivativesDataResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivativesData>: Start processing request`
+    `<addDerivativesData>: Start processing request`,
   );
 
   try {
@@ -67,7 +67,7 @@ const addDerivativesData = async (
         return WEXDateArray.indexOf(item) == pos;
       });
 
-      // Separate WEX result by date
+      // Separate WEXFile result by date
       const WEXFileArraySeparatedByDates: IWEXInterfaceArrayOfArrays =
         WEXFile.reduce((r, WEX) => {
           r[WEX.Date!] = r[WEX.Date!] || [];
@@ -75,54 +75,85 @@ const addDerivativesData = async (
           return r;
         }, Object.create(null));
 
-      // // Filter Exec Qty
-      // const filterExecQty = (date: IWEXInterface[]) => {
-      //   // Convert all negative numbers to positive
-      //   const convertNumberToPositive = (ExecQty: number) => {
-      //     // Check the number is negative
-      //     if (ExecQty < 0) {
-      //       // Multiply number with -1 to make it positive
-      //       ExecQty = ExecQty * -1;
-      //     }
-      //     // Return the positive number
-      //     return ExecQty;
-      //   };
-
-      //   // Filter all unequal or oppisite Exec Qty
-      //   const arrayEqualExecQty = date.filter((ExecQty, index) => {
-      //     let reminder = Array.from(
-      //       date.map((ExecQty) =>
-      //         convertNumberToPositive(Number(ExecQty["Exec Qty"]!))
-      //       )
-      //     );
-      //     reminder.splice(index, 1);
-      //     return (
-      //       reminder.indexOf(Number(ExecQty["Exec Qty"])) == -1 &&
-      //       reminder.indexOf(-ExecQty["Exec Qty"]!) == -1
-      //     );
-      //   });
-
-      //   return arrayEqualExecQty;
-      // };
-
+      let finalWEXArray: IWEXInterface[] = [];
+      let filteredWEXArraySeparatedByDates: IWEXInterface[] = [];
       for (const date of uniqueDateArray) {
-        // arrayOfArrays = filterExecQty(WEXFileArraySeparatedByDates[date!]);
-        // console.log(arrayOfArrays);
+        // Run over each row in date
+        for (let i = 0; i < WEXFileArraySeparatedByDates[date!].length; i++) {
+          // Run over each row starting from the outer element's position
+          for (
+            let j = i + 1;
+            j < WEXFileArraySeparatedByDates[date!].length;
+            j++
+          ) {
+            const { "Exec Qty": execQty_i, removed: removed_i } =
+              WEXFileArraySeparatedByDates[date!][i];
+            const { "Exec Qty": execQty_j, removed: removed_j } =
+              WEXFileArraySeparatedByDates[date!][j];
+            const numberExecQty_i = Number(execQty_i);
+            const numberExecQty_j = Number(execQty_j);
+            if (
+              !removed_i &&
+              !removed_j &&
+              numberExecQty_i === numberExecQty_j * -1
+            ) {
+              WEXFileArraySeparatedByDates[date!][i].removed = true;
+              WEXFileArraySeparatedByDates[date!][j].removed = true;
+            }
+          }
+        }
 
-        const t = WEXFileArraySeparatedByDates[date!];
-        console.log(t.length);
+        filteredWEXArraySeparatedByDates = WEXFileArraySeparatedByDates[
+          date!
+        ].filter((element) => {
+          return !element.removed;
+        });
+
+        finalWEXArray = finalWEXArray.concat(filteredWEXArraySeparatedByDates);
       }
+
+      console.log(finalWEXArray);
     };
   } catch {}
 };
 
 const getDerivativesData = async (
   req: IGetDerivativesDataRequest,
-  res: IGetDerivativesDataResponse
+  res: IGetDerivativesDataResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getCountriesData>: Start processing request`
+    `<getCountriesData>: Start processing request`,
   );
 };
 
 export { addDerivativesData, getDerivativesData };
+
+// Filter Exec Qty
+// const filterExecQty = (date: IWEXInterface[]) => {
+//   // Convert all negative numbers to positive
+//   const convertNumberToPositive = (ExecQty: number) => {
+//     // Check the number is negative
+//     if (ExecQty < 0) {
+//       // Multiply number with -1 to make it positive
+//       ExecQty = ExecQty * -1;
+//     }
+//     // Return the positive number
+//     return ExecQty;
+//   };
+
+//   // Filter all unequal or oppisite Exec Qty
+//   const arrayEqualExecQty = date.filter((ExecQty, index) => {
+//     let reminder = Array.from(
+//       date.map((ExecQty) =>
+//         convertNumberToPositive(Number(ExecQty["Exec Qty"]!)),
+//       ),
+//     );
+//     reminder.splice(index, 1);
+//     return (
+//       reminder.indexOf(Number(ExecQty["Exec Qty"])) == -1 &&
+//       reminder.indexOf(-ExecQty["Exec Qty"]!) == -1
+//     );
+//   });
+
+//   return arrayEqualExecQty;
+// };

@@ -5,3 +5,11 @@ check equals to him
 get the rows
 
 compare rows 
+
+
+
+Tamir -
+
+first for loop - run on filterd by date array
+
+second for loop - run on same thing
