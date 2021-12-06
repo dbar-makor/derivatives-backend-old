@@ -1,4 +1,6 @@
-interface IaddDerivativesDataRequest {
+// import { IAuthenticatedRequest } from "./auth";
+
+interface IaddDerivativesRequest {
   readonly body: Readonly<
     {
       id?: string;
@@ -7,6 +9,6 @@ interface IaddDerivativesDataRequest {
   >;
 }
 
-interface IGetDerivativesDataRequest {}
+interface IGetDerivativesRequest {}
 
-export { IaddDerivativesDataRequest, IGetDerivativesDataRequest };
+export { IaddDerivativesRequest, IGetDerivativesRequest };

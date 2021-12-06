@@ -2,26 +2,22 @@ import express from "express";
 
 import { IServerResponse } from "../../shared/response";
 
-type IaddDerivativesDataResponse = express.Response<
+type IaddDerivativesResponse = express.Response<IServerResponse>;
+
+type IGetDerivativesResponse = express.Response<
   IServerResponse & {
     data?: {
-      location?: string;
-      company1?: number;
-      company2?: number;
-      company3?: number;
+      date: string;
+      wex: string;
+      drv: string;
+      matched: number;
+      unmatched: number;
+      unknown: number;
+      complete: number;
+      derivatives: string;
+      username: string;
     }[];
   }
 >;
 
-type IGetDerivativesDataResponse = express.Response<
-  IServerResponse & {
-    data?: {
-      location?: string;
-      company1?: number;
-      company2?: number;
-      company3?: number;
-    }[];
-  }
->;
-
-export { IaddDerivativesDataResponse, IGetDerivativesDataResponse };
+export { IaddDerivativesResponse, IGetDerivativesResponse };

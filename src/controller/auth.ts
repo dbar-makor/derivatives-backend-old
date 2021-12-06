@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import ServerGlobal from "../server-global";
 
 import User from "../model/user";
+import Token from "../model/token";
 
 import {
   ILoginRequest,
@@ -16,19 +17,19 @@ import {
 
 const login = async (req: ILoginRequest, res: ILoginResponse) => {
   ServerGlobal.getInstance().logger.info(
-    `<login>: Start processing request with email: ${req.body.email}`
+    `<login>: Start processing request with username: ${req.body.username}`
   );
 
   try {
-    // Find matching user by email address
-    const userByEmail = await User.findOne({
-      where: { email: req.body.email },
+    // Find matching user by username
+    const userByusername = await User.findOne({
+      where: { username: req.body.username },
     });
 
-    // There is no such user with the provided email
-    if (!userByEmail) {
+    // There is no such user with the provided username
+    if (!userByusername) {
       ServerGlobal.getInstance().logger.error(
-        `<login>: Failed to login because the email ${req.body.email} does not match any user`
+        `<login>: Failed to login because the email ${req.body.username} does not match any user`
       );
 
       res.status(400).send({
@@ -38,40 +39,51 @@ const login = async (req: ILoginRequest, res: ILoginResponse) => {
       return;
     }
 
-    const compareResult = await bcrypt.compare(
-      req.body.password,
-      userByEmail.password
-    );
+    // const compareResult = await bcrypt.compare(
+    //   req.body.password,
+    //   userByusername.password
+    // );
+
+    // // From now on, the client is allowed to register
+    // const hashedPassword = await bcrypt.hash(req.body.password, 8);
 
     // Check whether the provided password is as same as the stored hashed one
-    if (!compareResult) {
-      ServerGlobal.getInstance().logger.error(
-        `<login>: Failed to login because the password does not match the hashed password \
-with email ${req.body.email}`
-      );
+    //     if (!compareResult) {
+    //       ServerGlobal.getInstance().logger.error(
+    //         `<login>: Failed to login because the password does not match the hashed password \
+    // with username ${req.body.username}`
+    //       );
 
-      res.status(400).send({
-        success: false,
-        message: "Authentication failed",
-      });
-      return;
-    }
+    //       res.status(400).send({
+    //         success: false,
+    //         message: "Authentication failed",
+    //       });
+    //       return;
+    //     }
 
     // Finding user token
+
     const tokenByUserId = await Token.findOne({
-      where: { user_id: userByEmail.id },
+      where: { user_id: userByusername.id },
     });
 
     // Create new token to insert
-    let newToken = jwt.sign({ id: userByEmail.id }, process.env.JWT_PWD, {
+    let newToken = jwt.sign({ id: userByusername.id }, process.env.JWT_PWD, {
       expiresIn: "7 days",
     });
 
     newToken = tokenByUserId?.token!;
 
-    if (tokenByUserId === null) {
+    // // Saving the user document in DB
+    // await User.create({
+    //   username: req.body.username,
+    //   password: req.body.password,
+    // });
+
+    // Check if token in valid
+    if (!tokenByUserId) {
       ServerGlobal.getInstance().logger.error(
-        `<login>: Failed to login because token is null`
+        `<login>: Failed to login because token is invalid`
       );
 
       res.status(400).send({
@@ -86,22 +98,21 @@ with email ${req.body.email}`
 
     ServerGlobal.getInstance().logger.info(
       `<login>: Successfully logged user in \
-with email: ${req.body.email} to user id: ${userByEmail.id}`
+with username: ${req.body.username} to user id: ${userByusername.id}`
     );
 
     res.status(200).send({
       success: true,
       message: "Successfully authenticated",
       data: {
-        username: userByEmail.username,
-        email: req.body.email,
+        username: userByusername.username,
         token: newToken,
       },
     });
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<register>: Failed to login with email ${req.body.email} because of server error: ${e}`
+      `<register>: Failed to login with username ${req.body.username} because of server error: ${e}`
     );
 
     res.status(500).send({
@@ -123,7 +134,7 @@ const autoLogin = async (req: IAutoLoginRequest, res: IAutoLoginResponse) => {
     readonly exp: number;
   }
 
-  let user: Pick<User, "email" | "username"> | null;
+  let user: Pick<User, "username"> | null;
   let user_id: string;
 
   // Authorizing the user
@@ -171,7 +182,6 @@ const autoLogin = async (req: IAutoLoginRequest, res: IAutoLoginResponse) => {
     message: "Successful auto login",
     data: {
       username: user.username,
-      email: user.email,
     },
   });
   return;

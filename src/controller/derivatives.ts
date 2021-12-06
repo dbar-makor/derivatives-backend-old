@@ -1,55 +1,99 @@
 import fs from "fs";
 import csv from "csv-parser";
+import moment from "moment";
+import shortid from "shortid";
+import converter from "json-2-csv";
 
 import ServerGlobal from "../server-global";
 
+import Derivative from "../model/derivative";
+
 import {
-  IaddDerivativesDataRequest,
-  IGetDerivativesDataRequest,
+  IaddDerivativesRequest,
+  IGetDerivativesRequest,
 } from "../model/express/request/derivatives";
 import {
-  IaddDerivativesDataResponse,
-  IGetDerivativesDataResponse,
+  IaddDerivativesResponse,
+  IGetDerivativesResponse,
 } from "../model/express/response/derivatives";
 
 import {
   IWEXInterface,
   IDRVInterface,
-  IWEXInterfaceArrayOfArrays,
+  IWEXInterfaceObjectOfArrays,
 } from "../model/shared/derivatives";
 
-const addDerivativesData = async (
-  req: IaddDerivativesDataRequest,
-  res: IaddDerivativesDataResponse,
+const addDerivatives = async (
+  req: IaddDerivativesRequest,
+  res: IaddDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivativesData>: Start processing request`,
+    `<addDerivatives>: Start processing request`
   );
 
   try {
     const base64WEXFile = req.body[0].file;
-    const WEXFileOne = base64WEXFile!.split(";base64,").pop();
-
     const base64DRVFile = req.body[1].file;
-    const DRVFileTwo = base64DRVFile!.split(";base64,").pop();
-
-    fs.writeFileSync(`data/fileOne.csv`, WEXFileOne!, {
-      encoding: "base64",
-    });
-
-    fs.writeFileSync(`data/fileTwo.csv`, DRVFileTwo!, {
-      encoding: "base64",
-    });
-
     const WEXFile: IWEXInterface[] = [];
-    fs.createReadStream(`data/fileOne.csv`)
+    const DRVFile: IDRVInterface[] = [];
+    let finalWEXArray: IWEXInterface[] = [];
+    let filteredWEXArraySeparatedByDates: IWEXInterface[] = [];
+    const uid = "ID_" + shortid.generate() + "_";
+    const date = new Date();
+    const formattedDate = moment(date).format("DD/MM/YYYY");
+
+    // Check if WEX file is valid
+    if (!base64WEXFile) {
+      ServerGlobal.getInstance().logger.error(
+        "<addDerivatives>: Failed to process WEX file because the file is invalid"
+      );
+
+      res.status(400).send({
+        success: false,
+        message: "WEX file is invalid",
+      });
+      return;
+    }
+
+    // Check if DRV file is valid
+    if (!base64DRVFile) {
+      ServerGlobal.getInstance().logger.error(
+        "<addDerivatives>: Failed to process DRV file because the file is invalid"
+      );
+
+      res.status(400).send({
+        success: false,
+        message: "DRV file is invalid",
+      });
+      return;
+    }
+
+    const WEXFileOne = base64WEXFile.split(";base64,").pop();
+    const DRVFileTwo = base64DRVFile.split(";base64,").pop();
+
+    ServerGlobal.getInstance().logger.info(
+      `<addDerivatives>: Successfully splited the files`
+    );
+
+    fs.writeFileSync(`assets/${uid}WEXFile.csv`, WEXFileOne!, {
+      encoding: "base64",
+    });
+
+    fs.writeFileSync(`assets/${uid}DRVFile.csv`, DRVFileTwo!, {
+      encoding: "base64",
+    });
+
+    ServerGlobal.getInstance().logger.info(
+      `<addDerivatives>: Successfully encoded the files`
+    );
+
+    fs.createReadStream(`assets/${uid}WEXFile.csv`)
       .pipe(csv())
       .on("data", (data: IWEXInterface) => {
         WEXFile.push(data);
       });
 
-    const DRVFile: IDRVInterface[] = [];
-    fs.createReadStream(`data/fileTwo.csv`)
+    fs.createReadStream(`assets/${uid}DRVFile.csv`)
       .pipe(csv())
       .on("data", (data: IDRVInterface) => {
         DRVFile.push(data);
@@ -58,7 +102,7 @@ const addDerivativesData = async (
         derivativesActions();
       });
 
-    const derivativesActions = () => {
+    const derivativesActions = async () => {
       // Map WEXFile returns date only
       const WEXDateArray = WEXFile.map((r) => r.Date);
 
@@ -68,15 +112,13 @@ const addDerivativesData = async (
       });
 
       // Separate WEXFile result by date
-      const WEXFileArraySeparatedByDates: IWEXInterfaceArrayOfArrays =
+      const WEXFileArraySeparatedByDates: IWEXInterfaceObjectOfArrays =
         WEXFile.reduce((r, WEX) => {
           r[WEX.Date!] = r[WEX.Date!] || [];
           r[WEX.Date!].push(WEX);
           return r;
         }, Object.create(null));
 
-      let finalWEXArray: IWEXInterface[] = [];
-      let filteredWEXArraySeparatedByDates: IWEXInterface[] = [];
       for (const date of uniqueDateArray) {
         // Run over each row in date
         for (let i = 0; i < WEXFileArraySeparatedByDates[date!].length; i++) {
@@ -112,48 +154,113 @@ const addDerivativesData = async (
         finalWEXArray = finalWEXArray.concat(filteredWEXArraySeparatedByDates);
       }
 
-      console.log(finalWEXArray);
+      // // convert JSON array to CSV string
+      converter.json2csv(finalWEXArray, (err, csv) => {
+        if (err) {
+          ServerGlobal.getInstance().logger.info(
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
+          );
+
+          res.status(400).send({
+            success: false,
+            message: "Failed to convert file to csv",
+          });
+          return;
+        }
+
+        if (!csv) {
+          ServerGlobal.getInstance().logger.info(
+            "<addDerivatives>: Failed to convert file to csv"
+          );
+
+          res.status(400).send({
+            success: false,
+            message: "Failed to convert file to csv",
+          });
+          return;
+        }
+
+        fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
+        // print CSV string
+        console.log(csv);
+      });
+
+      // Calculate matched rows
+      const matchedRows = WEXFile.length - finalWEXArray.length;
+
+      // Calculate complete percentage
+      const completePercentage = finalWEXArray.length / (WEXFile.length * 100);
+
+      // Saving the derivative document in DB
+      await Derivative.create({
+        date: formattedDate,
+        wex: `${uid}WEXFile.csv`,
+        drv: `${uid}DRVFile.csv`,
+        matched: matchedRows,
+        unmatched: finalWEXArray.length,
+        unknown: 0,
+        complete: completePercentage,
+        derivatives: `${uid}FilteredWEXFile.csv`,
+        username: "hey",
+      });
     };
-  } catch {}
+  } catch (e) {
+    ServerGlobal.getInstance().logger.error(
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
+    );
+
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+    return;
+  }
 };
 
-const getDerivativesData = async (
-  req: IGetDerivativesDataRequest,
-  res: IGetDerivativesDataResponse,
+const getDerivatives = async (
+  req: IGetDerivativesRequest,
+  res: IGetDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getCountriesData>: Start processing request`,
+    `<getDerivatives>: Start processing request`
   );
+
+  try {
+    // Get derivatives
+    const derivatives = await Derivative.findAll();
+
+    ServerGlobal.getInstance().logger.info(
+      `<getDerivatives>: Successfully got the derivatives`
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Successfully retrieved movies",
+      data: derivatives.map((derivative) => ({
+        id: derivative.id,
+        date: derivative.date,
+        wex: derivative.wex,
+        drv: derivative.drv,
+        matched: derivative.matched,
+        unmatched: derivative.unmatched,
+        unknown: derivative.unknown,
+        complete: derivative.complete,
+        derivatives: derivative.derivatives,
+        username: derivative.username,
+      })),
+    });
+    return;
+  } catch (e) {
+    ServerGlobal.getInstance().logger.error(
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+    );
+
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+    return;
+  }
 };
 
-export { addDerivativesData, getDerivativesData };
-
-// Filter Exec Qty
-// const filterExecQty = (date: IWEXInterface[]) => {
-//   // Convert all negative numbers to positive
-//   const convertNumberToPositive = (ExecQty: number) => {
-//     // Check the number is negative
-//     if (ExecQty < 0) {
-//       // Multiply number with -1 to make it positive
-//       ExecQty = ExecQty * -1;
-//     }
-//     // Return the positive number
-//     return ExecQty;
-//   };
-
-//   // Filter all unequal or oppisite Exec Qty
-//   const arrayEqualExecQty = date.filter((ExecQty, index) => {
-//     let reminder = Array.from(
-//       date.map((ExecQty) =>
-//         convertNumberToPositive(Number(ExecQty["Exec Qty"]!)),
-//       ),
-//     );
-//     reminder.splice(index, 1);
-//     return (
-//       reminder.indexOf(Number(ExecQty["Exec Qty"])) == -1 &&
-//       reminder.indexOf(-ExecQty["Exec Qty"]!) == -1
-//     );
-//   });
-
-//   return arrayEqualExecQty;
-// };
+export { addDerivatives, getDerivatives };

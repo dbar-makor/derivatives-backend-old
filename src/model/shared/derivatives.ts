@@ -1,4 +1,4 @@
-export interface IWEXInterfaceArrayOfArrays {
+export interface IWEXInterfaceObjectOfArrays {
   [key: string]: IWEXInterface[];
 }
 

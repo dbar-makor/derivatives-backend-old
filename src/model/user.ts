@@ -4,68 +4,44 @@ import ServerGlobal from "../server-global";
 import IDBAttribute from "./shared/db-table";
 
 interface IUserAttributes extends IDBAttribute {
-    email: string;
-    readonly username: string;
-    password: string;
-    like_count: number;
-}
-class User extends Sequelize.Model<Optional<IUserAttributes, 'id' | 'createdAt' |'updatedAt' | 'like_count'>> implements IUserAttributes {
-  public id!: number;
-  public email!: string;
-  public username!: string;
-  public password!: string;
-  public like_count!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  readonly username: string;
+  readonly password: string;
 }
 
-User.init({
-  id: {
-    type: Sequelize.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false,
-    unique: true,
-  },
-  email: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true,
-      len: [3, 320],
+class User
+  extends Sequelize.Model<Optional<IUserAttributes, "id" | "createdAt">>
+  implements IUserAttributes
+{
+  public readonly id!: number;
+  public readonly username!: string;
+  public readonly password!: string;
+  public readonly createdAt!: Date;
+}
+
+User.init(
+  {
+    id: {
+      type: Sequelize.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+      unique: true,
     },
-  },
-  username: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    validate: {
-      len: [3, 26],
+    username: {
+      type: Sequelize.STRING,
+      allowNull: false,
     },
-  },
-  password: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    validate: {
-      min: 7, 
+    password: {
+      type: Sequelize.STRING,
+      allowNull: false,
     },
-  },
-  like_count: {
-    type: Sequelize.INTEGER.UNSIGNED,
-    allowNull: false,
-    defaultValue: 0,
-  },
-  createdAt: Sequelize.DATE,
-  updatedAt: Sequelize.DATE,
-}, {
-  tableName: 'movies',
-  sequelize: ServerGlobal.getInstance().db,
-  indexes: [{
-    fields: ['title'],
+    createdAt: Sequelize.DATE,
   },
   {
-    fields: ['category'],
-  }],
-});
+    tableName: "users",
+    sequelize: ServerGlobal.getInstance().db,
+    updatedAt: false,
+  }
+);
 
 export default User;

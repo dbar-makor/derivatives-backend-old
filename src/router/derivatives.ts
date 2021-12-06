@@ -1,14 +1,11 @@
 import express from "express";
 
-import {
-  addDerivativesData,
-  getDerivativesData,
-} from "../controller/derivatives";
+import { addDerivatives, getDerivatives } from "../controller/derivatives";
 
 const router = express.Router();
 
-router.post("/", addDerivativesData);
+router.post("/", addDerivatives);
 
-router.get("/", getDerivativesData);
+router.get("/", getDerivatives);
 
 export default router;
