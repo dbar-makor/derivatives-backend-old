@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import csv from "csv-parser";
 import moment from "moment";
 import shortid from "shortid";
@@ -11,6 +12,7 @@ import Derivative from "../model/derivative";
 import {
   IaddDerivativesRequest,
   IGetDerivativesRequest,
+  IDownloadFilesRequest,
 } from "../model/express/request/derivatives";
 import {
   IaddDerivativesResponse,
@@ -25,10 +27,10 @@ import {
 
 const addDerivatives = async (
   req: IaddDerivativesRequest,
-  res: IaddDerivativesResponse
+  res: IaddDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`
+    `<addDerivatives>: Start processing request`,
   );
 
   try {
@@ -45,7 +47,7 @@ const addDerivatives = async (
     // Check if WEX file is valid
     if (!base64WEXFile) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process WEX file because the file is invalid"
+        "<addDerivatives>: Failed to process WEX file because the file is invalid",
       );
 
       res.status(400).send({
@@ -58,7 +60,7 @@ const addDerivatives = async (
     // Check if DRV file is valid
     if (!base64DRVFile) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process DRV file because the file is invalid"
+        "<addDerivatives>: Failed to process DRV file because the file is invalid",
       );
 
       res.status(400).send({
@@ -72,7 +74,7 @@ const addDerivatives = async (
     const DRVFileTwo = base64DRVFile.split(";base64,").pop();
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully splited the files`
+      `<addDerivatives>: Successfully splited the files`,
     );
 
     fs.writeFileSync(`assets/${uid}WEXFile.csv`, WEXFileOne!, {
@@ -84,7 +86,7 @@ const addDerivatives = async (
     });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully encoded the files`
+      `<addDerivatives>: Successfully encoded the files`,
     );
 
     fs.createReadStream(`assets/${uid}WEXFile.csv`)
@@ -158,7 +160,7 @@ const addDerivatives = async (
       converter.json2csv(finalWEXArray, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
           );
 
           res.status(400).send({
@@ -170,7 +172,7 @@ const addDerivatives = async (
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv"
+            "<addDerivatives>: Failed to convert file to csv",
           );
 
           res.status(400).send({
@@ -181,8 +183,6 @@ const addDerivatives = async (
         }
 
         fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
-        // print CSV string
-        console.log(csv);
       });
 
       // Calculate matched rows
@@ -206,7 +206,7 @@ const addDerivatives = async (
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -219,18 +219,31 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse
+  res: IGetDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`
+    `<getDerivatives>: Start processing request`,
   );
 
   try {
     // Get derivatives
     const derivatives = await Derivative.findAll();
 
+    // Check if derivatives are valid
+    if (!derivatives) {
+      ServerGlobal.getInstance().logger.error(
+        "<getDerivatives>: Failed to get derivatives",
+      );
+
+      res.status(400).send({
+        success: false,
+        message: "derivatives are invalid",
+      });
+      return;
+    }
+
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`
+      `<getDerivatives>: Successfully got the derivatives`,
     );
 
     res.status(200).send({
@@ -252,7 +265,7 @@ const getDerivatives = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -263,4 +276,26 @@ const getDerivatives = async (
   }
 };
 
-export { addDerivatives, getDerivatives };
+const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
+  ServerGlobal.getInstance().logger.info(
+    `<getDerivativeFiles>: Start processing request`,
+  );
+
+  try {
+    const fileName = req.params.fileId;
+    const filePath = __dirname + "../../../assets/" + fileName;
+    res.download(filePath, fileName);
+  } catch (e) {
+    ServerGlobal.getInstance().logger.error(
+      `<getDerivatives>: Failed to download files because of server error: ${e}`,
+    );
+
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+    return;
+  }
+};
+
+export { addDerivatives, getDerivatives, getDerivativeFiles };
