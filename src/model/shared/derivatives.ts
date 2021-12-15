@@ -2,6 +2,10 @@ export interface IWEXInterfaceObjectOfArrays {
   [key: string]: IWEXInterface[];
 }
 
+export interface IDRVInterfaceObjectOfArrays {
+  [key: string]: IDRVInterface[];
+}
+
 export interface IWEXInterface {
   readonly User?: string;
   readonly Date?: string;

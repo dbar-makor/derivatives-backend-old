@@ -13,3 +13,33 @@ Tamir -
 first for loop - run on filterd by date array
 
 second for loop - run on same thing
+
+
+
+
+
+
+
+1. Exec Qty
+2. Total charge
+
+3. User, Date.... Portfolio (first -)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
