@@ -15,11 +15,16 @@ interface ILoginRequest extends express.Request {
   }>;
 }
 
-interface IAutoLoginRequest extends express.Request {}
+interface IRegisterRequest extends express.Request {
+  readonly body: Readonly<{
+    username: string;
+    password: string;
+  }>;
+}
 
 export {
   IAuthMiddlewareRequest,
   IAuthenticatedRequest,
   ILoginRequest,
-  IAutoLoginRequest,
+  IRegisterRequest,
 };

@@ -7,10 +7,12 @@ import converter from "json-2-csv";
 import ServerGlobal from "../server-global";
 
 import Derivative from "../model/derivative";
+import User from "../model/user";
 
 import {
   IaddDerivativesRequest,
   IGetDerivativesRequest,
+  IGetDerivativeRequest,
   IDownloadFilesRequest,
 } from "../model/express/request/derivatives";
 import {
@@ -105,14 +107,52 @@ const addDerivatives = async (
         derivativesActions();
       });
 
+    ServerGlobal.getInstance().logger.info(
+      `<addDerivatives>: Successfully created the files to dir`,
+    );
+
     const derivativesActions = async () => {
       // Map WEX returns date only
       const WEXDateArray = WEXArray.map((r) => r.Date);
+
+      // Check if WEX date array is valid
+      if (!WEXDateArray) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because WEX date array is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message: "WEX date array is invalid",
+        });
+        return;
+      }
+
+      ServerGlobal.getInstance().logger.info(
+        `<addDerivatives>: Successfully mapped WEX date array`,
+      );
 
       // Filter WEXDateArray returns unique dates
       const uniqueDateWEXArray = WEXDateArray.filter((item, pos) => {
         return WEXDateArray.indexOf(item) == pos;
       });
+
+      // Check if unique WEX date array is valid
+      if (!uniqueDateWEXArray) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because unique WEX date array is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message: "Unique WEX date array is invalid",
+        });
+        return;
+      }
+
+      ServerGlobal.getInstance().logger.info(
+        `<addDerivatives>: Successfully filtered WEX date array`,
+      );
 
       // Separate WEX result by date
       const WEXArraySeparatedByDates: IWEXInterfaceObjectOfArrays =
@@ -122,6 +162,23 @@ const addDerivatives = async (
           return arr;
         }, Object.create(null));
 
+      // Check if WEX array separated by dates is valid
+      if (!WEXArraySeparatedByDates) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because WEX array separated by dates is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message: "WEX array separated by dates is invalid",
+        });
+        return;
+      }
+
+      ServerGlobal.getInstance().logger.info(
+        `<addDerivatives>: Successfully separated WEX array`,
+      );
+
       // Separate DRV result by date
       const DRVArraySeparatedByDates: IDRVInterfaceObjectOfArrays =
         DRVArray.reduce((arr, DRV) => {
@@ -129,6 +186,23 @@ const addDerivatives = async (
           arr[DRV.date!].push(DRV);
           return arr;
         }, Object.create(null));
+
+      // Check if DRV array separated by dates is valid
+      if (!DRVArraySeparatedByDates) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because DRV array separated by dates is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message: "DRV array separated by dates is invalid",
+        });
+        return;
+      }
+
+      ServerGlobal.getInstance().logger.info(
+        `<addDerivatives>: Successfully separated DRV array`,
+      );
 
       for (const date of uniqueDateWEXArray) {
         // Run over each row in date
@@ -231,6 +305,24 @@ const addDerivatives = async (
           return arr;
         }, Object.create(null));
 
+      // Check if canceled inverse pairs WEX array separated by dates is valid
+      if (!canceledInversePairsWEXArraySeparatedByDates) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because canceled inverse pairs WEX array separated by dates is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message:
+            "canceled inverse pairs WEX array separated by dates is invalid",
+        });
+        return;
+      }
+
+      ServerGlobal.getInstance().logger.info(
+        `<addDerivatives>: Successfully separated canceled inverse pairs WEX array`,
+      );
+
       for (const date of uniqueDateWEXArray) {
         const filteredByDRV = canceledInversePairsWEXArraySeparatedByDates[
           date!
@@ -253,8 +345,8 @@ const addDerivatives = async (
                   WEXRow["Call/Put"]!.charAt(0).toLowerCase() &&
                 DRVRow.quantity === WEXRow["Exec Qty"] &&
                 DRVRow.price === WEXRow["Average Price"]?.substring(1) &&
-                Number(DRVRow.strike) === Number(WEXRow.Strike?.substring(1));
-              DRVRow.expiry === WEXRowFormatedExpiry;
+                Number(DRVRow.strike) === Number(WEXRow.Strike?.substring(1)) &&
+                DRVRow.expiry === WEXRowFormatedExpiry;
             }),
         );
 
@@ -288,6 +380,10 @@ const addDerivatives = async (
         }
 
         fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
+
+        ServerGlobal.getInstance().logger.info(
+          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`,
+        );
       });
 
       // Calculate matched rows
@@ -297,7 +393,20 @@ const addDerivatives = async (
       const completePercentageRows =
         WEXArrayFilteredByDRV.length / (WEXArray.length * 100);
 
-      console.log(WEXArrayFilteredByDRV.length);
+      // Find the user
+      const userByID = await User.findByPk(req.user_id);
+
+      if (!userByID) {
+        ServerGlobal.getInstance().logger.error(
+          `<editProfile>: Failed to get user details for user id ${req.user_id}`,
+        );
+
+        res.status(401).send({
+          success: false,
+          message: "Could not find user",
+        });
+        return;
+      }
 
       // Saving the derivative document in DB
       await Derivative.create({
@@ -309,7 +418,7 @@ const addDerivatives = async (
         unknown: 0,
         complete: completePercentageRows,
         derivatives: `${uid}FilteredWEXFile.csv`,
-        username: "hey",
+        username: userByID.username,
       });
     };
   } catch (e) {
@@ -341,6 +450,65 @@ const getDerivatives = async (
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
         "<getDerivatives>: Failed to get derivatives",
+      );
+
+      res.status(400).send({
+        success: false,
+        message: "derivatives are invalid",
+      });
+      return;
+    }
+
+    ServerGlobal.getInstance().logger.info(
+      `<getDerivatives>: Successfully got the derivatives`,
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Successfully retrieved movies",
+      data: derivatives.map((derivative) => ({
+        id: derivative.id,
+        date: derivative.date,
+        wex: derivative.wex,
+        drv: derivative.drv,
+        matched: derivative.matched,
+        unmatched: derivative.unmatched,
+        unknown: derivative.unknown,
+        complete: derivative.complete,
+        derivatives: derivative.derivatives,
+        username: derivative.username,
+      })),
+    });
+    return;
+  } catch (e) {
+    ServerGlobal.getInstance().logger.error(
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+    );
+
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+    return;
+  }
+};
+
+const getDerivative = async (
+  req: IGetDerivativeRequest,
+  res: IGetDerivativesResponse,
+) => {
+  ServerGlobal.getInstance().logger.info(
+    `<getDerivative>: Start processing request`,
+  );
+
+  try {
+    // Get derivatives
+    const derivatives = await Derivative.findAll();
+
+    // Check if derivatives are valid
+    if (!derivatives) {
+      ServerGlobal.getInstance().logger.error(
+        "<getDerivative>: Failed to get derivatives",
       );
 
       res.status(400).send({

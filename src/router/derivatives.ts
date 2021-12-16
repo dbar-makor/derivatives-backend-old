@@ -1,5 +1,7 @@
 import express from "express";
 
+import { auth } from "../middleware/auth";
+
 import {
   addDerivatives,
   getDerivatives,
@@ -8,9 +10,9 @@ import {
 
 const router = express.Router();
 
-router.post("/", addDerivatives);
+router.post("/", auth, addDerivatives);
 
-router.get("/", getDerivatives);
+router.get("/", auth, getDerivatives);
 
 router.get("/download/:fileId", getDerivativeFiles);
 

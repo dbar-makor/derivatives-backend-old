@@ -4,7 +4,7 @@ import { auth } from "../middleware/auth";
 
 import { bodyKeys } from "../middleware/security";
 
-import { login } from "../controller/auth";
+import { login, register } from "../controller/auth";
 
 const router = express.Router();
 
@@ -15,6 +15,15 @@ router.post(
     { key: "password", type: "string" },
   ]),
   login,
+);
+
+router.post(
+  "/register",
+  bodyKeys([
+    { key: "username", type: "string" },
+    { key: "password", type: "string" },
+  ]),
+  register,
 );
 
 export default router;

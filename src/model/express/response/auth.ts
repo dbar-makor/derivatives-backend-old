@@ -13,12 +13,13 @@ type ILoginResponse = express.Response<
   }
 >;
 
-type IAutoLoginResponse = express.Response<
+type IRegisterResponse = express.Response<
   IServerResponse & {
     data?: {
       username: string;
+      token: string;
     };
   }
 >;
 
-export { IAuthMiddlewareResponse, ILoginResponse, IAutoLoginResponse };
+export { IAuthMiddlewareResponse, ILoginResponse, IRegisterResponse };
