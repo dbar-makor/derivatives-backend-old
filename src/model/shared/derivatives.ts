@@ -20,6 +20,7 @@ export interface IWEXInterface {
   readonly "Average Price"?: string;
   readonly Portfolio?: string;
   readonly "Commission Type"?: string;
+  readonly "Commission Rate"?: string;
   readonly "WEX Connect Rate"?: string;
   readonly "Exch. Fee Rate"?: string;
   readonly "Clearing Fee"?: string;

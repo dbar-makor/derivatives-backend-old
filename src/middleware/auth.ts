@@ -34,8 +34,6 @@ const auth = async (
       "",
     );
 
-    console.log(token);
-
     data = jwt.verify(token, process.env.JWT_PWD) as IVerify;
     userDocument = await User.findByPk(data.id);
 

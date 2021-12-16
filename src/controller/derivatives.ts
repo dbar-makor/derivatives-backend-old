@@ -41,7 +41,6 @@ const addDerivatives = async (
     const WEXArray: IWEXInterface[] = [];
     const DRVArray: IDRVInterface[] = [];
     let canceledInversePairsWEXArray: IWEXInterface[] = [];
-    let matchingCriteriaWEXArray: IWEXInterface[] = [];
     let WEXArrayFilteredByDRV: IWEXInterface[] = [];
     const uid = "ID_" + shortid.generate() + "_";
     const date = new Date();
@@ -256,27 +255,59 @@ const addDerivatives = async (
               totalCharge_j?.substring(1).replace(/[()]/g, ""),
             );
 
-            // Remove all chars after first -
-            const subPortfolio_i = portfolio_i?.split("-")[0];
-            const subPortfolio_j = portfolio_j?.split("-")[0];
+            // Lower case user
+            const lowerCaseUser_i = user_i!.toLowerCase();
+            const lowerCaseUser_j = user_j!.toLowerCase();
+
+            // Lower case route
+            const lowerCaseRoute_i = route_i!.toLowerCase();
+            const lowerCaseRoute_j = route_j!.toLowerCase();
+
+            // Lower case side and first char only
+            const lowerCaseFirstCharSide_i = side_i!.charAt(0).toLowerCase();
+            const lowerCaseFirstCharSide_j = side_j!.charAt(0).toLowerCase();
+
+            // Lower case security
+            const lowerCaseSecurity_i = security_i!.toLowerCase();
+            const lowerCaseSecurity_j = security_j!.toLowerCase();
+
+            // Lower case root
+            const lowerCaseRoot_i = root_i!.toLowerCase();
+            const lowerCaseRoot_j = root_j!.toLowerCase();
+
+            // Lower case call/put
+            const lowerCaseCallPut_i = callPut_i!.toLowerCase();
+            const lowerCaseCallPut_j = callPut_j!.toLowerCase();
+
+            // Lower case commission type
+            const lowerCaseCommissionType_i = commissionType_i!.toLowerCase();
+            const lowerCaseCommissionType_j = commissionType_j!.toLowerCase();
+
+            // Remove all chars after first dash and lower case
+            const subLowerCasePortfolio_i = portfolio_i
+              ?.split("-")[0]
+              .toLowerCase();
+            const subLowerCasePortfolio_j = portfolio_j
+              ?.split("-")[0]
+              .toLowerCase();
 
             if (
               !removed_i &&
               !removed_j &&
               numberExecQty_i === numberExecQty_j * -1 &&
               numberTotalCharge_i === numberTotalCharge_j &&
-              user_i === user_j &&
+              lowerCaseUser_i === lowerCaseUser_j &&
               date_i === date_j &&
-              route_i === route_j &&
-              side_i === side_j &&
-              security_i === security_j &&
-              root_i === root_j &&
+              lowerCaseRoute_i === lowerCaseRoute_j &&
+              lowerCaseFirstCharSide_i === lowerCaseFirstCharSide_j &&
+              lowerCaseSecurity_i === lowerCaseSecurity_j &&
+              lowerCaseRoot_i === lowerCaseRoot_j &&
               expiry_i === expiry_j &&
               strike_i === strike_j &&
-              callPut_i === callPut_j &&
+              lowerCaseCallPut_i === lowerCaseCallPut_j &&
               averagePrice_i === averagePrice_j &&
-              commissionType_i === commissionType_j &&
-              subPortfolio_i === subPortfolio_j
+              lowerCaseCommissionType_i === lowerCaseCommissionType_j &&
+              subLowerCasePortfolio_i === subLowerCasePortfolio_j
             ) {
               WEXArraySeparatedByDates[date!][i].removed = true;
               WEXArraySeparatedByDates[date!][j].removed = true;
@@ -323,34 +354,159 @@ const addDerivatives = async (
         `<addDerivatives>: Successfully separated canceled inverse pairs WEX array`,
       );
 
+      const formatDate = (date: string) => {
+        const WEXRowExpiryYear = date.substring(0, 4);
+        const WEXRowExpiryMonth = date.substring(5, 7);
+        const numberWEXRowExpiryMonth = parseInt(WEXRowExpiryMonth!, 10);
+        const WEXRowExpiryDay = date.substring(8, 10);
+        const numberWEXRowExpiryDay = parseInt(WEXRowExpiryDay!, 10);
+        return (date = `${numberWEXRowExpiryMonth}/${numberWEXRowExpiryDay}/${WEXRowExpiryYear}`);
+      };
+
       for (const date of uniqueDateWEXArray) {
         const filteredByDRV = canceledInversePairsWEXArraySeparatedByDates[
           date!
         ].filter(
           (WEXRow) =>
-            !DRVArraySeparatedByDates[date!].some((DRVRow) => {
-              // Format expiry date
-              const WEXRowExpiryYear = WEXRow.Expiry?.substring(0, 4);
-              const WEXRowExpiryMonth = WEXRow.Expiry?.substring(5, 7);
-              const numberWEXRowExpiryMonth = parseInt(WEXRowExpiryMonth!, 10);
-              const WEXRowExpiryDay = WEXRow.Expiry?.substring(8, 10);
-              const numberWEXRowExpiryDay = parseInt(WEXRowExpiryDay!, 10);
-              const WEXRowFormatedExpiry = `${numberWEXRowExpiryMonth}/${numberWEXRowExpiryDay}/${WEXRowExpiryYear}`;
-
-              DRVRow.date === WEXRow.Date &&
-                DRVRow.side!.charAt(0) ===
-                  WEXRow.Side!.charAt(0).toLowerCase() &&
-                DRVRow.symbol === WEXRow.Root &&
-                DRVRow.option?.charAt(0) ===
-                  WEXRow["Call/Put"]!.charAt(0).toLowerCase() &&
-                DRVRow.quantity === WEXRow["Exec Qty"] &&
-                DRVRow.price === WEXRow["Average Price"]?.substring(1) &&
-                Number(DRVRow.strike) === Number(WEXRow.Strike?.substring(1)) &&
-                DRVRow.expiry === WEXRowFormatedExpiry;
-            }),
+            !DRVArraySeparatedByDates[date!].find(
+              ({
+                date,
+                side,
+                symbol,
+                expiry,
+                strike,
+                option,
+                price,
+                quantity,
+              }) =>
+                WEXRow.Date === date &&
+                WEXRow.Side!.charAt(0).toLowerCase() ===
+                  side!.charAt(0).toLowerCase() &&
+                WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
+                WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
+                  option?.charAt(0).toLowerCase() &&
+                Number(WEXRow["Exec Qty"]) === Number(quantity) &&
+                Number(WEXRow["Average Price"]?.substring(1)) ===
+                  Number(price) &&
+                Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
+                formatDate(WEXRow.Expiry!) === expiry,
+            ),
         );
 
         WEXArrayFilteredByDRV = WEXArrayFilteredByDRV.concat(filteredByDRV);
+      }
+
+      // Separate WEX array filtered by DRV result by date
+      const WEXArrayFilteredByDRVSeparatedByDates: IWEXInterfaceObjectOfArrays =
+        canceledInversePairsWEXArray.reduce((arr, WEX) => {
+          arr[WEX.Date!] = arr[WEX.Date!] || [];
+          arr[WEX.Date!].push(WEX);
+          return arr;
+        }, Object.create(null));
+
+      // Check if WEX array filtered by DRV separated by dates is valid
+      if (!WEXArrayFilteredByDRVSeparatedByDates) {
+        ServerGlobal.getInstance().logger.error(
+          "<addDerivatives>: Failed because WEX array filtered by DRV separated by dates is invalid",
+        );
+
+        res.status(400).send({
+          success: false,
+          message: "WEX array filtered by DRV separated by dates is invalid",
+        });
+        return;
+      }
+
+      // 1. Group by all conditions
+      // 2. Sum quantity
+      // 3. Average the average price
+      // 4. check against terget
+      // 5. delete all group if match
+
+      for (const date of uniqueDateWEXArray) {
+        // Run over each row in date
+        for (let i = 0; i < WEXArraySeparatedByDates[date!].length; i++) {
+          // Run over each row starting from the outer element's position
+          for (let j = i + 1; j < WEXArraySeparatedByDates[date!].length; j++) {
+            const {
+              User: user_i,
+              Date: date_i,
+              Side: side_i,
+              Security: security_i,
+              Root: root_i,
+              Expiry: expiry_i,
+              Strike: strike_i,
+              "Call/Put": callPut_i,
+              Portfolio: portfolio_i,
+              "Commission Type": commissionType_i,
+              "Commission Rate": commissionRate_i,
+            } = WEXArraySeparatedByDates[date!][i];
+            const {
+              User: user_j,
+              Date: date_j,
+              Side: side_j,
+              Security: security_j,
+              Root: root_j,
+              Expiry: expiry_j,
+              Strike: strike_j,
+              "Call/Put": callPut_j,
+              Portfolio: portfolio_j,
+              "Commission Type": commissionType_j,
+              "Commission Rate": commissionRate_j,
+            } = WEXArraySeparatedByDates[date!][j];
+
+            // Lower case user
+            const lowerCaseUser_i = user_i!.toLowerCase();
+            const lowerCaseUser_j = user_j!.toLowerCase();
+
+            // Lower case side and first char only
+            const lowerCaseFirstCharSide_i = side_i!.charAt(0).toLowerCase();
+            const lowerCaseFirstCharSide_j = side_j!.charAt(0).toLowerCase();
+
+            // Lower case security
+            const lowerCaseSecurity_i = security_i!.toLowerCase();
+            const lowerCaseSecurity_j = security_j!.toLowerCase();
+
+            // Lower case root
+            const lowerCaseRoot_i = root_i!.toLowerCase();
+            const lowerCaseRoot_j = root_j!.toLowerCase();
+
+            // Lower case call/put
+            const lowerCaseCallPut_i = callPut_i!.toLowerCase();
+            const lowerCaseCallPut_j = callPut_j!.toLowerCase();
+
+            // Lower case commission type
+            const lowerCaseCommissionType_i = commissionType_i!.toLowerCase();
+            const lowerCaseCommissionType_j = commissionType_j!.toLowerCase();
+
+            // Cast to number commission rate
+            const numberCommissionRate_i = Number(commissionRate_i);
+            const numberCommissionRate_j = Number(commissionRate_j);
+
+            // Remove all chars after first dash and lower case
+            const subLowerCasePortfolio_i = portfolio_i
+              ?.split("-")[0]
+              .toLowerCase();
+            const subLowerCasePortfolio_j = portfolio_j
+              ?.split("-")[0]
+              .toLowerCase();
+
+            if (
+              lowerCaseUser_i === lowerCaseUser_j &&
+              date_i === date_j &&
+              lowerCaseFirstCharSide_i === lowerCaseFirstCharSide_j &&
+              lowerCaseSecurity_i === lowerCaseSecurity_j &&
+              lowerCaseRoot_i === lowerCaseRoot_j &&
+              expiry_i === expiry_j &&
+              strike_i === strike_j &&
+              lowerCaseCallPut_i === lowerCaseCallPut_j &&
+              lowerCaseCommissionType_i === lowerCaseCommissionType_j &&
+              numberCommissionRate_i === numberCommissionRate_j &&
+              subLowerCasePortfolio_i === subLowerCasePortfolio_j
+            ) {
+            }
+          }
+        }
       }
 
       // convert JSON array to CSV file
@@ -390,8 +546,7 @@ const addDerivatives = async (
       const matchedRows = WEXArray.length - WEXArrayFilteredByDRV.length;
 
       // Calculate complete percentage
-      const completePercentageRows =
-        WEXArrayFilteredByDRV.length / (WEXArray.length * 100);
+      const completePercentageRows = (matchedRows * 100) / WEXArray.length;
 
       // Find the user
       const userByID = await User.findByPk(req.user_id);
@@ -420,6 +575,12 @@ const addDerivatives = async (
         derivatives: `${uid}FilteredWEXFile.csv`,
         username: userByID.username,
       });
+
+      res.status(200).send({
+        success: true,
+        message: "Successfully added derivative",
+      });
+      return;
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
