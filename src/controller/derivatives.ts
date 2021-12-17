@@ -386,8 +386,8 @@ const addDerivatives = async (
                 WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
                   option?.charAt(0).toLowerCase() &&
                 Number(WEXRow["Exec Qty"]) === Number(quantity) &&
-                Number(WEXRow["Average Price"]?.substring(1)) ===
-                  Number(price) &&
+                Number(WEXRow["Average Price"]?.substring(1)).toFixed(2) ===
+                  Number(price).toFixed(2) &&
                 Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
                 formatDate(WEXRow.Expiry!) === expiry,
             ),
