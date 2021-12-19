@@ -11,13 +11,13 @@ export interface IWEXInterface {
   readonly Date?: string;
   readonly Route?: string;
   readonly Side?: string;
-  readonly "Exec Qty"?: string;
+  "Exec Qty"?: string;
   readonly Security?: string;
   readonly Root?: string;
   readonly Expiry?: string;
   readonly Strike?: string;
   readonly "Call/Put"?: string;
-  readonly "Average Price"?: string;
+  "Average Price"?: string;
   readonly Portfolio?: string;
   readonly "Commission Type"?: string;
   readonly "Commission Rate"?: string;
