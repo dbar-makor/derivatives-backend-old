@@ -417,6 +417,33 @@ const addDerivatives = async (
         return;
       }
 
+      const arr = [
+        { shape: "square", color: "red", used: 1, instances: 1 },
+        { shape: "square", color: "red", used: 2, instances: 1 },
+        { shape: "circle", color: "blue", used: 0, instances: 0 },
+        { shape: "square", color: "blue", used: 4, instances: 4 },
+        { shape: "circle", color: "red", used: 1, instances: 1 },
+        { shape: "circle", color: "red", used: 1, instances: 0 },
+        { shape: "square", color: "blue", used: 4, instances: 5 },
+        { shape: "square", color: "red", used: 2, instances: 1 },
+      ];
+
+      const helper: { [key: string]: string } = {};
+      const result = arr.reduce(function (r, o) {
+        const key = o.shape + "-" + o.color;
+
+        if (!helper[key]) {
+          helper[key] = Object.assign({}, o); // create a copy of o
+          r.push(helper[key]);
+        } else {
+          helper[key].used += o.used;
+          helper[key].instances += o.instances;
+        }
+
+        return r;
+      }, []);
+
+      console.log(result);
       // 1. Group by all conditions
       // 2. Sum quantity
       // 3. Average the average price
