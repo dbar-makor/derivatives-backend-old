@@ -7,9 +7,6 @@ get the rows
 compare rows 
 
 
-
-Tamir -
-
 first for loop - run on filterd by date array
 
 second for loop - run on same thing
@@ -25,6 +22,41 @@ second for loop - run on same thing
 
 3. User, Date.... Portfolio (first -)
 
+
+            // console.log(
+                //   "date: " +
+                //     WEXRow.Date +
+                //     " = " +
+                //     date +
+                //     " side: " +
+                //     WEXRow.Side!.charAt(0).toLowerCase() +
+                //     " = " +
+                //     side!.charAt(0).toLowerCase() +
+                //     " root: " +
+                //     WEXRow.Root!.toLowerCase() +
+                //     " = " +
+                //     symbol!.toLowerCase() +
+                //     " C/P: " +
+                //     WEXRow["Call/Put"]?.charAt(0).toLowerCase() +
+                //     " = " +
+                //     option?.charAt(0).toLowerCase() +
+                //     " QTY: " +
+                //     convertToNumber(WEXRow["Exec Qty"]!.toString()) +
+                //     " = " +
+                //     Number(quantity) +
+                //     " AVE: " +
+                //     Number(WEXRow["Average Price"]).toFixed(2) +
+                //     " = " +
+                //     Number(price).toFixed(2) +
+                //     " strike: " +
+                //     Number(WEXRow.Strike?.substring(1)) +
+                //     " = " +
+                //     Number(strike) +
+                //     " expiry: " +
+                //     formatWEXDate(WEXRow.Expiry!) +
+                //     " = " +
+                //     formatDRVDate(expiry!)
+                // )
 
 
 
