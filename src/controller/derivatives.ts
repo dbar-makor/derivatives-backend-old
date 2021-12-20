@@ -29,10 +29,10 @@ import {
 
 const addDerivatives = async (
   req: IaddDerivativesRequest,
-  res: IaddDerivativesResponse
+  res: IaddDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`
+    `<addDerivatives>: Start processing request`,
   );
 
   try {
@@ -42,6 +42,7 @@ const addDerivatives = async (
     const DRVArray: IDRVInterface[] = [];
     let canceledInversePairsWEXArray: IWEXInterface[] = [];
     let WEXArrayFilteredByDRV: IWEXInterface[] = [];
+    let WEXArrayGrouped: IWEXInterface[] = [];
     const uid = "ID_" + shortid.generate() + "_";
     const date = new Date();
     const formattedDate = moment(date).format("DD/MM/YYYY");
@@ -49,7 +50,7 @@ const addDerivatives = async (
     // Check if WEX file is valid
     if (!base64WEX) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process WEX file because the file is invalid"
+        "<addDerivatives>: Failed to process WEX file because the file is invalid",
       );
 
       res.status(400).send({
@@ -62,7 +63,7 @@ const addDerivatives = async (
     // Check if DRV file is valid
     if (!base64DRV) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process DRV file because the file is invalid"
+        "<addDerivatives>: Failed to process DRV file because the file is invalid",
       );
 
       res.status(400).send({
@@ -76,7 +77,7 @@ const addDerivatives = async (
     const DRVSplited = base64DRV.split(";base64,").pop();
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully splited the files`
+      `<addDerivatives>: Successfully splited the files`,
     );
 
     fs.writeFileSync(`assets/${uid}WEXFile.csv`, WEXSplited!, {
@@ -88,7 +89,7 @@ const addDerivatives = async (
     });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully encoded the files`
+      `<addDerivatives>: Successfully encoded the files`,
     );
 
     fs.createReadStream(`assets/${uid}WEXFile.csv`)
@@ -107,7 +108,7 @@ const addDerivatives = async (
       });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully created the files to dir`
+      `<addDerivatives>: Successfully created the files to dir`,
     );
 
     const derivativesActions = async () => {
@@ -117,7 +118,7 @@ const addDerivatives = async (
       // Check if WEX date array is valid
       if (!WEXDateArray) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because WEX date array is invalid"
+          "<addDerivatives>: Failed because WEX date array is invalid",
         );
 
         res.status(400).send({
@@ -128,7 +129,7 @@ const addDerivatives = async (
       }
 
       ServerGlobal.getInstance().logger.info(
-        `<addDerivatives>: Successfully mapped WEX date array`
+        `<addDerivatives>: Successfully mapped WEX date array`,
       );
 
       // Filter WEXDateArray returns unique dates
@@ -139,7 +140,7 @@ const addDerivatives = async (
       // Check if unique WEX date array is valid
       if (!uniqueDateWEXArray) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because unique WEX date array is invalid"
+          "<addDerivatives>: Failed because unique WEX date array is invalid",
         );
 
         res.status(400).send({
@@ -150,7 +151,7 @@ const addDerivatives = async (
       }
 
       ServerGlobal.getInstance().logger.info(
-        `<addDerivatives>: Successfully filtered WEX date array`
+        `<addDerivatives>: Successfully filtered WEX date array`,
       );
 
       // Separate WEX result by date
@@ -164,7 +165,7 @@ const addDerivatives = async (
       // Check if WEX array separated by dates is valid
       if (!WEXArraySeparatedByDates) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because WEX array separated by dates is invalid"
+          "<addDerivatives>: Failed because WEX array separated by dates is invalid",
         );
 
         res.status(400).send({
@@ -175,7 +176,7 @@ const addDerivatives = async (
       }
 
       ServerGlobal.getInstance().logger.info(
-        `<addDerivatives>: Successfully separated WEX array`
+        `<addDerivatives>: Successfully separated WEX array`,
       );
 
       // Separate DRV result by date
@@ -189,7 +190,7 @@ const addDerivatives = async (
       // Check if DRV array separated by dates is valid
       if (!DRVArraySeparatedByDates) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because DRV array separated by dates is invalid"
+          "<addDerivatives>: Failed because DRV array separated by dates is invalid",
         );
 
         res.status(400).send({
@@ -200,7 +201,7 @@ const addDerivatives = async (
       }
 
       ServerGlobal.getInstance().logger.info(
-        `<addDerivatives>: Successfully separated DRV array`
+        `<addDerivatives>: Successfully separated DRV array`,
       );
 
       for (const date of uniqueDateWEXArray) {
@@ -249,10 +250,10 @@ const addDerivatives = async (
 
             // Remove total charge dollar sign and parenthesis from string and cast to number
             const numberTotalCharge_i = Number(
-              totalCharge_i?.substring(1).replace(/[()]/g, "")
+              totalCharge_i?.substring(1).replace(/[()]/g, ""),
             );
             const numberTotalCharge_j = Number(
-              totalCharge_j?.substring(1).replace(/[()]/g, "")
+              totalCharge_j?.substring(1).replace(/[()]/g, ""),
             );
 
             // Lower case user
@@ -324,7 +325,7 @@ const addDerivatives = async (
         });
 
         canceledInversePairsWEXArray = canceledInversePairsWEXArray.concat(
-          canceledInversePairsWEXArraySeparatedByDates
+          canceledInversePairsWEXArraySeparatedByDates,
         );
       }
 
@@ -339,7 +340,7 @@ const addDerivatives = async (
       // Check if canceled inverse pairs WEX array separated by dates is valid
       if (!canceledInversePairsWEXArraySeparatedByDates) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because canceled inverse pairs WEX array separated by dates is invalid"
+          "<addDerivatives>: Failed because canceled inverse pairs WEX array separated by dates is invalid",
         );
 
         res.status(400).send({
@@ -351,7 +352,7 @@ const addDerivatives = async (
       }
 
       ServerGlobal.getInstance().logger.info(
-        `<addDerivatives>: Successfully separated canceled inverse pairs WEX array`
+        `<addDerivatives>: Successfully separated canceled inverse pairs WEX array`,
       );
 
       // Formatting WEX date
@@ -407,8 +408,8 @@ const addDerivatives = async (
                 Number(WEXRow["Average Price"]?.substring(1)).toFixed(2) ===
                   Number(price).toFixed(2) &&
                 Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
-                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
-            )
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!),
+            ),
         );
 
         WEXArrayFilteredByDRV = WEXArrayFilteredByDRV.concat(filteredByDRV);
@@ -425,7 +426,7 @@ const addDerivatives = async (
       // Check if WEX array filtered by DRV separated by dates is valid
       if (!WEXArrayFilteredByDRVSeparatedByDates) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because WEX array filtered by DRV separated by dates is invalid"
+          "<addDerivatives>: Failed because WEX array filtered by DRV separated by dates is invalid",
         );
 
         res.status(400).send({
@@ -443,7 +444,7 @@ const addDerivatives = async (
 
       const groupBy = (
         array: IWEXInterface[],
-        f: (element: IWEXInterface) => (string | undefined)[]
+        f: (element: IWEXInterface) => (string | undefined)[],
       ) => {
         const groups: { [key: string]: IWEXInterface[] } = {};
         array.forEach((object) => {
@@ -471,7 +472,7 @@ const addDerivatives = async (
             element["Commission Type"],
             element["Commission Rate"],
           ];
-        }
+        },
       );
 
       // matched after grouping - 1542/2066
@@ -485,8 +486,7 @@ const addDerivatives = async (
       };
 
       groupedWEXArrayKeys.forEach((element: string) => {
-        // console.log(groupedWEXArray[element]);
-        const sums = [
+        const groupedWEXArrayMergedQtyAndAvePrice = [
           ...groupedWEXArray[element]
             .reduce((map, item) => {
               const {
@@ -502,7 +502,7 @@ const addDerivatives = async (
                 ).toString();
                 prev["Average Price"]! = getAverage(
                   Number(prev["Average Price"]?.substring(1)),
-                  Number(averagePrice?.substring(1))
+                  Number(averagePrice?.substring(1)),
                 );
               } else {
                 map.set(key, Object.assign({}, item));
@@ -513,19 +513,16 @@ const addDerivatives = async (
             .values(),
         ];
 
-        console.log(sums);
+        WEXArrayGrouped = WEXArrayGrouped.concat(
+          groupedWEXArrayMergedQtyAndAvePrice,
+        );
       });
 
-      const average = (arr: any) =>
-        arr.reduce((a: any, b: any) => a + b, 0) / arr.length;
-
-      console.log(average([0.15, 0.15, 0.15, 0.15, 0.15, 0.15]));
-
       // convert JSON array to CSV file
-      converter.json2csv(WEXArrayFilteredByDRV, (err, csv) => {
+      converter.json2csv(WEXArrayGrouped, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
           );
 
           res.status(400).send({
@@ -537,7 +534,7 @@ const addDerivatives = async (
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv"
+            "<addDerivatives>: Failed to convert file to csv",
           );
 
           res.status(400).send({
@@ -550,12 +547,12 @@ const addDerivatives = async (
         fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`
+          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`,
         );
       });
 
       // Calculate matched rows
-      const matchedRows = WEXArray.length - WEXArrayFilteredByDRV.length;
+      const matchedRows = WEXArray.length - WEXArrayGrouped.length;
 
       console.log(matchedRows);
 
@@ -567,7 +564,7 @@ const addDerivatives = async (
 
       if (!userByID) {
         ServerGlobal.getInstance().logger.error(
-          `<editProfile>: Failed to get user details for user id ${req.user_id}`
+          `<editProfile>: Failed to get user details for user id ${req.user_id}`,
         );
 
         res.status(401).send({
@@ -583,7 +580,7 @@ const addDerivatives = async (
         wex: `${uid}WEXFile.csv`,
         drv: `${uid}DRVFile.csv`,
         matched: matchedRows,
-        unmatched: WEXArrayFilteredByDRV.length,
+        unmatched: WEXArrayGrouped.length,
         unknown: 0,
         complete: completePercentageRows,
         derivatives: `${uid}FilteredWEXFile.csv`,
@@ -598,7 +595,7 @@ const addDerivatives = async (
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -611,10 +608,10 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse
+  res: IGetDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`
+    `<getDerivatives>: Start processing request`,
   );
 
   try {
@@ -624,7 +621,7 @@ const getDerivatives = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivatives>: Failed to get derivatives"
+        "<getDerivatives>: Failed to get derivatives",
       );
 
       res.status(400).send({
@@ -635,7 +632,7 @@ const getDerivatives = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`
+      `<getDerivatives>: Successfully got the derivatives`,
     );
 
     res.status(200).send({
@@ -657,7 +654,7 @@ const getDerivatives = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -670,10 +667,10 @@ const getDerivatives = async (
 
 const getDerivative = async (
   req: IGetDerivativeRequest,
-  res: IGetDerivativesResponse
+  res: IGetDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivative>: Start processing request`
+    `<getDerivative>: Start processing request`,
   );
 
   try {
@@ -683,7 +680,7 @@ const getDerivative = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get derivatives"
+        "<getDerivative>: Failed to get derivatives",
       );
 
       res.status(400).send({
@@ -694,7 +691,7 @@ const getDerivative = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`
+      `<getDerivatives>: Successfully got the derivatives`,
     );
 
     res.status(200).send({
@@ -716,7 +713,7 @@ const getDerivative = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -729,7 +726,7 @@ const getDerivative = async (
 
 const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivativeFiles>: Start processing request`
+    `<getDerivativeFiles>: Start processing request`,
   );
 
   try {
@@ -738,7 +735,7 @@ const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
     res.download(filePath, fileName);
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to download files because of server error: ${e}`
+      `<getDerivatives>: Failed to download files because of server error: ${e}`,
     );
 
     res.status(500).send({
