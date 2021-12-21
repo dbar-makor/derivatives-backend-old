@@ -29,10 +29,10 @@ import {
 
 const addDerivatives = async (
   req: IaddDerivativesRequest,
-  res: IaddDerivativesResponse,
+  res: IaddDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`,
+    `<addDerivatives>: Start processing request`
   );
 
   try {
@@ -44,6 +44,7 @@ const addDerivatives = async (
     let WEXArrayFilteredByDRV: IWEXInterface[] = [];
     let WEXGroupedArrayFilteredByDRV: IWEXInterface[] = [];
     let WEXArrayGrouped: IWEXInterface[] = [];
+    let DRVArrayGrouped: IWEXInterface[] = [];
     const uid = "ID_" + shortid.generate() + "_";
     const date = new Date();
     const formattedDate = moment(date).format("DD/MM/YYYY");
@@ -51,7 +52,7 @@ const addDerivatives = async (
     // Check if WEX file is valid
     if (!base64WEX) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process WEX file because the file is invalid",
+        "<addDerivatives>: Failed to process WEX file because the file is invalid"
       );
 
       res.status(400).send({
@@ -64,7 +65,7 @@ const addDerivatives = async (
     // Check if DRV file is valid
     if (!base64DRV) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process DRV file because the file is invalid",
+        "<addDerivatives>: Failed to process DRV file because the file is invalid"
       );
 
       res.status(400).send({
@@ -78,7 +79,7 @@ const addDerivatives = async (
     const DRVSplited = base64DRV.split(";base64,").pop();
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully splited the files`,
+      `<addDerivatives>: Successfully splited the files`
     );
 
     fs.writeFileSync(`assets/${uid}WEXFile.csv`, WEXSplited!, {
@@ -90,7 +91,7 @@ const addDerivatives = async (
     });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully encoded the files`,
+      `<addDerivatives>: Successfully encoded the files`
     );
 
     fs.createReadStream(`assets/${uid}WEXFile.csv`)
@@ -109,7 +110,7 @@ const addDerivatives = async (
       });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully created the files to dir`,
+      `<addDerivatives>: Successfully created the files to dir`
     );
 
     const derivativesActions = async () => {
@@ -183,10 +184,10 @@ const addDerivatives = async (
 
             // Remove total charge dollar sign and parenthesis from string and cast to number
             const numberTotalCharge_i = Number(
-              totalCharge_i?.substring(1).replace(/[()]/g, ""),
+              totalCharge_i?.toString().substring(1).replace(/[()]/g, "")
             );
             const numberTotalCharge_j = Number(
-              totalCharge_j?.substring(1).replace(/[()]/g, ""),
+              totalCharge_j?.toString().substring(1).replace(/[()]/g, "")
             );
 
             // Lower case user
@@ -213,8 +214,12 @@ const addDerivatives = async (
             const lowerCaseCallPut_i = callPut_i!.toLowerCase();
             const lowerCaseCallPut_j = callPut_j!.toLowerCase();
 
-            const subAveragePrice_i = averagePrice_i?.replace("$", "");
-            const subAveragePrice_j = averagePrice_j?.replace("$", "");
+            const subAveragePrice_i = averagePrice_i
+              ?.toString()
+              .replace("$", "");
+            const subAveragePrice_j = averagePrice_j
+              ?.toString()
+              .replace("$", "");
 
             // Lower case commission type
             const lowerCaseCommissionType_i = commissionType_i!.toLowerCase();
@@ -248,6 +253,15 @@ const addDerivatives = async (
             ) {
               WEXArraySeparatedByDates[date!][i].removed = true;
               WEXArraySeparatedByDates[date!][j].removed = true;
+            } else {
+              WEXArraySeparatedByDates[date!][i].Side =
+                WEXArraySeparatedByDates[date!][i].Side?.charAt(
+                  0
+                ).toLowerCase();
+              WEXArraySeparatedByDates[date!][j].Side =
+                WEXArraySeparatedByDates[date!][i].Side?.charAt(
+                  0
+                ).toLowerCase();
             }
           }
         }
@@ -261,7 +275,7 @@ const addDerivatives = async (
         });
 
         canceledInversePairsWEXArray = canceledInversePairsWEXArray.concat(
-          canceledInversePairsWEXArraySeparatedByDates,
+          canceledInversePairsWEXArraySeparatedByDates
         );
       }
 
@@ -316,30 +330,32 @@ const addDerivatives = async (
                 quantity,
               }) =>
                 WEXRow.Date === date &&
-                WEXRow.Side!.charAt(0).toLowerCase() ===
-                  side!.charAt(0).toLowerCase() &&
+                WEXRow.Side === side!.charAt(0).toLowerCase() &&
                 WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
                 WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
                   option?.charAt(0).toLowerCase() &&
-                removeCommas(WEXRow["Exec Qty"]!.toString()) ===
-                  Number(quantity) &&
-                Number(WEXRow["Average Price"]?.replace("$", "")).toFixed(2) ===
-                  Number(price).toFixed(2) &&
+                removeCommas(WEXRow["Exec Qty"]!.toString()).toString() ===
+                  Number(quantity).toString() &&
+                Number(
+                  WEXRow["Average Price"]?.toString().replace("$", "")
+                ).toFixed(2) === Number(price).toFixed(2) &&
                 Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
-                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!),
-            ),
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
+            )
         );
 
         WEXArrayFilteredByDRV = WEXArrayFilteredByDRV.concat(filteredByDRV);
       }
 
-      const groupBy = (
+      const groupByWEX = (
         array: IWEXInterface[],
-        f: (element: IWEXInterface) => (string | undefined)[],
+        f: (element: IWEXInterface) => (string | undefined)[]
       ) => {
         const groups: { [key: string]: IWEXInterface[] } = {};
+
         array.forEach((object) => {
           const group = f(object).join("-");
+
           groups[group] = groups[group] || [];
           groups[group].push(object);
         });
@@ -347,94 +363,89 @@ const addDerivatives = async (
       };
 
       // Grouping WEX by date, user, side, security, root, expiry, strike, call/put, portfolio, commission type, commission rate
-      const groupedWEXArray = groupBy(
+      const groupedWEXArray = groupByWEX(
         WEXArrayFilteredByDRV,
         (element: IWEXInterface) => {
           return [
             element.Date,
-            element.User?.toLowerCase(),
-            element.Side?.charAt(0).toLowerCase(),
-            element.Security?.toLowerCase(),
-            element.Root?.toLowerCase(),
+            element.User,
+            element.Side,
+            element.Security,
+            element.Root,
             element.Expiry,
-            element.Strike?.replace("$", ""),
-            element["Call/Put"]?.toLowerCase(),
-            element.Portfolio?.split("-")[0].toLowerCase(),
-            element["Commission Type"]?.toLowerCase(),
+            element.Strike,
+            element["Call/Put"],
+            element.Portfolio,
+            element["Commission Type"],
             element["Commission Rate"],
           ];
-        },
+        }
       );
 
+      const filteredSmallerThanTwoGroupedWEXArray: IWEXInterfaceObjectOfArrays =
+        Object.entries(groupedWEXArray).reduce(
+          (a, b) =>
+            (a = { ...a, ...(b[1].length != 1 ? { [b[0]]: b[1] } : {}) }),
+          {}
+        );
+
       // Get WEX group keys
-      const groupedWEXArrayKeys = Object.keys(groupedWEXArray);
-
-      const getAverage = (x: number, y: number) => {
-        const average = ((x + y) / 2).toFixed(2);
-        return average;
-      };
-
-      // // Run over each row in date
-      // for (const key of groupedWEXArrayKeys) {
-      //   for (let i = 0; i < groupedWEXArray[key!].length; i++) {
-      //     // Run over each row starting from the outer element's position
-      //     console.log(groupedWEXArray[key!][i]["Average Price"]);
-
-      //     for (let j = i + 1; j < groupedWEXArray[key!].length; j++) {
-      //       const {
-      //         Date: date_i,
-      //         "Exec Qty": execQty_i,
-      //         "Average Price": averagePrice_i,
-      //       } = groupedWEXArray[key!][i];
-      //       const {
-      //         Date: date_j,
-      //         "Exec Qty": execQty_j,
-      //         "Average Price": averagePrice_j,
-      //       } = groupedWEXArray[key!][j];
-
-      //       // console.log(groupedWEXArray[key!][j]);
-      //     }
-      //   }
-      // }
+      const groupedWEXArrayKeys = Object.keys(
+        filteredSmallerThanTwoGroupedWEXArray
+      );
 
       for (const element of groupedWEXArrayKeys) {
-        groupedWEXArray[element].reduce((item) => {
-          return item;
-        }, {});
-      }
+        let qtyPriceSum = 0;
+        let totalQty = 0;
+        const groupedWEXArrayCalculated = [
+          ...filteredSmallerThanTwoGroupedWEXArray[element]
+            .reduce((array, object) => {
+              const key = `${object.Date}-${object.Side}-${object.Security}-${object.Root}-${object.Expiry}-${object.Strike}-${object["Call/Put"]}-${object.Portfolio}-${object["Commission Type"]}-${object["Commission Rate"]}`;
+              const item: IWEXInterface =
+                array.get(key) ||
+                Object.assign({}, object, {
+                  "Exec Qty": 0,
+                  "Average Price": 0,
+                  "Total Charge": 0,
+                });
 
-      groupedWEXArrayKeys.forEach((element: string) => {
-        const groupedWEXArrayMergedQtyAndAvePrice: IWEXInterface[] = [
-          ...groupedWEXArray[element]
-            .reduce((map, item) => {
-              const {
-                Date: key,
-                "Exec Qty": execQty,
-                "Average Price": averagePrice,
-              } = item;
-              const prev: IWEXInterface = map.get(key);
+              const numberItemExecQty = Number(item["Exec Qty"]);
+              const numberObjectExecQty = Number(object["Exec Qty"]);
 
-              if (prev) {
-                prev["Exec Qty"]! = (
-                  Number(prev["Exec Qty"]) + Number(execQty)
-                ).toString();
-                prev["Average Price"]! = getAverage(
-                  Number(prev["Average Price"]?.replace("$", "")),
-                  Number(averagePrice?.replace("$", "")),
-                );
-              } else {
-                map.set(key, Object.assign({}, item));
-              }
+              item["Exec Qty"] = (
+                numberItemExecQty + numberObjectExecQty
+              ).toString();
 
-              return map;
+              const curQtyPriceSum =
+                numberObjectExecQty *
+                Number(object["Average Price"]?.toString().replace("$", ""));
+
+              qtyPriceSum += curQtyPriceSum;
+              totalQty += numberObjectExecQty;
+
+              item["Average Price"] =
+                Math.round((qtyPriceSum / totalQty) * 100) / 100;
+
+              item["Total Charge"] = parseFloat(
+                Number(
+                  item["Total Charge"]!.toString()
+                    .substring(1)
+                    .replace(/[()]/g, "")
+                ) +
+                  Number(
+                    object["Total Charge"]!.toString()
+                      .substring(1)
+                      .replace(/[()]/g, "")
+                  ).toString()
+              ).toFixed(2);
+
+              return array.set(key, item);
             }, new Map())
             .values(),
         ];
 
-        WEXArrayGrouped = WEXArrayGrouped.concat(
-          groupedWEXArrayMergedQtyAndAvePrice,
-        );
-      });
+        WEXArrayGrouped = WEXArrayGrouped.concat(groupedWEXArrayCalculated);
+      }
 
       // Map WEX grouped returns date only
       const WEXGroupedDateArray = WEXArrayGrouped.map((r) => r.Date);
@@ -443,7 +454,7 @@ const addDerivatives = async (
       const uniqueDateWEXGroupedArray = WEXGroupedDateArray.filter(
         (item, pos) => {
           return WEXGroupedDateArray.indexOf(item) == pos;
-        },
+        }
       );
 
       // Separate WEX grouped by date
@@ -471,29 +482,111 @@ const addDerivatives = async (
                 quantity,
               }) =>
                 WEXRow.Date === date &&
-                WEXRow.Side!.charAt(0).toLowerCase() ===
-                  side!.charAt(0).toLowerCase() &&
+                WEXRow.Side === side!.charAt(0).toLowerCase() &&
                 WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
                 WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
                   option?.charAt(0).toLowerCase() &&
                 removeCommas(WEXRow["Exec Qty"]!.toString()) ===
                   Number(quantity) &&
-                Number(WEXRow["Average Price"]?.replace("$", "")).toFixed(2) ===
-                  Number(price).toFixed(2) &&
+                Number(
+                  WEXRow["Average Price"]?.toString().replace("$", "")
+                ).toFixed(2) === Number(price).toFixed(2) &&
                 Number(WEXRow.Strike) === Number(strike) &&
-                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!),
-            ),
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
+            )
         );
 
         WEXGroupedArrayFilteredByDRV =
           WEXGroupedArrayFilteredByDRV.concat(filteredWEXGrouped);
       }
 
+      const groupByDRV = (
+        array: IDRVInterface[],
+        f: (element: IDRVInterface) => (string | undefined)[]
+      ) => {
+        const groups: { [key: string]: IDRVInterface[] } = {};
+
+        array.forEach((object) => {
+          const group = f(object).join("-");
+
+          groups[group] = groups[group] || [];
+          groups[group].push(object);
+        });
+        return groups;
+      };
+
+      // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
+      const groupedDRVArray = groupByDRV(DRVArray, (element: IDRVInterface) => {
+        return [
+          element.drv_trade_id,
+          element.floor_broker,
+          element.date,
+          element.side,
+          element.component_type,
+          element.contract_type,
+          element.symbol,
+          element.expiry,
+          element.strike,
+          element.option,
+          element.client_id,
+        ];
+      });
+
+      const filteredSmallerThanTwoGroupedDRVArray: IDRVInterfaceObjectOfArrays =
+        Object.entries(groupedDRVArray).reduce(
+          (a, b) =>
+            (a = { ...a, ...(b[1].length != 1 ? { [b[0]]: b[1] } : {}) }),
+          {}
+        );
+
+      // Get WEX group keys
+      const groupedDRVArrayKeys = Object.keys(
+        filteredSmallerThanTwoGroupedDRVArray
+      );
+
+      for (const element of groupedDRVArrayKeys) {
+        let qtyPriceSum = 0;
+        let totalQty = 0;
+        const groupedDRVArrayCalculated = [
+          ...filteredSmallerThanTwoGroupedDRVArray[element]
+            .reduce((array, object) => {
+              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.date}-${object.side}-${object.component_type}-${object.contract_type}-${object.symbol}-${object.expiry}-${object.strike}-${object.option}-${object.client_id}`;
+              const item: IDRVInterface =
+                array.get(key) ||
+                Object.assign({}, object, {
+                  quantity: 0,
+                  price: 0,
+                });
+
+              const numberItemExecQty = Number(item.quantity);
+              const numberObjectExecQty = Number(object.quantity);
+
+              item.quantity = (
+                numberItemExecQty + numberObjectExecQty
+              ).toString();
+
+              const curQtyPriceSum =
+                numberObjectExecQty *
+                Number(object.price?.toString().replace("$", ""));
+
+              qtyPriceSum += curQtyPriceSum;
+              totalQty += numberObjectExecQty;
+
+              item.price = Math.round((qtyPriceSum / totalQty) * 100) / 100;
+
+              return array.set(key, item);
+            }, new Map())
+            .values(),
+        ];
+
+        DRVArrayGrouped = DRVArrayGrouped.concat(groupedDRVArrayCalculated);
+      }
+
       // convert JSON array to CSV file
-      converter.json2csv(WEXArrayFilteredByDRV, (err, csv) => {
+      converter.json2csv(WEXGroupedArrayFilteredByDRV, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
           );
 
           res.status(400).send({
@@ -505,7 +598,7 @@ const addDerivatives = async (
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
+            "<addDerivatives>: Failed to convert file to csv"
           );
 
           res.status(400).send({
@@ -518,7 +611,7 @@ const addDerivatives = async (
         fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`,
+          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`
         );
       });
 
@@ -535,7 +628,7 @@ const addDerivatives = async (
 
       if (!userByID) {
         ServerGlobal.getInstance().logger.error(
-          `<editProfile>: Failed to get user details for user id ${req.user_id}`,
+          `<editProfile>: Failed to get user details for user id ${req.user_id}`
         );
 
         res.status(401).send({
@@ -566,7 +659,7 @@ const addDerivatives = async (
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
     );
 
     res.status(500).send({
@@ -579,10 +672,10 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse,
+  res: IGetDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`,
+    `<getDerivatives>: Start processing request`
   );
 
   try {
@@ -592,7 +685,7 @@ const getDerivatives = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivatives>: Failed to get derivatives",
+        "<getDerivatives>: Failed to get derivatives"
       );
 
       res.status(400).send({
@@ -603,7 +696,7 @@ const getDerivatives = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`,
+      `<getDerivatives>: Successfully got the derivatives`
     );
 
     res.status(200).send({
@@ -625,7 +718,7 @@ const getDerivatives = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
@@ -638,10 +731,10 @@ const getDerivatives = async (
 
 const getDerivative = async (
   req: IGetDerivativeRequest,
-  res: IGetDerivativesResponse,
+  res: IGetDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivative>: Start processing request`,
+    `<getDerivative>: Start processing request`
   );
 
   try {
@@ -651,7 +744,7 @@ const getDerivative = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get derivatives",
+        "<getDerivative>: Failed to get derivatives"
       );
 
       res.status(400).send({
@@ -662,7 +755,7 @@ const getDerivative = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`,
+      `<getDerivatives>: Successfully got the derivatives`
     );
 
     res.status(200).send({
@@ -684,7 +777,7 @@ const getDerivative = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
@@ -697,7 +790,7 @@ const getDerivative = async (
 
 const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivativeFiles>: Start processing request`,
+    `<getDerivativeFiles>: Start processing request`
   );
 
   try {
@@ -706,7 +799,7 @@ const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
     res.download(filePath, fileName);
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to download files because of server error: ${e}`,
+      `<getDerivatives>: Failed to download files because of server error: ${e}`
     );
 
     res.status(500).send({

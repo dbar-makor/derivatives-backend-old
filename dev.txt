@@ -64,14 +64,41 @@ second for loop - run on same thing
 
 
 
+      groupedWEXArrayKeys.forEach((element: string) => {
+        const groupedWEXArrayMergedQtyAndAvePrice: IWEXInterface[] = [
+          ...groupedWEXArray[element]
+            .reduce((map, item) => {
+              const {
+                Date: key,
+                "Exec Qty": execQty,
+                "Average Price": averagePrice,
+              } = item;
+              const prev: IWEXInterface = map.get(key);
 
+              if (prev) {
+                prev["Exec Qty"]! = (
+                  Number(prev["Exec Qty"]) + Number(execQty)
+                ).toString();
+                prev["Average Price"]! = getAverage(
+                  Number(prev["Average Price"]?.replace("$", "")),
+                  Number(averagePrice?.replace("$", ""))
+                );
+              } else {
+                map.set(key, Object.assign({}, item));
+              }
 
+              return map;
+            }, new Map())
+            .values(),
+        ];
+      });
 
+Portfolio - after dash when grouping?
+Total charge - toFixed?
 
-
-
-
-
-
-
-
+      const getAverage = (x: number, y: number) => {
+        const average = (x + y) / 2;
+        const roundedAverage =
+          Math.round((average + Number.EPSILON) * 100) / 100;
+        return roundedAverage;
+      };
