@@ -6,6 +6,7 @@ import {
   addDerivatives,
   getDerivatives,
   getDerivativeFiles,
+  getDerivative,
 } from "../controller/derivatives";
 
 const router = express.Router();
@@ -13,6 +14,8 @@ const router = express.Router();
 router.post("/", auth, addDerivatives);
 
 router.get("/", auth, getDerivatives);
+
+router.get("/single", auth, getDerivative);
 
 router.get("/download/:fileId", getDerivativeFiles);
 

@@ -58,11 +58,9 @@ second for loop - run on same thing
                 //     formatDRVDate(expiry!)
                 // )
 
-
-
-
-
-
+group
+compare
+delete from original by groups
 
       groupedWEXArrayKeys.forEach((element: string) => {
         const groupedWEXArrayMergedQtyAndAvePrice: IWEXInterface[] = [
@@ -102,3 +100,156 @@ Total charge - toFixed?
           Math.round((average + Number.EPSILON) * 100) / 100;
         return roundedAverage;
       };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      i = 
+
+
+      
+      const groupByDRV = (
+        array: IDRVInterface[],
+        f: (element: IDRVInterface) => (string | undefined)[]
+      ) => {
+        const groups: { [key: string]: IDRVInterface[] } = {};
+
+        array.forEach((object) => {
+          const group = f(object).join("-");
+
+          groups[group] = groups[group] || [];
+          groups[group].push(object);
+        });
+        return groups;
+      };
+
+      // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
+      const groupedDRVArray = groupByDRV(DRVArray, (element: IDRVInterface) => {
+        return [
+          element.drv_trade_id,
+          element.floor_broker,
+          element.date,
+          element.side,
+          element.component_type,
+          element.contract_type,
+          element.symbol,
+          element.expiry,
+          element.strike,
+          element.option,
+          element.client_id,
+        ];
+      });
+
+      const filteredSmallerThanTwoGroupedDRVArray: IDRVInterfaceObjectOfArrays =
+        Object.entries(groupedDRVArray).reduce(
+          (a, b) =>
+            (a = { ...a, ...(b[1].length != 1 ? { [b[0]]: b[1] } : {}) }),
+          {}
+        );
+
+      // Get WEX group keys
+      const groupedDRVArrayKeys = Object.keys(
+        filteredSmallerThanTwoGroupedDRVArray
+      );
+
+      for (const element of groupedDRVArrayKeys) {
+        let qtyPriceSum = 0;
+        let totalQty = 0;
+        const groupedDRVArrayCalculated = [
+          ...filteredSmallerThanTwoGroupedDRVArray[element]
+            .reduce((array, object) => {
+              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.date}-${object.side}-${object.component_type}-${object.contract_type}-${object.symbol}-${object.expiry}-${object.strike}-${object.option}-${object.client_id}`;
+              const item: IDRVInterface =
+                array.get(key) ||
+                Object.assign({}, object, {
+                  quantity: 0,
+                  price: 0,
+                });
+
+              const numberItemExecQty = Number(item.quantity);
+              const numberObjectExecQty = Number(object.quantity);
+
+              item.quantity = (
+                numberItemExecQty + numberObjectExecQty
+              ).toString();
+
+              const curQtyPriceSum =
+                numberObjectExecQty *
+                Number(object.price?.toString().replace("$", ""));
+
+              qtyPriceSum += curQtyPriceSum;
+              totalQty += numberObjectExecQty;
+
+              item.price = Math.round((qtyPriceSum / totalQty) * 100) / 100;
+
+              return array.set(key, item);
+            }, new Map())
+            .values(),
+        ];
+
+        DRVArrayGrouped = DRVArrayGrouped.concat(groupedDRVArrayCalculated);
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // Fourth step
+      for (const date of uniqueDateWEXGroupedArray) {
+        const filteredWEXGrouped = WEXGroupedArraySeparatedByDates[
+          date!
+        ].filter(
+          (WEXRow) =>
+            !WEXArrayFilteredByDRVSeparatedByDates[date!].find(
+              ({
+                Date,
+                Side,
+                Security,
+                Expiry,
+                Strike,
+                "Call/Put": callPut,
+                Portfolio,
+                "Commission Type": commissionType,
+                "Commission Rate": commissionRate,
+              }) =>
+                WEXRow.Date === Date &&
+                WEXRow.Side!.charAt(0).toLowerCase() ===
+                  Side!.charAt(0).toLowerCase() &&
+                WEXRow.Security!.toLowerCase() === Security!.toLowerCase() &&
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(Expiry!) &&
+                WEXRow.Strike === Strike &&
+                WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
+                  callPut?.charAt(0).toLowerCase() &&
+                WEXRow.Portfolio?.split("-")[0].toLowerCase() ===
+                  Portfolio?.split("-")[0].toLowerCase() &&
+                WEXRow["Commission Type"]?.toLowerCase() ===
+                  commissionType?.toLowerCase() &&
+                WEXRow["Commission Rate"]?.toLowerCase() ===
+                  commissionRate?.toLowerCase()
+            )
+        );
+
+        WEXArrayFilteredByWEXGrouped =
+          WEXArrayFilteredByWEXGrouped.concat(filteredWEXGrouped);
+      }
