@@ -1,7 +1,6 @@
 interface IDBAttribute {
   readonly id: number;
-  readonly createdAt: Date;
-  readonly updatedAt?: Date;
+  readonly createdAt?: Date;
 }
 
 export default IDBAttribute;

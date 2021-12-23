@@ -11,7 +11,7 @@ interface IDerivativesAttributes extends IDBAttribute {
   readonly unmatched: number;
   readonly unknown: number;
   readonly complete: number;
-  readonly derivatives: string;
+  readonly unresolved: string;
   readonly username: string;
 }
 
@@ -29,9 +29,8 @@ class Derivative
   public readonly unmatched!: number;
   public readonly unknown!: number;
   public readonly complete!: number;
-  public readonly derivatives!: string;
+  public readonly unresolved!: string;
   public readonly username!: string;
-  public readonly createdAt!: Date;
 }
 
 Derivative.init(
@@ -44,6 +43,10 @@ Derivative.init(
       unique: true,
     },
     date: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    username: {
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -67,19 +70,15 @@ Derivative.init(
     complete: {
       type: Sequelize.INTEGER.UNSIGNED,
     },
-    derivatives: {
+    unresolved: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    username: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    createdAt: Sequelize.DATE,
   },
   {
     tableName: "derivatives",
     sequelize: ServerGlobal.getInstance().db,
+    createdAt: false,
     updatedAt: false,
   }
 );

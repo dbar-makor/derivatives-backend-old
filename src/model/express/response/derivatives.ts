@@ -7,16 +7,16 @@ type IaddDerivativesResponse = express.Response<IServerResponse>;
 type IGetDerivativesResponse = express.Response<
   IServerResponse & {
     data?: {
-      id: number;
+      username: string;
       date: string;
+      id: number;
       wex: string;
       drv: string;
       matched: number;
       unmatched: number;
       unknown: number;
       complete: number;
-      derivatives: string;
-      username: string;
+      unresolved: string;
     }[];
   }
 >;
@@ -24,16 +24,14 @@ type IGetDerivativesResponse = express.Response<
 type IGetDerivativeResponse = express.Response<
   IServerResponse & {
     data?: {
-      id: number;
-      date: string;
+      username: string;
       wex: string;
       drv: string;
       matched: number;
       unmatched: number;
       unknown: number;
       complete: number;
-      derivatives: string;
-      username: string;
+      unresolved: string;
     };
   }
 >;

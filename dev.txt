@@ -1,29 +1,5 @@
-Get array first value
 
-check equals to him
-
-get the rows
-
-compare rows 
-
-
-first for loop - run on filterd by date array
-
-second for loop - run on same thing
-
-
-
-
-
-
-
-1. Exec Qty
-2. Total charge
-
-3. User, Date.... Portfolio (first -)
-
-
-            // console.log(
+        // console.log(
                 //   "date: " +
                 //     WEXRow.Date +
                 //     " = " +
@@ -57,57 +33,6 @@ second for loop - run on same thing
                 //     " = " +
                 //     formatDRVDate(expiry!)
                 // )
-
-group
-compare
-delete from original by groups
-
-      groupedWEXArrayKeys.forEach((element: string) => {
-        const groupedWEXArrayMergedQtyAndAvePrice: IWEXInterface[] = [
-          ...groupedWEXArray[element]
-            .reduce((map, item) => {
-              const {
-                Date: key,
-                "Exec Qty": execQty,
-                "Average Price": averagePrice,
-              } = item;
-              const prev: IWEXInterface = map.get(key);
-
-              if (prev) {
-                prev["Exec Qty"]! = (
-                  Number(prev["Exec Qty"]) + Number(execQty)
-                ).toString();
-                prev["Average Price"]! = getAverage(
-                  Number(prev["Average Price"]?.replace("$", "")),
-                  Number(averagePrice?.replace("$", ""))
-                );
-              } else {
-                map.set(key, Object.assign({}, item));
-              }
-
-              return map;
-            }, new Map())
-            .values(),
-        ];
-      });
-
-Portfolio - after dash when grouping?
-Total charge - toFixed?
-
-      const getAverage = (x: number, y: number) => {
-        const average = (x + y) / 2;
-        const roundedAverage =
-          Math.round((average + Number.EPSILON) * 100) / 100;
-        return roundedAverage;
-      };
-
-
-
-
-
-
-
-
 
 
 
@@ -212,44 +137,3 @@ Total charge - toFixed?
 
 
 
-
-
-
-            // Fourth step
-      for (const date of uniqueDateWEXGroupedArray) {
-        const filteredWEXGrouped = WEXGroupedArraySeparatedByDates[
-          date!
-        ].filter(
-          (WEXRow) =>
-            !WEXArrayFilteredByDRVSeparatedByDates[date!].find(
-              ({
-                Date,
-                Side,
-                Security,
-                Expiry,
-                Strike,
-                "Call/Put": callPut,
-                Portfolio,
-                "Commission Type": commissionType,
-                "Commission Rate": commissionRate,
-              }) =>
-                WEXRow.Date === Date &&
-                WEXRow.Side!.charAt(0).toLowerCase() ===
-                  Side!.charAt(0).toLowerCase() &&
-                WEXRow.Security!.toLowerCase() === Security!.toLowerCase() &&
-                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(Expiry!) &&
-                WEXRow.Strike === Strike &&
-                WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
-                  callPut?.charAt(0).toLowerCase() &&
-                WEXRow.Portfolio?.split("-")[0].toLowerCase() ===
-                  Portfolio?.split("-")[0].toLowerCase() &&
-                WEXRow["Commission Type"]?.toLowerCase() ===
-                  commissionType?.toLowerCase() &&
-                WEXRow["Commission Rate"]?.toLowerCase() ===
-                  commissionRate?.toLowerCase()
-            )
-        );
-
-        WEXArrayFilteredByWEXGrouped =
-          WEXArrayFilteredByWEXGrouped.concat(filteredWEXGrouped);
-      }

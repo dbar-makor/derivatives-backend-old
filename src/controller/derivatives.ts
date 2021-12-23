@@ -1,13 +1,15 @@
 import fs from "fs";
 import csv from "csv-parser";
 import moment from "moment";
-import shortid from "shortid";
 import converter from "json-2-csv";
 
 import ServerGlobal from "../server-global";
 
 import Derivative from "../model/derivative";
 import User from "../model/user";
+
+import { removeCommas } from "../utils/derivatives";
+import { WEXDatesArray } from "../utils/wex";
 
 import {
   IaddDerivativesRequest,
@@ -36,20 +38,36 @@ const addDerivatives = async (
     `<addDerivatives>: Start processing request`
   );
 
+  // Find the user
+  const userByID = await User.findByPk(req.user_id);
+
+  if (!userByID) {
+    ServerGlobal.getInstance().logger.error(
+      `<editProfile>: Failed to get user details for user id ${req.user_id}`
+    );
+
+    res.status(401).send({
+      success: false,
+      message: "Could not find user",
+    });
+    return;
+  }
+
   try {
     const base64WEX = req.body[0].file;
     const base64DRV = req.body[1].file;
-    const WEXArray: IWEXInterface[] = [];
+    const WEX: IWEXInterface[] = [];
     const DRVArray: IDRVInterface[] = [];
+    const date = new Date();
+    const formattedDate = moment(date).format("DD-MM-YYYY-HH-mm-ss");
     let canceledInversePairsWEXArray: IWEXInterface[] = [];
     let WEXArrayFilteredByDRV: IWEXInterface[] = [];
     let WEXGroupedArrayFilteredByDRV: IWEXInterface[] = [];
     let WEXfilterdByGroupedWEX: IWEXInterface[] = [];
+    let WEXfilterdByGroupedDRV: IWEXInterface[] = [];
+    let unresolved: IWEXInterface[] = [];
     let WEXArrayGrouped: IWEXInterface[] = [];
-    let DRVArrayGrouped: IWEXInterface[] = [];
-    const uid = "ID_" + shortid.generate() + "_";
-    const date = new Date();
-    const formattedDate = moment(date).format("DD/MM/YYYY");
+    let DRVArrayGrouped: IDRVInterface[] = [];
 
     // Check if WEX file is valid
     if (!base64WEX) {
@@ -84,25 +102,33 @@ const addDerivatives = async (
       `<addDerivatives>: Successfully splited the files`
     );
 
-    fs.writeFileSync(`assets/${uid}WEXFile.csv`, WEXSplited!, {
-      encoding: "base64",
-    });
+    fs.writeFileSync(
+      `assets/WEX-${userByID.username}-${formattedDate}.csv`,
+      WEXSplited!,
+      {
+        encoding: "base64",
+      }
+    );
 
-    fs.writeFileSync(`assets/${uid}DRVFile.csv`, DRVSplited!, {
-      encoding: "base64",
-    });
+    fs.writeFileSync(
+      `assets/DRV-${userByID.username}-${formattedDate}.csv`,
+      DRVSplited!,
+      {
+        encoding: "base64",
+      }
+    );
 
     ServerGlobal.getInstance().logger.info(
       `<addDerivatives>: Successfully encoded the files`
     );
 
-    fs.createReadStream(`assets/${uid}WEXFile.csv`)
+    fs.createReadStream(`assets/WEX-${userByID.username}-${formattedDate}.csv`)
       .pipe(csv())
       .on("data", (data: IWEXInterface) => {
-        WEXArray.push(data);
+        WEX.push(data);
       });
 
-    fs.createReadStream(`assets/${uid}DRVFile.csv`)
+    fs.createReadStream(`assets/DRV-${userByID.username}-${formattedDate}.csv`)
       .pipe(csv())
       .on("data", (data: IDRVInterface) => {
         DRVArray.push(data);
@@ -117,20 +143,22 @@ const addDerivatives = async (
 
     const derivativesActions = async () => {
       // Map WEX returns date only
-      const WEXDateArray = WEXArray.map((r) => r.Date);
+      const WEXDates = WEXDatesArray(WEX);
 
       // Filter WEXDateArray returns unique dates
-      const uniqueDateWEXArray = WEXDateArray.filter((item, pos) => {
-        return WEXDateArray.indexOf(item) == pos;
+      const uniqueDateWEXArray = WEXDates.filter((item, pos) => {
+        return WEXDates.indexOf(item) == pos;
       });
 
       // Separate WEX result by date
-      const WEXArraySeparatedByDates: IWEXInterfaceObjectOfArrays =
-        WEXArray.reduce((arr, WEX) => {
+      const WEXArraySeparatedByDates: IWEXInterfaceObjectOfArrays = WEX.reduce(
+        (arr, WEX) => {
           arr[WEX.Date!] = arr[WEX.Date!] || [];
           arr[WEX.Date!].push(WEX);
           return arr;
-        }, Object.create(null));
+        },
+        Object.create(null)
+      );
 
       // Separate DRV result by date
       const DRVArraySeparatedByDates: IDRVInterfaceObjectOfArrays =
@@ -139,12 +167,6 @@ const addDerivatives = async (
           arr[DRV.date!].push(DRV);
           return arr;
         }, Object.create(null));
-
-      // Convert string with commas to number
-      const removeCommas = (element: string) => {
-        const output = parseFloat(element.replace(/,/g, ""));
-        return output;
-      };
 
       // First step
       for (const date of uniqueDateWEXArray) {
@@ -358,18 +380,6 @@ const addDerivatives = async (
         WEXArrayFilteredByDRV = WEXArrayFilteredByDRV.concat(filteredByDRV);
       }
 
-      // Map WEX Array Filtered By DRV returns date only
-      const dateWEXArrayFilteredByDRV = WEXArrayFilteredByDRV.map(
-        (r) => r.Date
-      );
-
-      // Filter date WEX Array Filtered By DRV returns unique dates
-      const uniqueDateWEXArrayFilteredByDRV = dateWEXArrayFilteredByDRV.filter(
-        (item, pos) => {
-          return dateWEXArrayFilteredByDRV.indexOf(item) == pos;
-        }
-      );
-
       // Separate WEX Array Filtered By DRV by date
       const WEXArrayFilteredByDRVSeparatedByDates: IWEXInterfaceObjectOfArrays =
         WEXArrayFilteredByDRV.reduce((arr, WEX) => {
@@ -413,24 +423,15 @@ const addDerivatives = async (
         }
       );
 
-      const filteredSmallerThanTwoGroupedWEXArray: IWEXInterfaceObjectOfArrays =
-        Object.entries(groupedWEXArray).reduce(
-          (a, b) =>
-            (a = { ...a, ...(b[1].length != 1 ? { [b[0]]: b[1] } : {}) }),
-          {}
-        );
-
       // Get WEX group keys
-      const groupedWEXArrayKeys = Object.keys(
-        filteredSmallerThanTwoGroupedWEXArray
-      );
+      const groupedWEXArrayKeys = Object.keys(groupedWEXArray);
 
       // Third step
       for (const element of groupedWEXArrayKeys) {
-        let qtyPriceSum = 0;
-        let totalQty = 0;
+        let weightAverageExecQty = 0;
+        let totalExecQty = 0;
         const groupedWEXArrayCalculated: IWEXInterface[] = [
-          ...filteredSmallerThanTwoGroupedWEXArray[element]
+          ...groupedWEXArray[element]
             .reduce((array, object) => {
               const key = `${object.Date}-${object.Side}-${object.Security}-${object.Root}-${object.Expiry}-${object.Strike}-${object["Call/Put"]}-${object.Portfolio}-${object["Commission Type"]}-${object["Commission Rate"]}`;
               const item: IWEXInterface =
@@ -448,15 +449,15 @@ const addDerivatives = async (
                 numberItemExecQty + numberObjectExecQty
               ).toString();
 
-              const curQtyPriceSum =
+              const curWeightAverageExecQty =
                 numberObjectExecQty *
                 Number(object["Average Price"]?.toString().replace("$", ""));
 
-              qtyPriceSum += curQtyPriceSum;
-              totalQty += numberObjectExecQty;
+              weightAverageExecQty += curWeightAverageExecQty;
+              totalExecQty += numberObjectExecQty;
 
               item["Average Price"] =
-                Math.round((qtyPriceSum / totalQty) * 100) / 100;
+                Math.round((weightAverageExecQty / totalExecQty) * 100) / 100;
 
               item["Total Charge"] = parseFloat(
                 Number(
@@ -497,29 +498,37 @@ const addDerivatives = async (
           return arr;
         }, Object.create(null));
 
+      // Fourth step
       for (const date of uniqueDateWEXGroupedArray) {
-        console.log(WEXGroupedArraySeparatedByDates["08/04/2021"]);
-        // console.log(DRVArraySeparatedByDates["08/04/2021"]);
-
         const filteredWEXGrouped = WEXGroupedArraySeparatedByDates[
           date!
-        ].filter((WEXRow) =>
-          DRVArraySeparatedByDates[date!].find(
-            ({ date, side, symbol, expiry, strike, option, price, quantity }) =>
-              WEXRow.Date === date &&
-              WEXRow.Side!.charAt(0).toLowerCase() ===
-                side!.charAt(0).toLowerCase() &&
-              WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
-              WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
-                option?.charAt(0).toLowerCase() &&
-              removeCommas(WEXRow["Exec Qty"]!.toString()) ===
-                removeCommas(quantity!.toString()) &&
-              Number(
-                WEXRow["Average Price"]?.toString().replace("$", "")
-              ).toFixed(2) === Number(price).toFixed(2) &&
-              Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
-              formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
-          )
+        ].filter(
+          (WEXRow) =>
+            !DRVArraySeparatedByDates[date!].find(
+              ({
+                date,
+                side,
+                symbol,
+                expiry,
+                strike,
+                option,
+                price,
+                quantity,
+              }) =>
+                WEXRow.Date === date &&
+                WEXRow.Side!.charAt(0).toLowerCase() ===
+                  side!.charAt(0).toLowerCase() &&
+                WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
+                WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
+                  option?.charAt(0).toLowerCase() &&
+                removeCommas(WEXRow["Exec Qty"]!.toString()) ===
+                  removeCommas(quantity!.toString()) &&
+                Number(
+                  WEXRow["Average Price"]?.toString().replace("$", "")
+                ).toFixed(2) === Number(price).toFixed(2) &&
+                Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
+            )
         );
 
         WEXGroupedArrayFilteredByDRV =
@@ -545,48 +554,236 @@ const addDerivatives = async (
           return arr;
         }, Object.create(null));
 
+      // Fifth step
       for (const date of uniqueDateWEXGroupedArrayFilteredByDRV) {
         const filterdGroupedByWEX = WEXArrayFilteredByDRVSeparatedByDates[
           date!
-        ].filter(
-          (WEXRow) =>
-            !WEXGroupedArrayFilteredByDRVSeparatedByDates[date!].find(
-              ({
-                Date,
-                User,
-                Side,
-                Security,
-                Root,
-                Expiry,
-                Strike,
-                "Call/Put": callPut,
-                Portfolio,
-                "Commission Type": commissionType,
-                "Commission Rate": commissionRate,
-              }) =>
-                WEXRow.Date === Date &&
-                WEXRow.User?.toLowerCase() === User?.toLowerCase() &&
-                WEXRow.Side!.charAt(0).toLowerCase() ===
-                  Side!.charAt(0).toLowerCase() &&
-                WEXRow.Security!.toLowerCase() === Security!.toLowerCase() &&
-                WEXRow.Root!.toLowerCase() === Root!.toLowerCase() &&
-                formatWEXDate(WEXRow.Expiry!) === formatWEXDate(Expiry!) &&
-                WEXRow.Strike === Strike &&
-                WEXRow["Call/Put"]?.toLowerCase() === callPut?.toLowerCase() &&
-                WEXRow.Portfolio?.split("-")[0].toLowerCase() ===
-                  Portfolio?.split("-")[0].toLowerCase() &&
-                WEXRow["Commission Type"]?.toLowerCase() ===
-                  commissionType?.toLowerCase() &&
-                WEXRow["Commission Rate"] === commissionRate
-            )
+        ].filter((WEXRow) =>
+          WEXGroupedArrayFilteredByDRVSeparatedByDates[date!].find(
+            ({
+              Date,
+              User,
+              Side,
+              Security,
+              Root,
+              Expiry,
+              Strike,
+              "Call/Put": callPut,
+              Portfolio,
+              "Commission Type": commissionType,
+              "Commission Rate": commissionRate,
+            }) =>
+              WEXRow.Date === Date &&
+              WEXRow.User?.toLowerCase() === User?.toLowerCase() &&
+              WEXRow.Side!.charAt(0).toLowerCase() ===
+                Side!.charAt(0).toLowerCase() &&
+              WEXRow.Security!.toLowerCase() === Security!.toLowerCase() &&
+              WEXRow.Root!.toLowerCase() === Root!.toLowerCase() &&
+              formatWEXDate(WEXRow.Expiry!) === formatWEXDate(Expiry!) &&
+              WEXRow.Strike === Strike &&
+              WEXRow["Call/Put"]?.toLowerCase() === callPut?.toLowerCase() &&
+              WEXRow.Portfolio?.split("-")[0].toLowerCase() ===
+                Portfolio?.split("-")[0].toLowerCase() &&
+              WEXRow["Commission Type"]?.toLowerCase() ===
+                commissionType?.toLowerCase() &&
+              WEXRow["Commission Rate"] === commissionRate
+          )
         );
 
         WEXfilterdByGroupedWEX =
           WEXfilterdByGroupedWEX.concat(filterdGroupedByWEX);
       }
 
+      // Map WEXfilterdByGroupedWEX returns date only
+      const WEXfilterdByGroupedWEXGrouped = WEXfilterdByGroupedWEX.map(
+        (r) => r.Date
+      );
+
+      // Filter date WEXfilterdByGroupedWEX returns unique dates
+      const uniqueDateWEXfilterdByGroupedWEX =
+        WEXfilterdByGroupedWEXGrouped.filter((item, pos) => {
+          return WEXfilterdByGroupedWEXGrouped.indexOf(item) == pos;
+        });
+
+      const groupByDRV = (
+        array: IDRVInterface[],
+        f: (element: IDRVInterface) => (string | undefined)[]
+      ) => {
+        const groups: { [key: string]: IDRVInterface[] } = {};
+
+        array.forEach((object) => {
+          const group = f(object).join("-");
+
+          groups[group] = groups[group] || [];
+          groups[group].push(object);
+        });
+        return groups;
+      };
+
+      // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
+      const groupedDRVArray = groupByDRV(DRVArray, (element: IDRVInterface) => {
+        return [
+          element.drv_trade_id,
+          element.floor_broker,
+          element.date,
+          element.side,
+          element.component_type,
+          element.contract_type,
+          element.symbol,
+          element.expiry,
+          element.strike,
+          element.option,
+          element.client_id,
+        ];
+      });
+
+      // Get WEX group keys
+      const groupedDRVArrayKeys = Object.keys(groupedDRVArray);
+
+      // Sixth step
+      for (const element of groupedDRVArrayKeys) {
+        let weightAverageExecQty = 0;
+        let totalExecQty = 0;
+        const groupedDRVArrayCalculated: IDRVInterface[] = [
+          ...groupedDRVArray[element]
+            .reduce((array, object) => {
+              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.date}-${object.side}-${object.component_type}-${object.contract_type}-${object.symbol}-${object.expiry}-${object.strike}-${object.option}-${object.client_id}`;
+              const item: IDRVInterface =
+                array.get(key) ||
+                Object.assign({}, object, {
+                  quantity: 0,
+                  price: 0,
+                });
+
+              const numberItemExecQty = Number(item.quantity);
+              const numberObjectExecQty = Number(object.quantity);
+
+              item.quantity = (
+                numberItemExecQty + numberObjectExecQty
+              ).toString();
+
+              const curWeightAverageExecQty =
+                numberObjectExecQty * Number(object.price);
+
+              weightAverageExecQty += curWeightAverageExecQty;
+              totalExecQty += numberObjectExecQty;
+
+              item.price =
+                Math.round((weightAverageExecQty / totalExecQty) * 100) / 100;
+
+              return array.set(key, item);
+            }, new Map())
+            .values(),
+        ];
+
+        DRVArrayGrouped = DRVArrayGrouped.concat(groupedDRVArrayCalculated);
+      }
+
+      // Separate DRV Array Grouped by date
+      const DRVArrayGroupedSeparatedByDates: IDRVInterfaceObjectOfArrays =
+        DRVArrayGrouped.reduce((arr, WEX) => {
+          arr[WEX.date!] = arr[WEX.date!] || [];
+          arr[WEX.date!].push(WEX);
+          return arr;
+        }, Object.create(null));
+
+      // Seventh step
+      for (const date of uniqueDateWEXfilterdByGroupedWEX) {
+        const filterdGroupedByWEX = WEXGroupedArraySeparatedByDates[
+          date!
+        ].filter(
+          (WEXRow) =>
+            !DRVArrayGroupedSeparatedByDates[date!].find(
+              ({
+                date,
+                side,
+                symbol,
+                expiry,
+                strike,
+                option,
+                price,
+                quantity,
+              }) =>
+                WEXRow.Date === date &&
+                WEXRow.Side!.charAt(0).toLowerCase() ===
+                  side!.charAt(0).toLowerCase() &&
+                WEXRow.Root!.toLowerCase() === symbol!.toLowerCase() &&
+                WEXRow["Call/Put"]?.charAt(0).toLowerCase() ===
+                  option?.charAt(0).toLowerCase() &&
+                removeCommas(WEXRow["Exec Qty"]!.toString()) ===
+                  removeCommas(quantity!.toString()) &&
+                Number(
+                  WEXRow["Average Price"]?.toString().replace("$", "")
+                ).toFixed(2) === Number(price).toFixed(2) &&
+                Number(WEXRow.Strike?.substring(1)) === Number(strike) &&
+                formatWEXDate(WEXRow.Expiry!) === formatDRVDate(expiry!)
+            )
+        );
+
+        WEXfilterdByGroupedDRV =
+          WEXfilterdByGroupedDRV.concat(filterdGroupedByWEX);
+      }
+
+      // Map WEXfilterdByGroupedDRV returns date only
+      const dateWEXfilterdByGroupedDRV = WEXfilterdByGroupedDRV.map(
+        (r) => r.Date
+      );
+
+      // Filter dateWEXfilterdByGroupedDRV returns unique dates
+      const uniqueDatedateWEXfilterdByGroupedDRV =
+        dateWEXfilterdByGroupedDRV.filter((item, pos) => {
+          return dateWEXfilterdByGroupedDRV.indexOf(item) == pos;
+        });
+
+      // Separate WEXfilterdByGroupedDRV by date
+      const WEXfilterdByGroupedDRVSeparatedByDates: IWEXInterfaceObjectOfArrays =
+        WEXfilterdByGroupedDRV.reduce((arr, WEX) => {
+          arr[WEX.Date!] = arr[WEX.Date!] || [];
+          arr[WEX.Date!].push(WEX);
+          return arr;
+        }, Object.create(null));
+
+      // Fifth step
+      for (const date of uniqueDatedateWEXfilterdByGroupedDRV) {
+        const filterdGroupedByWEX = WEXArrayFilteredByDRVSeparatedByDates[
+          date!
+        ].filter((WEXRow) =>
+          WEXfilterdByGroupedDRVSeparatedByDates[date!].find(
+            ({
+              Date,
+              User,
+              Side,
+              Security,
+              Root,
+              Expiry,
+              Strike,
+              "Call/Put": callPut,
+              Portfolio,
+              "Commission Type": commissionType,
+              "Commission Rate": commissionRate,
+            }) =>
+              WEXRow.Date === Date &&
+              WEXRow.User?.toLowerCase() === User?.toLowerCase() &&
+              WEXRow.Side!.charAt(0).toLowerCase() ===
+                Side!.charAt(0).toLowerCase() &&
+              WEXRow.Security!.toLowerCase() === Security!.toLowerCase() &&
+              WEXRow.Root!.toLowerCase() === Root!.toLowerCase() &&
+              formatWEXDate(WEXRow.Expiry!) === formatWEXDate(Expiry!) &&
+              WEXRow.Strike === Strike &&
+              WEXRow["Call/Put"]?.toLowerCase() === callPut?.toLowerCase() &&
+              WEXRow.Portfolio?.split("-")[0].toLowerCase() ===
+                Portfolio?.split("-")[0].toLowerCase() &&
+              WEXRow["Commission Type"]?.toLowerCase() ===
+                commissionType?.toLowerCase() &&
+              WEXRow["Commission Rate"] === commissionRate
+          )
+        );
+
+        unresolved = unresolved.concat(filterdGroupedByWEX);
+      }
+
       // convert JSON array to CSV file
-      converter.json2csv(WEXGroupedArrayFilteredByDRV, (err, csv) => {
+      converter.json2csv(unresolved, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
             `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
@@ -611,46 +808,34 @@ const addDerivatives = async (
           return;
         }
 
-        fs.writeFileSync(`assets/${uid}FilteredWEXFile.csv`, csv);
+        fs.writeFileSync(
+          `assets/unresolved-${userByID.username}-${formattedDate}.csv`,
+          csv
+        );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the ${uid}FilteredWEXFile.csv to dir`
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedDate}.csv to dir`
         );
       });
 
       // Calculate matched rows
-      const matchedRows = WEXArray.length - WEXGroupedArrayFilteredByDRV.length;
+      const matchedRows = WEX.length - unresolved.length;
 
       console.log("matchedRows " + matchedRows);
 
       // Calculate complete percentage
-      const completePercentageRows = (matchedRows * 100) / WEXArray.length;
-
-      // Find the user
-      const userByID = await User.findByPk(req.user_id);
-
-      if (!userByID) {
-        ServerGlobal.getInstance().logger.error(
-          `<editProfile>: Failed to get user details for user id ${req.user_id}`
-        );
-
-        res.status(401).send({
-          success: false,
-          message: "Could not find user",
-        });
-        return;
-      }
+      const completePercentageRows = (matchedRows * 100) / WEX.length;
 
       // Saving the derivative document in DB
       await Derivative.create({
         date: formattedDate,
-        wex: `${uid}WEXFile.csv`,
-        drv: `${uid}DRVFile.csv`,
+        wex: `WEX-${userByID.username}-${formattedDate}.csv`,
+        drv: `DRV-${userByID.username}-${formattedDate}.csv`,
         matched: matchedRows,
-        unmatched: WEXGroupedArrayFilteredByDRV.length,
+        unmatched: unresolved.length,
         unknown: 0,
         complete: completePercentageRows,
-        derivatives: `${uid}FilteredWEXFile.csv`,
+        unresolved: `unresolved-${userByID.username}-${formattedDate}.csv`,
         username: userByID.username,
       });
 
@@ -714,7 +899,7 @@ const getDerivatives = async (
         unmatched: derivative.unmatched,
         unknown: derivative.unknown,
         complete: derivative.complete,
-        derivatives: derivative.derivatives,
+        unresolved: derivative.unresolved,
         username: derivative.username,
       })),
     });
@@ -767,15 +952,13 @@ const getDerivative = async (
       success: true,
       message: "Successfully retrieved movies",
       data: {
-        id: derivative.id,
-        date: derivative.date,
         wex: derivative.wex,
         drv: derivative.drv,
         matched: derivative.matched,
         unmatched: derivative.unmatched,
         unknown: derivative.unknown,
         complete: derivative.complete,
-        derivatives: derivative.derivatives,
+        unresolved: derivative.unresolved,
         username: derivative.username,
       },
     });

@@ -64,7 +64,7 @@ ServerGlobal.getInstance()
   .db.sync()
   .then(() => {
     ServerGlobal.getInstance().logger.info(
-      "Successfully initiated connection for mysql datebase",
+      "Successfully initiated connection for mysql datebase"
     );
     server.listen(port || 3000);
 
@@ -73,6 +73,6 @@ ServerGlobal.getInstance()
   .catch((e) => {
     console.log(e);
     ServerGlobal.getInstance().logger.info(
-      `Failed to initiated connection for mysql database with error: ${e}`,
+      `Failed to initiated connection for mysql database with error: ${e}`
     );
   });
