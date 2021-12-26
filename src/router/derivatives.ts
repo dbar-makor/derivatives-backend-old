@@ -17,6 +17,6 @@ router.get("/", auth, getDerivatives);
 
 router.get("/single", auth, getDerivative);
 
-router.get("/download/:fileId", getDerivativeFiles);
+router.get("/download/:fileId", auth, getDerivativeFiles);
 
 export default router;

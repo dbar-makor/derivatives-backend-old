@@ -22,7 +22,6 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
-    "csv-writer": "^1.6.0",
     "debug": "^4.3.3",
     "express": "^4.17.1",
     "json-2-csv": "^3.14.4",

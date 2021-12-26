@@ -1,7 +1,5 @@
 import express from "express";
 
-import { auth } from "../middleware/auth";
-
 import { bodyKeys } from "../middleware/security";
 
 import { login, register } from "../controller/auth";
@@ -14,7 +12,7 @@ router.post(
     { key: "username", type: "string" },
     { key: "password", type: "string" },
   ]),
-  login,
+  login
 );
 
 router.post(
@@ -23,7 +21,7 @@ router.post(
     { key: "username", type: "string" },
     { key: "password", type: "string" },
   ]),
-  register,
+  register
 );
 
 export default router;

@@ -5,14 +5,13 @@ import IDBAttribute from "./shared/db-table";
 
 interface IDerivativesAttributes extends IDBAttribute {
   readonly date: string;
+  readonly username: string;
   readonly wex: string;
   readonly drv: string;
   readonly matched: number;
   readonly unmatched: number;
-  readonly unknown: number;
   readonly complete: number;
   readonly unresolved: string;
-  readonly username: string;
 }
 
 class Derivative
@@ -23,14 +22,13 @@ class Derivative
 {
   public readonly id!: number;
   public readonly date!: string;
+  public readonly username!: string;
   public readonly wex!: string;
   public readonly drv!: string;
   public readonly matched!: number;
   public readonly unmatched!: number;
-  public readonly unknown!: number;
   public readonly complete!: number;
   public readonly unresolved!: string;
-  public readonly username!: string;
 }
 
 Derivative.init(
@@ -62,9 +60,6 @@ Derivative.init(
       type: Sequelize.INTEGER.UNSIGNED,
     },
     unmatched: {
-      type: Sequelize.INTEGER.UNSIGNED,
-    },
-    unknown: {
       type: Sequelize.INTEGER.UNSIGNED,
     },
     complete: {

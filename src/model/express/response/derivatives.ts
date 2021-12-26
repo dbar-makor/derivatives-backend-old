@@ -14,7 +14,6 @@ type IGetDerivativesResponse = express.Response<
       drv: string;
       matched: number;
       unmatched: number;
-      unknown: number;
       complete: number;
       unresolved: string;
     }[];
@@ -29,7 +28,6 @@ type IGetDerivativeResponse = express.Response<
       drv: string;
       matched: number;
       unmatched: number;
-      unknown: number;
       complete: number;
       unresolved: string;
     };
