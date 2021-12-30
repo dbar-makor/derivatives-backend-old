@@ -1,7 +1,7 @@
 import path from "path";
 import winston from "winston";
 
-import { Sequelize } from "sequelize/dist";
+import { Sequelize } from "sequelize";
 
 class ServerGlobal {
   private readonly _logger: winston.Logger;
@@ -27,7 +27,7 @@ class ServerGlobal {
     this._db = new Sequelize(
       process.env.MYSQL_SCHEMA,
       process.env.MYSQL_USERNAME,
-      process.env.MYSQL_PASSWORD,
+      process.env.MYSQL_PASSWORD!,
       {
         dialect: "mysql",
         host: process.env.MYSQL_HOST,

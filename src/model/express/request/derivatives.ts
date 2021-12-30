@@ -1,10 +1,11 @@
 import { IAuthenticatedRequest } from "./auth";
 import express from "express";
 
-interface IaddDerivativesRequest extends IAuthenticatedRequest {
+interface IAddDerivativesRequest extends IAuthenticatedRequest {
   readonly body: Readonly<
     {
       id?: string;
+      name?: string;
       file?: string;
     }[]
   >;
@@ -19,7 +20,7 @@ interface IDownloadFilesRequest extends express.Request {
 }
 
 export {
-  IaddDerivativesRequest,
+  IAddDerivativesRequest,
   IGetDerivativesRequest,
   IGetDerivativeRequest,
   IDownloadFilesRequest,
