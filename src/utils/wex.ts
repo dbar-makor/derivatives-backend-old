@@ -25,7 +25,7 @@ export const formatWEXExpiry = (date: string) => {
   return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
 };
 
-// format WEX date
+// Format WEX date
 export const WEXDateFormat = (date: string) => {
   if (!date) {
     return date;
@@ -60,7 +60,7 @@ export const WEXGroupBy = (
 };
 
 // Separate WEX Array by date
-export const WEXDatesObject = (array: IWEX[]) => {
+export const WEXSeparateDatesObject = (array: IWEX[]) => {
   if (!array) {
     return array;
   }

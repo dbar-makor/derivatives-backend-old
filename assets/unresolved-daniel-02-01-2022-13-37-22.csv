@@ -1,0 +1,71 @@
+drv_trade_id,drv_trade_client_trader_id,drv_trade_client_account_execution_id,floor_broker,date,side,quantity,component_type,contract_type,symbol,expiry,strike,option,price,client_id,client,trader,modifiedDate,modifiedSide,modifiedQuantity,modifiedSymbol,modifiedExpiry,modifiedStrike,modifiedOption,modifiedPrice
+59109,120845,305894,Mando,08/02/2021,buy,500,leg,option,EEM,1/20/2023,40,put,1.83,251,ubs,nelson zhu,8/2/2021,b,500,eem,1/20/2023,40,p,1.83
+59113,120855,305912,Mando,08/02/2021,buy,1000,leg,option,GDX,6/17/2022,35,put,4.1,251,ubs,nelson zhu,8/2/2021,b,1000,gdx,6/17/2022,35,p,4.1
+59113,120855,305913,Mando,08/02/2021,buy,1000,leg,option,GDX,6/17/2022,35,call,3.95,251,ubs,nelson zhu,8/2/2021,b,1000,gdx,6/17/2022,35,c,3.95
+59131,120903,306025,Mando,08/02/2021,buy,300,leg,option,PYPL,8/20/2021,270,put,5.65,228,mizuho,mizuho,8/2/2021,b,300,pypl,8/20/2021,270,p,5.65
+61415,126073,319920,Mando,08/02/2021,sell,7,leg,option,IPOF,9/17/2021,10,call,0.11,714,vivaldi,gs account,8/2/2021,s,7,ipof,9/17/2021,10,c,0.11
+59184,120991,306179,Mando,08/03/2021,buy,700,leg,option,PSTG,1/20/2023,17.5,put,3,251,ubs,Kelly Shen,8/3/2021,b,700,pstg,1/20/2023,17.5,p,3
+59221,121080,306445,WEX FIX,08/03/2021,sell,250,leg,option,LUXA,10/15/2021,10,call,0.1622,659,milton arbitrage,milton,8/3/2021,s,250,luxa,10/15/2021,10,c,0.16
+61837,127053,322340,WEX FIX,08/03/2021,buy,500,leg,option,CANO,9/17/2021,7.5,put,0.1497,1151,difesa,difesa,8/3/2021,b,500,cano,9/17/2021,7.5,p,0.15
+61839,127056,322347,WEX FIX,08/03/2021,buy,1,leg,option,SPAK,9/17/2021,20,put,0.45,1151,difesa,difesa,8/3/2021,b,1,spak,9/17/2021,20,p,0.45
+59224,121083,306450,WEX FIX,08/03/2021,sell,68,leg,option,IPOF,9/17/2021,10,call,0.0912,714,vivaldi,gs account,8/3/2021,s,68,ipof,9/17/2021,10,c,0.09
+61416,126074,319922,WEX FIX,08/03/2021,sell,180,leg,option,LUXA,10/15/2021,10,call,0.15,714,vivaldi,bnp account,8/3/2021,s,200,luxa,10/15/2021,10,c,0.15
+61417,126076,319924,WEX FIX,08/04/2021,sell,261,leg,option,LUXA,10/15/2021,10,call,0.1259,714,vivaldi,bnp account,8/4/2021,s,290,luxa,10/15/2021,10,c,0.13
+59348,121318,306937,Mando,08/05/2021,buy,800,leg,option,GDX,1/20/2023,31,put,3.05,251,ubs,nelson zhu,8/5/2021,b,800,gdx,1/20/2023,31,p,3.05
+59404,121487,307401,WEX FIX,08/05/2021,buy,473,leg,option,MYPS,8/20/2021,5,put,0.1998,1151,difesa,difesa,8/5/2021,b,473,myps,8/20/2021,5,p,0.2
+59405,121488,307402,WEX FIX,08/05/2021,sell,261,leg,option,AGCB,10/15/2021,10,call,0.1,714,vivaldi,bnp account,8/5/2021,s,261,agcb,10/15/2021,10,c,0.1
+59428,121532,307516,Mando,08/06/2021,buy,1,leg,option,BLUE,8/20/2021,65,call,0.1,195,citibank,eric g he,8/6/2021,b,1,blue,8/20/2021,65,c,0.1
+59480,121646,307851,WEX FIX,08/06/2021,sell,110,leg,option,AGCB,10/15/2021,10,call,0.07,714,vivaldi,bnp account,8/6/2021,s,110,agcb,10/15/2021,10,c,0.07
+59483,121650,307861,WEX FIX,08/06/2021,sell,15,leg,option,FSLY,1/20/2023,60,call,8.006667,191,bnp ny,Shui Ling Geng,8/6/2021,s,15,fsly,1/20/2023,60,c,8.01
+59529,121719,308007,Mando,08/09/2021,buy,1000,leg,option,GDX,1/20/2023,29,put,2.89,251,ubs,nelson zhu,8/9/2021,b,1000,gdx,1/20/2023,29,p,2.89
+59546,121765,308124,Mando,08/09/2021,buy,320,leg,option,MYPS,8/20/2021,5,put,0.15,1151,difesa,difesa,8/9/2021,b,320,myps,8/20/2021,5,p,0.15
+59550,121776,308157,WEX FIX,08/09/2021,sell,41,leg,option,LUXA,10/15/2021,10,call,0.1,714,vivaldi,bnp account,8/9/2021,s,45,luxa,10/15/2021,10,c,0.1
+59551,121778,308161,WEX FIX,08/09/2021,sell,182,leg,option,MCMJ,10/15/2021,10,call,0.2,714,vivaldi,bnp account,8/9/2021,s,202,mcmj,10/15/2021,10,c,0.2
+61418,126078,319928,WEX FIX,08/09/2021,sell,61,leg,option,IPOF,11/19/2021,10,call,0.1898,714,vivaldi,bnp account,8/9/2021,s,61,ipof,11/19/2021,10,c,0.19
+59590,121847,308324,Mando,08/10/2021,buy,2200,leg,option,XLF,9/17/2021,38,put,0.75,251,ubs,nelson zhu,8/10/2021,b,2200,xlf,9/17/2021,38,p,0.75
+59590,121847,308325,Mando,08/10/2021,buy,2200,leg,option,XLF,9/17/2021,40,call,0.31,251,ubs,nelson zhu,8/10/2021,b,2200,xlf,9/17/2021,40,c,0.31
+59595,121862,308364,Mando,08/10/2021,buy,4750,leg,option,XLF,9/17/2021,36,put,0.29,251,ubs,nelson zhu,8/10/2021,b,4750,xlf,9/17/2021,36,p,0.29
+59608,121900,308456,WEX FIX,08/10/2021,sell,4,leg,option,MDLA,9/17/2021,35,call,0.15,314,westchester,wetchester,8/10/2021,s,4,mdla,9/17/2021,35,c,0.15
+59609,121901,308457,WEX FIX,08/10/2021,sell,2,leg,option,IPOF,11/19/2021,10,call,0.19,714,vivaldi,bnp account,8/10/2021,s,2,ipof,11/19/2021,10,c,0.19
+59612,121906,308475,WEX FIX,08/10/2021,sell,609,leg,option,LUXA,10/15/2021,10,call,0.0512,714,vivaldi,bnp account,8/10/2021,s,677,luxa,10/15/2021,10,c,0.05
+59613,121908,308477,WEX FIX,08/10/2021,sell,1,leg,option,MCMJ,10/15/2021,10,call,0.2,714,vivaldi,bnp account,8/10/2021,s,1,mcmj,10/15/2021,10,c,0.2
+59614,121909,308480,XFA,08/10/2021,sell,500,leg,option,VIX,11/17/2021,22,call,4.2,251,ubs,harsh mundhra,8/10/2021,s,500,vix,11/17/2021,22,c,4.2
+59614,121909,308481,XFA,08/10/2021,sell,175,leg,option,VIX,8/18/2021,18,call,1.05,251,ubs,harsh mundhra,8/10/2021,s,175,vix,8/18/2021,18,c,1.05
+59614,121909,308484,XFA,08/10/2021,sell,305,leg,option,VIX,11/17/2021,23,put,4.5,251,ubs,harsh mundhra,8/10/2021,s,305,vix,11/17/2021,23,p,4.5
+59693,122087,308924,WEX FIX,08/11/2021,buy,207,leg,option,MYPS,8/20/2021,5,put,0.15,1151,difesa,difesa,8/11/2021,b,207,myps,8/20/2021,5,p,0.15
+59695,122091,308931,WEX FIX,08/11/2021,buy,2,leg,option,SUNL,8/20/2021,7.5,put,0.1,1151,difesa,difesa,8/11/2021,b,2,sunl,8/20/2021,7.5,p,0.1
+59698,122099,308950,WEX FIX,08/11/2021,sell,259,leg,option,BTWN,10/15/2021,10,call,0.1,714,vivaldi,bnp account,8/11/2021,s,259,btwn,10/15/2021,10,c,0.1
+59699,122100,308952,WEX FIX,08/11/2021,sell,1,leg,option,LUXA,10/15/2021,10,call,0.05,714,vivaldi,bnp account,8/11/2021,s,1,luxa,10/15/2021,10,c,0.05
+59769,122272,309376,WEX FIX,08/12/2021,sell,56,leg,option,BTWN,10/15/2021,10,call,0.1,714,vivaldi,bnp account,8/12/2021,s,57,btwn,10/15/2021,10,c,0.1
+59770,122274,309380,WEX FIX,08/12/2021,sell,46,leg,option,LUXA,10/15/2021,10,call,0.052174,714,vivaldi,bnp account,8/12/2021,s,46,luxa,10/15/2021,10,c,0.05
+59772,122276,309384,WEX FIX,08/12/2021,sell,9,leg,option,IPOF,11/19/2021,10,call,0.21,714,vivaldi,vivaldi,8/12/2021,s,9,ipof,11/19/2021,10,c,0.21
+59774,122281,309402,WEX FIX,08/12/2021,sell,537,leg,option,PIPP,10/15/2021,10,call,0.05,714,vivaldi,bnp account,8/12/2021,s,547,pipp,10/15/2021,10,c,0.05
+59785,122299,309448,XFA,08/12/2021,sell,300,leg,option,VIX,10/20/2021,35,call,1.5067,251,ubs,harsh mundhra,8/12/2021,s,300,vix,10/20/2021,35,c,1.51
+59850,122452,309847,Mando,8/13/2021,sell,100,leg,option,PPC,8/20/2021,28,call,0.3775,214,havens,jpm account,8/13/2021,s,100,ppc,8/20/2021,28,c,0.38
+59852,122455,309855,WEX FIX,8/13/2021,sell,200,leg,option,MYPS,8/20/2021,5,put,0.4,1151,difesa,difesa,8/13/2021,s,200,myps,8/20/2021,5,p,0.4
+59853,122456,309856,WEX FIX,8/13/2021,buy,200,leg,option,SKIN,11/19/2021,12.5,put,0.15,1151,difesa,difesa,8/13/2021,b,200,skin,11/19/2021,12.5,p,0.15
+59854,122457,309858,WEX FIX,8/13/2021,sell,383,leg,option,IPOF,11/19/2021,10,call,0.2032,714,vivaldi,bnp account,8/13/2021,s,383,ipof,11/19/2021,10,c,0.2
+59855,122458,309859,WEX FIX,8/13/2021,sell,187,leg,option,LUXA,10/15/2021,10,call,0.05,714,vivaldi,bnp account,8/13/2021,s,187,luxa,10/15/2021,10,c,0.05
+59856,122459,309860,WEX FIX,8/13/2021,sell,905,leg,option,PIPP,10/15/2021,10,call,0.05,714,vivaldi,bnp account,8/13/2021,s,905,pipp,10/15/2021,10,c,0.05
+59950,122676,310417,Mando,8/16/2021,sell,96,leg,option,IPOF,11/19/2021,10,call,0.18,714,vivaldi,bnp account,8/16/2021,s,96,ipof,11/19/2021,10,c,0.18
+59957,122689,310445,WEX FIX,8/16/2021,sell,200,leg,option,MYPS,8/20/2021,5,put,0.3,1151,difesa,difesa,8/16/2021,s,200,myps,8/20/2021,5,p,0.3
+60041,122873,310947,Mando,8/17/2021,sell,662,leg,option,AI,6/17/2022,35,put,5.6,191,bnp ny,Shui Ling Geng,8/17/2021,s,662,ai,6/17/2022,35,p,5.6
+60042,122874,310949,Mando,8/17/2021,buy,300,leg,option,EWT,9/17/2021,60,put,1.6529,547,newfoundland,Jonathan Myles Rosenthal,8/17/2021,b,300,ewt,9/17/2021,60,p,1.65
+60087,122982,311242,Mando,8/18/2021,sell,250,leg,option,JPM,6/17/2022,185,call,4.4,251,ubs,Elaine Tang,8/18/2021,s,250,jpm,6/17/2022,185,c,4.4
+60087,122983,311244,Mando,8/18/2021,sell,250,leg,option,JPM,6/17/2022,185,call,4.4,209,goldman sachs,Brian Pasquinelli,8/18/2021,s,250,jpm,6/17/2022,185,c,4.4
+60106,123034,311387,Mando,8/18/2021,buy,2950,leg,option,GDX,1/20/2023,44,call,1.64,251,ubs,nelson zhu,8/18/2021,b,2950,gdx,1/20/2023,44,c,1.64
+60128,123081,311513,WEX FIX,8/18/2021,sell,200,leg,option,MYPS,8/20/2021,5,put,0.8275,1151,difesa,difesa,8/18/2021,s,200,myps,8/20/2021,5,p,0.83
+61840,127057,322348,WEX FIX,8/18/2021,buy,122,leg,option,MYPS,11/19/2021,5,call,0.4,1151,difesa,difesa,8/18/2021,b,122,myps,11/19/2021,5,c,0.4
+60222,123272,312652,WEX FIX,8/19/2021,sell,500,leg,option,LEV,8/20/2021,12.5,put,0.67,1151,difesa,difesa,8/19/2021,s,500,lev,8/20/2021,12.5,p,0.67
+60225,123279,312668,WEX FIX,8/19/2021,sell,331,leg,option,MYPS,8/20/2021,5,put,0.9622,1151,difesa,difesa,8/19/2021,s,331,myps,8/20/2021,5,p,0.96
+60227,123282,312673,WEX FIX,8/19/2021,buy,1,leg,option,MYPS,11/19/2021,5,call,0.4,1151,difesa,difesa,8/19/2021,b,1,myps,11/19/2021,5,c,0.4
+60302,123448,313092,WEX FIX,8/20/2021,sell,199,leg,option,IPOF,12/17/2021,10,call,0.2002,714,vivaldi,bnp account,8/20/2021,s,199,ipof,12/17/2021,10,c,0.2
+60304,123451,313097,WEX FIX,8/20/2021,sell,2000,leg,option,IPOF,12/17/2021,12.5,call,0.1122,317,kepos capital,kepos,8/20/2021,s,2000,ipof,12/17/2021,12.5,c,0.11
+60305,123452,313098,Mando,8/20/2021,sell,69,leg,option,MYPS,8/20/2021,5,put,0.6065,1151,difesa,difesa,8/20/2021,s,69,myps,8/20/2021,5,p,0.61
+60306,123453,313099,WEX FIX,8/20/2021,sell,2,leg,option,SUNL,8/20/2021,7.5,put,2.3,1151,difesa,difesa,8/20/2021,s,2,sunl,8/20/2021,7.5,p,2.3
+60532,123976,314528,XFA,8/25/2021,sell,600,leg,option,VIX,9/15/2021,16,put,0.2,251,ubs,harsh mundhra,8/25/2021,s,600,vix,9/15/2021,16,p,0.2
+60614,124157,314956,WEX FIX,8/26/2021,buy,200,leg,option,PTON,1/21/2022,50,put,0.5333,195,citibank,eric g he,8/26/2021,b,200,pton,1/21/2022,50,p,0.53
+60629,124192,315061,WEX FIX,8/26/2021,buy,150,leg,option,CYXT,9/17/2021,7.5,put,0.25,1151,difesa,difesa,8/26/2021,b,150,cyxt,9/17/2021,7.5,p,0.25
+62501,128551,326173,Mando,8/26/2021,sell,500,leg,option,ZM,11/19/2021,290,put,9.6,228,mizuho,fan yang,8/26/2021,s,500,zm,11/19/2021,290,p,9.6
+60770,124537,316021,WEX FIX,8/30/2021,buy,75,leg,option,CYXT,9/17/2021,7.5,put,0.15,1151,difesa,difesa,8/30/2021,b,75,cyxt,9/17/2021,7.5,p,0.15
+60817,124637,316241,XFA,8/31/2021,sell,2000,leg,option,VIX,10/20/2021,19,put,1.71,251,ubs,harsh mundhra,8/31/2021,s,2000,vix,10/20/2021,19,p,1.71

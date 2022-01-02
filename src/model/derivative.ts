@@ -5,6 +5,7 @@ import IDBAttribute from "./shared/db-table";
 
 interface IDerivativesAttributes extends IDBAttribute {
   readonly date: string;
+  readonly floorBrokerId: string;
   readonly username: string;
   readonly wex: string;
   readonly drv: string;
@@ -28,6 +29,7 @@ class Derivative
 {
   public readonly id!: number;
   public readonly date!: string;
+  public readonly floorBrokerId!: string;
   public readonly username!: string;
   public readonly wex!: string;
   public readonly drv!: string;
@@ -53,6 +55,10 @@ Derivative.init(
       unique: true,
     },
     date: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    floorBrokerId: {
       type: Sequelize.STRING,
       allowNull: false,
     },

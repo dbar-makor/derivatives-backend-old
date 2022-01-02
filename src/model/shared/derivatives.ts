@@ -40,6 +40,9 @@ export interface IWEX {
   modifiedCommissionRate?: number;
   modifiedTotalCharge?: number;
   removed?: boolean;
+  drv_trade_client_account_execution_id?: string;
+  drv_trade_floor_broker_id?: number;
+  charge?: number;
 }
 
 export interface IDRV {
@@ -68,5 +71,4 @@ export interface IDRV {
   modifiedStrike?: number;
   modifiedOption?: string;
   modifiedPrice?: number;
-  modifiedDRVTradeClientAccountExecutionID?: number;
 }
