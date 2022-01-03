@@ -71,4 +71,12 @@ export interface IDRV {
   modifiedStrike?: number;
   modifiedOption?: string;
   modifiedPrice?: number;
+  charge?: number;
+}
+
+export interface IMatchedRows {
+  drv_trade_floor_broker_id?: string;
+  drv_trade_client_account_execution_id?: string;
+  charge?: number;
+  rule?: string;
 }
