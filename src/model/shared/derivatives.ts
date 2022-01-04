@@ -43,6 +43,14 @@ export interface IWEX {
   drv_trade_client_account_execution_id?: string;
   drv_trade_floor_broker_id?: number;
   charge?: number;
+  modifiedQuantity?: number;
+  drv_trade_id?: string;
+  floor_broker?: string;
+  component_type?: string;
+  contract_type?: string;
+  modifiedSymbol?: string;
+  modifiedOption?: string;
+  client_id?: string;
 }
 
 export interface IDRV {

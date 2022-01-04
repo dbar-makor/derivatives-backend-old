@@ -26,6 +26,32 @@ export const DRVDateFormat = (date: string) => {
   return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);
 };
 
+// Convert DRV to unique dates only
+export const DRVUniqueDatesArray = (array: IDRV[]) => {
+  if (!array) {
+    return array;
+  }
+
+  const dates = array.map((date: IDRV) => date.modifiedDate);
+  const uniqueDates = dates.filter((item, pos) => dates.indexOf(item) == pos);
+
+  return uniqueDates;
+};
+
+// Separate DRV by date
+export const DRVSeparateDatesObject = (array: IDRV[]) => {
+  if (!array) {
+    return array;
+  }
+
+  const result: IDRVObject = array.reduce((arr, DRV) => {
+    arr[DRV.modifiedDate!] = arr[DRV.modifiedDate!] || [];
+    arr[DRV.modifiedDate!].push(DRV);
+    return arr;
+  }, Object.create(null));
+  return result;
+};
+
 // Grouping DRV
 export const DRVGroupBy = (
   array: IDRV[],
@@ -40,14 +66,4 @@ export const DRVGroupBy = (
     groups[group].push(object);
   });
   return groups;
-};
-
-// Separate DRV by date
-export const DRVDatesObject = (array: IDRV[]) => {
-  const result: IDRVObject = array.reduce((arr, WEX) => {
-    arr[WEX.modifiedDate!] = arr[WEX.modifiedDate!] || [];
-    arr[WEX.modifiedDate!].push(WEX);
-    return arr;
-  }, Object.create(null));
-  return result;
 };
