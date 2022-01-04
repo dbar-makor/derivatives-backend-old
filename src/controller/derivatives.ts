@@ -21,8 +21,8 @@ import {
   WEXUniqueDatesArray,
   WEXGroupBy,
   WEXDateFormat,
-  formatWEXExpiry,
   WEXModifiyTotalCharge,
+  WEXExpiryFormat,
 } from "../utils/wex";
 import {
   DRVDateFormat,
@@ -45,10 +45,10 @@ import {
 
 const addDerivatives = async (
   req: IAddDerivativesRequest,
-  res: IAddDerivativesResponse
+  res: IAddDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`
+    `<addDerivatives>: Start processing request`,
   );
 
   // Find user
@@ -56,7 +56,7 @@ const addDerivatives = async (
 
   if (!userByID) {
     ServerGlobal.getInstance().logger.error(
-      `<editProfile>: Failed to get user details for user id ${req.user_id}`
+      `<editProfile>: Failed to get user details for user id ${req.user_id}`,
     );
 
     res.status(401).send({
@@ -69,7 +69,7 @@ const addDerivatives = async (
   try {
     const currentDate = new Date();
     const formattedCurrentDate = moment(currentDate).format(
-      "DD-MM-YYYY-HH-mm-ss"
+      "DD-MM-YYYY-HH-mm-ss",
     );
     const floorBrokerId = req.body.floorBrokerId;
     let WEXBase64: string | undefined;
@@ -107,11 +107,12 @@ const addDerivatives = async (
     let matchedCountMakorX: IMatchedRows[] = [];
     let matchedRows: IWEX[] = [];
     let matchedRows2: IWEX[] = [];
+    let qtySumArray: IDRV[] = [];
 
     // Check if WEX base64WEX/base64WEX are valid
     if (!WEXBase64 || !DRVBase64) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process base64WEX/base64DRV"
+        "<addDerivatives>: Failed to process base64WEX/base64DRV",
       );
 
       res.status(400).send({
@@ -127,7 +128,7 @@ const addDerivatives = async (
     // Check if WEX base64WEX/base64WEX are valid
     if (!WEXBase64Splited && !DRVBase64Splited) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process WEXSplited/DRVSplited"
+        "<addDerivatives>: Failed to process WEXSplited/DRVSplited",
       );
 
       res.status(400).send({
@@ -143,26 +144,26 @@ const addDerivatives = async (
       WEXBase64Splited!,
       {
         encoding: "base64",
-      }
+      },
     );
     fs.writeFileSync(
       `assets/DRV-${userByID.username}-${formattedCurrentDate}.csv`,
       DRVBase64Splited!,
       {
         encoding: "base64",
-      }
+      },
     );
 
     // Parsing csv file to JSON
     fs.createReadStream(
-      `assets/WEX-${userByID.username}-${formattedCurrentDate}.csv`
+      `assets/WEX-${userByID.username}-${formattedCurrentDate}.csv`,
     )
       .pipe(csv())
       .on("data", (data: IWEX) => {
         WEX.push(data);
       });
     fs.createReadStream(
-      `assets/DRV-${userByID.username}-${formattedCurrentDate}.csv`
+      `assets/DRV-${userByID.username}-${formattedCurrentDate}.csv`,
     )
       .pipe(csv())
       .on("data", (data: IDRV) => {
@@ -173,7 +174,7 @@ const addDerivatives = async (
       });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully created the files to dir`
+      `<addDerivatives>: Successfully created the files to dir`,
     );
 
     const derivativesActions = async () => {
@@ -182,14 +183,14 @@ const addDerivatives = async (
         const modifiedDate = DRVDateFormat(element.date!);
         const modifiedSide = element.side?.charAt(0).toLowerCase();
         const modifiedQuantity = Number(
-          removeCommas(element.quantity?.toString()!)
+          removeCommas(element.quantity?.toString()!),
         );
         const modifiedSymbol = element.symbol?.toLowerCase();
         const modifiedExpiry = DRVDateFormat(element.expiry!);
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price?.toString())).toFixed(2)
+          Number(removeCommas(element.price?.toString())).toFixed(2),
         );
 
         return {
@@ -211,19 +212,19 @@ const addDerivatives = async (
         const modifiedUser = element.User?.toLowerCase();
         const modifiedSide = element.Side?.charAt(0).toLowerCase();
         const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!)
+          removeCommas(element["Exec Qty"]?.toString()!),
         );
         const modifiedSecurity = element.Security?.toLowerCase();
         const modifiedRoot = element.Root?.toLowerCase();
-        const modifiedExpiry = formatWEXExpiry(element.Expiry!);
+        const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
         const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", ""))
+          removeCommas(element.Strike?.toString().replace("$", "")),
         );
         const modifiedCallPut = element["Call/Put"]?.toLowerCase();
         const modifiedAveragePrice = Number(
           Number(
-            removeCommas(element["Average Price"]?.replace("$", ""))
-          ).toFixed(2)
+            removeCommas(element["Average Price"]?.replace("$", "")),
+          ).toFixed(2),
         );
         const modifiedPortfolio =
           element.Portfolio?.split("-")[0].toLowerCase();
@@ -231,7 +232,7 @@ const addDerivatives = async (
           element["Commission Type"]?.toLowerCase();
         const modifiedCommissionRate = Number(element["Commission Rate"]);
         const modifiedTotalCharge = WEXModifiyTotalCharge(
-          element["Total Charge"]!
+          element["Total Charge"]!,
         );
 
         return {
@@ -262,7 +263,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -339,11 +340,11 @@ const addDerivatives = async (
         WEXCanceledPairsSeparatedByDates = WEXSeparatedByDates[date].filter(
           (element) => {
             return !element.removed;
-          }
+          },
         );
 
         WEXCanceledPairs = WEXCanceledPairs.concat(
-          WEXCanceledPairsSeparatedByDates
+          WEXCanceledPairsSeparatedByDates,
         );
       }
 
@@ -397,13 +398,13 @@ const addDerivatives = async (
 
               item.modifiedAveragePrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
                 ) / 100;
 
               item.modifiedTotalCharge = Number(
                 (
                   item.modifiedTotalCharge! + object.modifiedTotalCharge!
-                ).toFixed(2)
+                ).toFixed(2),
               );
 
               return array.set(key, item);
@@ -412,7 +413,7 @@ const addDerivatives = async (
         ];
 
         WEXGroupedCalculated = WEXGroupedCalculated.concat(
-          groupedWEXArrayCalculated
+          groupedWEXArrayCalculated,
         );
       }
 
@@ -440,11 +441,11 @@ const addDerivatives = async (
       const DRVGroupedKeys = Object.keys(DRVGrouped);
 
       // Sum quantity, weight average price
-      for (const element of DRVGroupedKeys) {
+      for (const key of DRVGroupedKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
         const groupedDRVCalculated: IDRV[] = [
-          ...DRVGrouped[element]
+          ...DRVGrouped[key]
             .reduce((array, object) => {
               const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
               const item: IDRV =
@@ -465,7 +466,7 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
                 ) / 100;
 
               return array.set(key, item);
@@ -485,7 +486,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -515,8 +516,8 @@ const addDerivatives = async (
                 WEXRow.modifiedExecQty === modifiedQuantity &&
                 WEXRow.modifiedAveragePrice === modifiedPrice &&
                 WEXRow.modifiedStrike === modifiedStrike &&
-                WEXRow.modifiedExpiry === modifiedExpiry
-            )
+                WEXRow.modifiedExpiry === modifiedExpiry,
+            ),
         );
 
         const WEXMatched = WEXGroupedSeparatedByDates[date].filter((WEXRow) =>
@@ -538,8 +539,8 @@ const addDerivatives = async (
               WEXRow.modifiedExecQty === modifiedQuantity &&
               WEXRow.modifiedAveragePrice === modifiedPrice &&
               WEXRow.modifiedStrike === modifiedStrike &&
-              WEXRow.modifiedExpiry === modifiedExpiry
-          )
+              WEXRow.modifiedExpiry === modifiedExpiry,
+          ),
         );
 
         const DRVMatched = DRVGroupedSeparatedByDates[date].filter((DRVRow) =>
@@ -561,8 +562,8 @@ const addDerivatives = async (
               DRVRow.modifiedQuantity === modifiedExecQty &&
               DRVRow.modifiedPrice === modifiedAveragePrice &&
               DRVRow.modifiedStrike === modifiedStrike &&
-              DRVRow.modifiedExpiry === modifiedExpiry
-          )
+              DRVRow.modifiedExpiry === modifiedExpiry,
+          ),
         );
 
         WEXByDRVGrouped = WEXByDRVGrouped.concat(WEXUnmatched);
@@ -580,7 +581,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -615,8 +616,8 @@ const addDerivatives = async (
               WEXRow.modifiedCallPut === modifiedCallPut &&
               WEXRow.modifiedPortfolio === modifiedPortfolio &&
               WEXRow.modifiedCommissionType === modifiedCommissionType &&
-              WEXRow.modifiedCommissionRate === modifiedCommissionRate
-          )
+              WEXRow.modifiedCommissionRate === modifiedCommissionRate,
+          ),
         );
 
         WEXSeparateGroups = WEXSeparateGroups.concat(WEXMatched);
@@ -631,7 +632,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -666,8 +667,8 @@ const addDerivatives = async (
               DRVRow.modifiedExpiry === modifiedExpiry &&
               DRVRow.modifiedStrike === modifiedStrike &&
               DRVRow.modifiedOption === modifiedOption &&
-              DRVRow.client_id === client_id
-          )
+              DRVRow.client_id === client_id,
+          ),
         );
 
         DVRSeparateGroups = DVRSeparateGroups.concat(DRVMatched);
@@ -687,7 +688,7 @@ const addDerivatives = async (
               WEXRow.modifiedAveragePrice ===
                 DVRSeparateGroups[i].modifiedPrice &&
               WEXRow.modifiedStrike === DVRSeparateGroups[i].modifiedStrike &&
-              WEXRow.modifiedExpiry === DVRSeparateGroups[i].modifiedExpiry
+              WEXRow.modifiedExpiry === DVRSeparateGroups[i].modifiedExpiry,
           ),
         });
       }
@@ -699,64 +700,68 @@ const addDerivatives = async (
           modifiedExecQty,
           modifiedTotalCharge,
         }) => {
-          console.log(
-            drv_trade_client_account_execution_id,
-            execQty,
-            modifiedExecQty,
-            modifiedTotalCharge
-          );
-
-          // const chargeCalc =
-          //   (Number(removeCommas(execQty)) * modifiedTotalCharge!) /
-          //   modifiedExecQty!;
           return {
             charge: modifiedTotalCharge,
             drv_trade_client_account_execution_id,
             drv_trade_floor_broker_id: floorBrokerId,
           };
-        }
+        },
       );
 
       const DRVMatchedAfter = matchedRows.filter(
-        (e) => e.modifiedUser === undefined
+        (e) => e.modifiedUser === undefined,
       );
 
-      // console.log(DRVMatchedAfter);
-
-      const map = DRVMatchedAfter.reduce(
-        (acc: { [key: string]: number }, curr) => {
-          if (
-            acc[curr.drv_trade_id!] &&
-            acc[curr.floor_broker!] &&
-            acc[curr.modifiedDate!] &&
-            acc[curr.modifiedSide!] &&
-            acc[curr.component_type!] &&
-            acc[curr.contract_type!] &&
-            acc[curr.modifiedSymbol!] &&
-            acc[curr.modifiedExpiry!] &&
-            acc[curr.modifiedStrike!] &&
-            acc[curr.modifiedOption!] &&
-            acc[curr.client_id!]
-          ) {
-            acc[curr.modifiedDate!] =
-              acc[curr.modifiedDate!] + curr.modifiedQuantity!;
-          }
-
-          acc[curr.modifiedDate!] = curr.modifiedExecQty!;
-
-          return acc;
-        },
-        {}
-      );
-
-      const result = DRVMatchedAfter.map((item) => {
-        return {
-          ...item,
-          quantity: map[item.modifiedDate!],
-        };
+      const DRVMatchedGrouped = DRVGroupBy(DRVMatchedAfter, (element: IDRV) => {
+        return [
+          element.drv_trade_id,
+          element.floor_broker,
+          element.modifiedDate,
+          element.modifiedSide,
+          element.component_type,
+          element.contract_type,
+          element.modifiedSymbol,
+          element.modifiedExpiry,
+          element.modifiedStrike,
+          element.modifiedOption,
+          element.client_id,
+        ];
       });
 
-      console.log(result);
+      // Get WEX group keys
+      const DRVMatchedGroupedKeys = Object.keys(DRVMatchedGrouped);
+
+      for (const key of DRVMatchedGroupedKeys) {
+        const qty = DRVMatchedGrouped[key].map(({ modifiedQuantity }) => {
+          return modifiedQuantity;
+        });
+
+        const qtySum = qty.reduce((a, b) => a! + b!, 0);
+
+        for (let i = 0; i < DRVMatchedGrouped[key].length; i++) {
+          DRVMatchedGrouped[key][i].quantitySum = qtySum;
+          qtySumArray = qtySumArray.concat(DRVMatchedGrouped[key][i]);
+        }
+      }
+
+      for (let i = 0; i < qtySumArray.length; i++) {
+        matchedRows2.push({
+          ...qtySumArray[i],
+          ...WEXSeparateGroups.find(
+            (WEXRow) =>
+              WEXRow.modifiedDate === qtySumArray[i].modifiedDate &&
+              WEXRow.modifiedSide === qtySumArray[i].modifiedSide &&
+              WEXRow.modifiedRoot === qtySumArray[i].modifiedSymbol &&
+              WEXRow.modifiedCallPut === qtySumArray[i].modifiedOption &&
+              WEXRow.modifiedExecQty === qtySumArray[i].modifiedQuantity &&
+              WEXRow.modifiedAveragePrice === qtySumArray[i].modifiedPrice &&
+              WEXRow.modifiedStrike === qtySumArray[i].modifiedStrike &&
+              WEXRow.modifiedExpiry === qtySumArray[i].modifiedExpiry,
+          ),
+        });
+      }
+
+      console.log(matchedRows2);
 
       const WEXGroupedUniqueDatesByDRVGrouped =
         WEXUniqueDatesArray(WEXByDRVGrouped);
@@ -768,7 +773,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -804,8 +809,8 @@ const addDerivatives = async (
                 WEXRow.modifiedCallPut === modifiedCallPut &&
                 WEXRow.modifiedPortfolio === modifiedPortfolio &&
                 WEXRow.modifiedCommissionType === modifiedCommissionType &&
-                WEXRow.modifiedCommissionRate === modifiedCommissionRate
-            )
+                WEXRow.modifiedCommissionRate === modifiedCommissionRate,
+            ),
         );
 
         WEXVDRV = WEXVDRV.concat(WEXUnmatched);
@@ -819,7 +824,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -849,8 +854,8 @@ const addDerivatives = async (
                 WEXRow.modifiedExecQty === modifiedQuantity &&
                 WEXRow.modifiedAveragePrice === modifiedPrice &&
                 WEXRow.modifiedStrike === modifiedStrike &&
-                WEXRow.modifiedExpiry === modifiedExpiry
-            )
+                WEXRow.modifiedExpiry === modifiedExpiry,
+            ),
         );
 
         const WEXMatched = WEXVDRVSeparatedByDates[date].filter((WEXRow) =>
@@ -872,8 +877,8 @@ const addDerivatives = async (
               WEXRow.modifiedExecQty === modifiedQuantity &&
               WEXRow.modifiedAveragePrice === modifiedPrice &&
               WEXRow.modifiedStrike === modifiedStrike &&
-              WEXRow.modifiedExpiry === modifiedExpiry
-          )
+              WEXRow.modifiedExpiry === modifiedExpiry,
+          ),
         );
 
         const DRVMatched = DRVSeparatedByDates[date].filter((DRVRow) =>
@@ -895,8 +900,8 @@ const addDerivatives = async (
               DRVRow.modifiedQuantity === modifiedExecQty &&
               DRVRow.modifiedPrice === modifiedAveragePrice &&
               DRVRow.modifiedStrike === modifiedStrike &&
-              DRVRow.modifiedExpiry === modifiedExpiry
-          )
+              DRVRow.modifiedExpiry === modifiedExpiry,
+          ),
         );
 
         WEXGroupedByDRV = WEXGroupedByDRV.concat(WEXUnmatched);
@@ -924,7 +929,7 @@ const addDerivatives = async (
             drv_trade_client_account_execution_id,
             charge: chargeCalc,
           };
-        }
+        },
       );
 
       const WEXUniqueDatesGroupedByFilteredDRV =
@@ -937,7 +942,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -972,8 +977,8 @@ const addDerivatives = async (
               WEXRow.modifiedCallPut === modifiedCallPut &&
               WEXRow.modifiedPortfolio === modifiedPortfolio &&
               WEXRow.modifiedCommissionType === modifiedCommissionType &&
-              WEXRow.modifiedCommissionRate === modifiedCommissionRate
-          )
+              WEXRow.modifiedCommissionRate === modifiedCommissionRate,
+          ),
         );
 
         WEXByGroupedWEX = WEXByGroupedWEX.concat(WEXUnmatched);
@@ -988,7 +993,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -1018,8 +1023,8 @@ const addDerivatives = async (
                 WEXRow.modifiedExecQty === modifiedQuantity &&
                 WEXRow.modifiedAveragePrice === modifiedPrice &&
                 WEXRow.modifiedStrike === modifiedStrike &&
-                WEXRow.modifiedExpiry === modifiedExpiry
-            )
+                WEXRow.modifiedExpiry === modifiedExpiry,
+            ),
         );
 
         const WEXMatched = WEXByGroupedWEXSeparatedByDates[date].filter(
@@ -1042,8 +1047,8 @@ const addDerivatives = async (
                 WEXRow.modifiedExecQty === modifiedQuantity &&
                 WEXRow.modifiedAveragePrice === modifiedPrice &&
                 WEXRow.modifiedStrike === modifiedStrike &&
-                WEXRow.modifiedExpiry === modifiedExpiry
-            )
+                WEXRow.modifiedExpiry === modifiedExpiry,
+            ),
         );
 
         const DRVMatched = DRVSeparatedByDates[date].filter((DRVRow) =>
@@ -1065,8 +1070,8 @@ const addDerivatives = async (
               DRVRow.modifiedQuantity === modifiedExecQty &&
               DRVRow.modifiedPrice === modifiedAveragePrice &&
               DRVRow.modifiedStrike === modifiedStrike &&
-              DRVRow.modifiedExpiry === modifiedExpiry
-          )
+              DRVRow.modifiedExpiry === modifiedExpiry,
+          ),
         );
 
         WEXunresolved = WEXunresolved.concat(WEXunresolvedByDRV);
@@ -1093,25 +1098,25 @@ const addDerivatives = async (
             drv_trade_client_account_execution_id,
             charge,
           };
-        }
+        },
       );
 
       matchedCountMakorX = matchedCountMakorX.concat(
         matchedGroupVGroup,
         matchedGroupV1,
-        matched1V1
+        matched1V1,
       );
 
       // Total charge
       const totalCharge = WEXModified.reduce(
         (n, { modifiedTotalCharge }) => n + modifiedTotalCharge,
-        0
+        0,
       );
 
       // Unmatched unresolved charge
       const unmatchedUnresolvedCharge = WEXunresolved.reduce(
         (n, { modifiedTotalCharge }) => n + modifiedTotalCharge!,
-        0
+        0,
       );
 
       // Matched Sum Charge
@@ -1151,7 +1156,7 @@ const addDerivatives = async (
       converter.json2csv(matchedCountMakorX, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
           );
 
           res.status(400).send({
@@ -1163,7 +1168,7 @@ const addDerivatives = async (
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv"
+            "<addDerivatives>: Failed to convert file to csv",
           );
 
           res.status(400).send({
@@ -1175,11 +1180,11 @@ const addDerivatives = async (
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv
+          csv,
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
         );
       });
 
@@ -1210,7 +1215,7 @@ const addDerivatives = async (
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -1223,10 +1228,10 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse
+  res: IGetDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`
+    `<getDerivatives>: Start processing request`,
   );
 
   try {
@@ -1236,7 +1241,7 @@ const getDerivatives = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivatives>: Failed to get derivatives"
+        "<getDerivatives>: Failed to get derivatives",
       );
 
       res.status(400).send({
@@ -1247,7 +1252,7 @@ const getDerivatives = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`
+      `<getDerivatives>: Successfully got the derivatives`,
     );
 
     res.status(200).send({
@@ -1268,7 +1273,7 @@ const getDerivatives = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -1281,10 +1286,10 @@ const getDerivatives = async (
 
 const getDerivative = async (
   req: IGetDerivativeRequest,
-  res: IGetDerivativeResponse
+  res: IGetDerivativeResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivative>: Start processing request`
+    `<getDerivative>: Start processing request`,
   );
 
   try {
@@ -1296,7 +1301,7 @@ const getDerivative = async (
     // Check if derivatives are valid
     if (!derivative) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get derivatives"
+        "<getDerivative>: Failed to get derivatives",
       );
 
       res.status(400).send({
@@ -1307,7 +1312,7 @@ const getDerivative = async (
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got derivative`
+      `<getDerivatives>: Successfully got derivative`,
     );
 
     res.status(200).send({
@@ -1331,7 +1336,7 @@ const getDerivative = async (
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -1344,7 +1349,7 @@ const getDerivative = async (
 
 const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivativeFiles>: Start processing request`
+    `<getDerivativeFiles>: Start processing request`,
   );
 
   try {
@@ -1354,7 +1359,7 @@ const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
     // Check file path
     if (!filePath) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get file"
+        "<getDerivative>: Failed to get file",
       );
 
       res.status(400).send({
@@ -1367,7 +1372,7 @@ const getDerivativeFiles = async (req: IDownloadFilesRequest, res: any) => {
     res.download(filePath, fileName);
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to download files because of server error: ${e}`
+      `<getDerivatives>: Failed to download files because of server error: ${e}`,
     );
 
     res.status(500).send({

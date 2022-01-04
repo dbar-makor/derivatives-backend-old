@@ -54,23 +54,23 @@ export interface IWEX {
 }
 
 export interface IDRV {
-  readonly drv_trade_id?: string;
-  readonly drv_trade_client_trader_id?: string;
-  readonly drv_trade_client_account_execution_id?: string;
-  readonly floor_broker?: string;
-  readonly date?: string;
-  readonly side?: string;
+  drv_trade_id?: string;
+  drv_trade_client_trader_id?: string;
+  drv_trade_client_account_execution_id?: string;
+  floor_broker?: string;
+  date?: string;
+  side?: string;
   quantity?: string;
-  readonly component_type?: string;
-  readonly contract_type?: string;
-  readonly symbol?: string;
-  readonly expiry?: string;
-  readonly strike?: string;
-  readonly option?: string;
+  component_type?: string;
+  contract_type?: string;
+  symbol?: string;
+  expiry?: string;
+  strike?: string;
+  option?: string;
   price?: string;
-  readonly client_id?: string;
-  readonly client?: string;
-  readonly trader?: string;
+  client_id?: string;
+  client?: string;
+  trader?: string;
   modifiedDate?: string;
   modifiedSide?: string;
   modifiedQuantity?: number;
@@ -80,6 +80,7 @@ export interface IDRV {
   modifiedOption?: string;
   modifiedPrice?: number;
   charge?: number;
+  quantitySum?: number;
 }
 
 export interface IMatchedRows {
