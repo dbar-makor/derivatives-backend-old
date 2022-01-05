@@ -76,9 +76,10 @@ const addDerivatives = async (
     if (firstFile.id === "WEX") {
       WEXBase64 = firstFile.file;
       DRVBase64 = secondFile.file;
+    } else {
+      DRVBase64 = firstFile.file;
+      WEXBase64 = secondFile.file;
     }
-    DRVBase64 = firstFile.file;
-    WEXBase64 = secondFile.file;
 
     const WEX: IWEX[] = [];
     let WEXCanceledPairs: IWEX[] = [];
@@ -202,6 +203,7 @@ const addDerivatives = async (
 
       // Modifing WEX
       const WEXModified = WEX.map((element) => {
+        console.log(element!);
         const modifiedDate = WEXDateFormat(element.Date!);
         const modifiedUser = element.User?.toLowerCase();
         const modifiedSide = element.Side?.charAt(0).toLowerCase();
