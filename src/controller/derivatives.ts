@@ -1172,7 +1172,7 @@ const addDerivatives = async (
       });
 
       // convert JSON to CSV file
-      converter.json2csv(matchedCountMakorX, (err, csv) => {
+      converter.json2csv(WEXunresolved, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
             `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
