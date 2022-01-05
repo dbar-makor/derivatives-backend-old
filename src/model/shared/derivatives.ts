@@ -51,6 +51,7 @@ export interface IWEX {
   modifiedSymbol?: string;
   modifiedOption?: string;
   client_id?: string;
+  quantitySum?: number;
 }
 
 export interface IDRV {

@@ -18,10 +18,18 @@ export const WEXExpiryFormat = (date: string) => {
     return date;
   }
 
-  const year = date!.split("-")[0];
-  const month = date.split("-")[1];
+  if (date.includes("-")) {
+    const year = date!.split("-")[0];
+    const month = date.split("-")[1];
+    const removeLeadingZeroMonth = parseInt(month, 10);
+    const day = date.split("-")[2];
+    return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
+  }
+
+  const day = date!.split("/")[0];
+  const month = date.split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
-  const day = date.split("-")[2];
+  const year = date.split("/")[2];
   return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
 };
 

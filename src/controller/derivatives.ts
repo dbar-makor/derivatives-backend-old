@@ -96,7 +96,6 @@ const addDerivatives = async (
     let WEXByDRVGrouped: IWEX[] = [];
     let WEXGroupedCalculated: IWEX[] = [];
     let DRVGroupedCalculated: IDRV[] = [];
-    let DRVGroupedCalculatedAfter: IDRV[] = [];
     let WEXunresolved: IWEX[] = [];
     let DRVGroupedMatched: IDRV[] = [];
     let WEXGroupedMatched: IWEX[] = [];
@@ -106,7 +105,7 @@ const addDerivatives = async (
     let DRV1V1Matched: IDRV[] = [];
     let matchedCountMakorX: IMatchedRows[] = [];
     let matchedRows: IWEX[] = [];
-    let matchedRows2: IWEX[] = [];
+    let matchedGroupedRows: IWEX[] = [];
     let qtySumArray: IDRV[] = [];
 
     // Check if WEX base64WEX/base64WEX are valid
@@ -693,13 +692,8 @@ const addDerivatives = async (
         });
       }
 
-      const matchedGroupVGroup: IMatchedRows[] = matchedRows.map(
-        ({
-          drv_trade_client_account_execution_id,
-          "Exec Qty": execQty,
-          modifiedExecQty,
-          modifiedTotalCharge,
-        }) => {
+      const matchedGroupVS1: IMatchedRows[] = matchedRows.map(
+        ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
           return {
             charge: modifiedTotalCharge,
             drv_trade_client_account_execution_id,
@@ -708,29 +702,35 @@ const addDerivatives = async (
         },
       );
 
-      const DRVMatchedAfter = matchedRows.filter(
+      const DRVMatchedUndefined = matchedRows.filter(
         (e) => e.modifiedUser === undefined,
       );
 
-      const DRVMatchedGrouped = DRVGroupBy(DRVMatchedAfter, (element: IDRV) => {
-        return [
-          element.drv_trade_id,
-          element.floor_broker,
-          element.modifiedDate,
-          element.modifiedSide,
-          element.component_type,
-          element.contract_type,
-          element.modifiedSymbol,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedOption,
-          element.client_id,
-        ];
-      });
+      const DRVMatched = matchedGroupVS1.filter((e) => e.charge !== undefined);
+
+      const DRVMatchedGrouped = DRVGroupBy(
+        DRVMatchedUndefined,
+        (element: IDRV) => {
+          return [
+            element.drv_trade_id,
+            element.floor_broker,
+            element.modifiedDate,
+            element.modifiedSide,
+            element.component_type,
+            element.contract_type,
+            element.modifiedSymbol,
+            element.modifiedExpiry,
+            element.modifiedStrike,
+            element.modifiedOption,
+            element.client_id,
+          ];
+        },
+      );
 
       // Get WEX group keys
       const DRVMatchedGroupedKeys = Object.keys(DRVMatchedGrouped);
 
+      // Give DRV sum array
       for (const key of DRVMatchedGroupedKeys) {
         const qty = DRVMatchedGrouped[key].map(({ modifiedQuantity }) => {
           return modifiedQuantity;
@@ -745,7 +745,7 @@ const addDerivatives = async (
       }
 
       for (let i = 0; i < qtySumArray.length; i++) {
-        matchedRows2.push({
+        matchedGroupedRows.push({
           ...qtySumArray[i],
           ...WEXSeparateGroups.find(
             (WEXRow) =>
@@ -753,7 +753,7 @@ const addDerivatives = async (
               WEXRow.modifiedSide === qtySumArray[i].modifiedSide &&
               WEXRow.modifiedRoot === qtySumArray[i].modifiedSymbol &&
               WEXRow.modifiedCallPut === qtySumArray[i].modifiedOption &&
-              WEXRow.modifiedExecQty === qtySumArray[i].modifiedQuantity &&
+              WEXRow.modifiedExecQty === qtySumArray[i].quantitySum &&
               WEXRow.modifiedAveragePrice === qtySumArray[i].modifiedPrice &&
               WEXRow.modifiedStrike === qtySumArray[i].modifiedStrike &&
               WEXRow.modifiedExpiry === qtySumArray[i].modifiedExpiry,
@@ -761,7 +761,23 @@ const addDerivatives = async (
         });
       }
 
-      console.log(matchedRows2);
+      const matchedGroupVGroup: IMatchedRows[] = matchedGroupedRows.map(
+        ({
+          drv_trade_client_account_execution_id,
+          modifiedTotalCharge,
+          quantitySum,
+          modifiedQuantity,
+        }) => {
+          const chargeCalc =
+            (Number(modifiedQuantity!) * modifiedTotalCharge!) / quantitySum!;
+
+          return {
+            charge: chargeCalc,
+            drv_trade_client_account_execution_id,
+            drv_trade_floor_broker_id: floorBrokerId,
+          };
+        },
+      );
 
       const WEXGroupedUniqueDatesByDRVGrouped =
         WEXUniqueDatesArray(WEXByDRVGrouped);
@@ -1101,7 +1117,10 @@ const addDerivatives = async (
         },
       );
 
+      console.log(matched1V1);
+
       matchedCountMakorX = matchedCountMakorX.concat(
+        DRVMatched,
         matchedGroupVGroup,
         matchedGroupV1,
         matched1V1,
