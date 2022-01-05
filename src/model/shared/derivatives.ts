@@ -39,10 +39,10 @@ export interface IWEX {
   modifiedCommissionType?: string;
   modifiedCommissionRate?: number;
   modifiedTotalCharge?: number;
-  removed?: boolean;
-  drv_trade_client_account_execution_id?: string;
   modifiedQuantity?: number;
+  drv_trade_client_account_execution_id?: string;
   quantitySum?: number;
+  removed?: boolean;
 }
 
 export interface IDRV {
