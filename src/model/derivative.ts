@@ -22,9 +22,7 @@ interface IDerivativesAttributes extends IDBAttribute {
 }
 
 class Derivative
-  extends Sequelize.Model<
-    Optional<IDerivativesAttributes, "id" | "date" | "createdAt">
-  >
+  extends Sequelize.Model<Optional<IDerivativesAttributes, "id">>
   implements IDerivativesAttributes
 {
   public readonly id!: number;
@@ -111,7 +109,7 @@ Derivative.init(
     sequelize: ServerGlobal.getInstance().db,
     createdAt: false,
     updatedAt: false,
-  }
+  },
 );
 
 export default Derivative;

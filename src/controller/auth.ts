@@ -23,7 +23,7 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
       password: hashedPassword,
     });
 
-    // // Creating the user document
+    // Creating the user document
     const newToken = jwt.sign({ id: newUser.id }, process.env.JWT_PWD, {
       expiresIn: "7 days",
     });
@@ -34,7 +34,7 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
     });
 
     ServerGlobal.getInstance().logger.info(
-      `<register>: Successfully registered user with ID: ${newUser.id}`
+      `<register>: Successfully registered user with ID: ${newUser.id}`,
     );
 
     res.status(201).send({
@@ -48,7 +48,7 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<register>: Failed to register because of server error: ${e}`
+      `<register>: Failed to register because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -61,7 +61,7 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
 
 const login = async (req: ILoginRequest, res: ILoginResponse) => {
   ServerGlobal.getInstance().logger.info(
-    `<login>: Start processing request with username: ${req.body.username}`
+    `<login>: Start processing request with username: ${req.body.username}`,
   );
 
   try {
@@ -73,7 +73,7 @@ const login = async (req: ILoginRequest, res: ILoginResponse) => {
     // There is no such user with the provided username
     if (!userByUsername) {
       ServerGlobal.getInstance().logger.error(
-        `<login>: Failed to login because the username ${req.body.username} does not match any user`
+        `<login>: Failed to login because the username ${req.body.username} does not match any user`,
       );
 
       res.status(400).send({
@@ -85,14 +85,14 @@ const login = async (req: ILoginRequest, res: ILoginResponse) => {
 
     const compareResult = await bcrypt.compare(
       req.body.password,
-      userByUsername.password
+      userByUsername.password,
     );
 
     // Check whether the provided password is as same as the stored hashed one
     if (!compareResult) {
       ServerGlobal.getInstance().logger.error(
         `<login>: Failed to login because the password does not match the hashed password \
-with username ${req.body.username}`
+with username ${req.body.username}`,
       );
 
       res.status(400).send({
@@ -117,7 +117,7 @@ with username ${req.body.username}`
     // Check if token in valid
     if (!tokenByUserId) {
       ServerGlobal.getInstance().logger.error(
-        `<login>: Failed to login because token is invalid`
+        `<login>: Failed to login because token is invalid`,
       );
 
       res.status(400).send({
@@ -132,7 +132,7 @@ with username ${req.body.username}`
 
     ServerGlobal.getInstance().logger.info(
       `<login>: Successfully logged user in \
-with username: ${req.body.username} to user id: ${userByUsername.id}`
+with username: ${req.body.username} to user id: ${userByUsername.id}`,
     );
 
     res.status(200).send({
@@ -146,7 +146,7 @@ with username: ${req.body.username} to user id: ${userByUsername.id}`
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<register>: Failed to login with username ${req.body.username} because of server error: ${e}`
+      `<register>: Failed to login with username ${req.body.username} because of server error: ${e}`,
     );
 
     res.status(500).send({

@@ -41,37 +41,28 @@ export interface IWEX {
   modifiedTotalCharge?: number;
   removed?: boolean;
   drv_trade_client_account_execution_id?: string;
-  drv_trade_floor_broker_id?: number;
-  charge?: number;
   modifiedQuantity?: number;
-  drv_trade_id?: string;
-  floor_broker?: string;
-  component_type?: string;
-  contract_type?: string;
-  modifiedSymbol?: string;
-  modifiedOption?: string;
-  client_id?: string;
   quantitySum?: number;
 }
 
 export interface IDRV {
-  drv_trade_id?: string;
-  drv_trade_client_trader_id?: string;
-  drv_trade_client_account_execution_id?: string;
-  floor_broker?: string;
-  date?: string;
-  side?: string;
-  quantity?: string;
-  component_type?: string;
-  contract_type?: string;
-  symbol?: string;
-  expiry?: string;
-  strike?: string;
-  option?: string;
-  price?: string;
-  client_id?: string;
-  client?: string;
-  trader?: string;
+  readonly drv_trade_id?: string;
+  readonly drv_trade_client_trader_id?: string;
+  readonly drv_trade_client_account_execution_id?: string;
+  readonly floor_broker?: string;
+  readonly date?: string;
+  readonly side?: string;
+  readonly quantity?: string;
+  readonly component_type?: string;
+  readonly contract_type?: string;
+  readonly symbol?: string;
+  readonly expiry?: string;
+  readonly strike?: string;
+  readonly option?: string;
+  readonly price?: string;
+  readonly client_id?: string;
+  readonly client?: string;
+  readonly trader?: string;
   modifiedDate?: string;
   modifiedSide?: string;
   modifiedQuantity?: number;
@@ -88,5 +79,4 @@ export interface IMatchedRows {
   drv_trade_floor_broker_id?: string;
   drv_trade_client_account_execution_id?: string;
   charge?: number;
-  rule?: string;
 }
