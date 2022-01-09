@@ -1,9 +1,116 @@
-export interface IWEXObject {
-  [key: string]: IWEX[];
+export interface IDRV {
+  readonly drv_trade_id?: string;
+  readonly drv_trade_client_trader_id?: string;
+  readonly drv_trade_client_account_execution_id?: string;
+  readonly floor_broker?: string;
+  readonly date?: string;
+  readonly side?: string;
+  readonly quantity?: string;
+  readonly component_type?: string;
+  readonly contract_type?: string;
+  readonly symbol?: string;
+  readonly expiry?: string;
+  readonly strike?: string;
+  readonly option?: string;
+  readonly price?: string;
+  readonly client_id?: string;
+  readonly client?: string;
+  readonly trader?: string;
+  modifiedDate?: string;
+  modifiedSide?: string;
+  modifiedQuantity?: number;
+  modifiedSymbol?: string;
+  modifiedExpiry?: string;
+  modifiedExpiryMonthOnly?: string;
+  modifiedExpiryYearOnly?: string;
+  modifiedStrike?: number;
+  modifiedOption?: string;
+  modifiedPrice?: number;
+  quantitySum?: number;
+  charge?: number;
 }
 
-export interface IDRVObject {
-  [key: string]: IDRV[];
+export interface IDASH {
+  readonly USER?: string;
+  readonly EXCHANGE?: string;
+  readonly SYMBOL?: string;
+  readonly EXPIRATION?: string;
+  readonly DATE?: string;
+  readonly "B/S"?: string;
+  readonly STRIKE?: string;
+  readonly "C/P"?: string;
+  readonly PREMIUM?: string;
+  readonly "FILLED QTY"?: string;
+  readonly "TOTAL EXCHANGE FEES"?: string;
+  modifiedUser?: string;
+  modifiedExchange?: string;
+  modifiedSymbol?: string;
+  modifiedExpiration?: string;
+  modifiedDate?: string;
+  modifiedBS?: string;
+  modifiedStrike?: number;
+  modifiedCP?: string;
+  modifiedPremium?: number;
+  modifiedFilledQty?: number;
+  modifiedTotalExchangeFees?: number;
+  drv_trade_client_account_execution_id?: string;
+  quantitySum?: number;
+}
+export interface IBAML {
+  readonly "Trade Date"?: string;
+  readonly Side?: string;
+  readonly Exch?: string;
+  readonly "B/S"?: string;
+  readonly "P/C"?: string;
+  readonly Qty?: string;
+  readonly Class?: string;
+  readonly Sym?: string;
+  readonly Mo?: string;
+  readonly Yr?: string;
+  readonly Strike?: string;
+  readonly Price?: string;
+  readonly "O/C"?: string;
+  readonly CFM?: string;
+  readonly "Optional data"?: string;
+  readonly Client_Order_ID?: string;
+  readonly "Ex Brok"?: string;
+  readonly "MM ID"?: string;
+  readonly CMTA?: string;
+  readonly "Ex Firm"?: string;
+  readonly "Client ID"?: string;
+  readonly "Billing ID"?: string;
+  readonly Account?: string;
+  readonly Trader?: string;
+  readonly CompID?: string;
+  readonly "Cust ID"?: string;
+  readonly "Product Code"?: string;
+  readonly Penny?: string;
+  readonly Parent_Type?: string;
+  readonly ise_mt?: string;
+  readonly phlx_mt?: string;
+  readonly Liquidity?: string;
+  readonly "Exec Rate"?: string;
+  readonly "Exec Charge"?: string;
+  readonly "Exch Trans Fees"?: string;
+  readonly "OCC Clrg Fees"?: string;
+  readonly "Total Charges"?: string;
+  readonly transaction_ID?: string;
+  modifiedTradeDate?: string;
+  modifiedExch?: string;
+  modifiedBS?: string;
+  modifiedPC?: string;
+  modifiedClass?: string;
+  modifiedSym?: string;
+  modifiedStrike?: number;
+  modifiedPrice?: number;
+  modifiedQty?: number;
+  modifiedOC?: string;
+  modifiedCFM?: string;
+  modifiedExBrok?: string;
+  modifiedQuantity?: number;
+  modifiedTotalCharges?: number;
+  drv_trade_client_account_execution_id?: string;
+  quantitySum?: number;
 }
 
 export interface IWEX {
@@ -45,38 +152,24 @@ export interface IWEX {
   removed?: boolean;
 }
 
-export interface IDRV {
-  readonly drv_trade_id?: string;
-  readonly drv_trade_client_trader_id?: string;
-  readonly drv_trade_client_account_execution_id?: string;
-  readonly floor_broker?: string;
-  readonly date?: string;
-  readonly side?: string;
-  readonly quantity?: string;
-  readonly component_type?: string;
-  readonly contract_type?: string;
-  readonly symbol?: string;
-  readonly expiry?: string;
-  readonly strike?: string;
-  readonly option?: string;
-  readonly price?: string;
-  readonly client_id?: string;
-  readonly client?: string;
-  readonly trader?: string;
-  modifiedDate?: string;
-  modifiedSide?: string;
-  modifiedQuantity?: number;
-  modifiedSymbol?: string;
-  modifiedExpiry?: string;
-  modifiedStrike?: number;
-  modifiedOption?: string;
-  modifiedPrice?: number;
-  charge?: number;
-  quantitySum?: number;
-}
-
 export interface IMatchedRows {
-  drv_trade_floor_broker_id?: string;
+  drv_trade_floor_broker_id?: number;
   drv_trade_client_account_execution_id?: string;
   charge?: number;
+}
+
+export interface IDRVObject {
+  [key: string]: IDRV[];
+}
+
+export interface IDASHObject {
+  [key: string]: IDASH[];
+}
+
+export interface IBAMLObject {
+  [key: string]: IBAML[];
+}
+
+export interface IWEXObject {
+  [key: string]: IWEX[];
 }

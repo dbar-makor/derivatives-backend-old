@@ -12,7 +12,7 @@ router.post(
     { key: "username", type: "string" },
     { key: "password", type: "string" },
   ]),
-  login
+  login,
 );
 
 router.post(
@@ -21,7 +21,7 @@ router.post(
     { key: "username", type: "string" },
     { key: "password", type: "string" },
   ]),
-  register
+  register,
 );
 
 export default router;

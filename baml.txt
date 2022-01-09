@@ -1,0 +1,1173 @@
+[
+  {
+    charge: 270,
+    drv_trade_client_account_execution_id: '244142',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 189,
+    drv_trade_client_account_execution_id: '244145',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 81,
+    drv_trade_client_account_execution_id: '244148',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 71.5,
+    drv_trade_client_account_execution_id: '244143',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 50.05,
+    drv_trade_client_account_execution_id: '244146',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21.45,
+    drv_trade_client_account_execution_id: '244149',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 175,
+    drv_trade_client_account_execution_id: '227694',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 24.5,
+    drv_trade_client_account_execution_id: '227695',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21,
+    drv_trade_client_account_execution_id: '227696',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 120,
+    drv_trade_client_account_execution_id: '275810',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 16.8,
+    drv_trade_client_account_execution_id: '275812',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 14.4,
+    drv_trade_client_account_execution_id: '275814',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 275,
+    drv_trade_client_account_execution_id: '235902',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 192.5,
+    drv_trade_client_account_execution_id: '235904',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 82.5,
+    drv_trade_client_account_execution_id: '235906',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '222837',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '222839',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 125,
+    drv_trade_client_account_execution_id: '223014',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 125,
+    drv_trade_client_account_execution_id: '223016',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '223045',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '247313',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 787.5,
+    drv_trade_client_account_execution_id: '254446',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '223299',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 126,
+    drv_trade_client_account_execution_id: '223301',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 20,
+    drv_trade_client_account_execution_id: '223649',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 20,
+    drv_trade_client_account_execution_id: '223651',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 50,
+    drv_trade_client_account_execution_id: '223285',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 40,
+    drv_trade_client_account_execution_id: '223459',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 40,
+    drv_trade_client_account_execution_id: '223461',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 80,
+    drv_trade_client_account_execution_id: '223463',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 105,
+    drv_trade_client_account_execution_id: '244337',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 105,
+    drv_trade_client_account_execution_id: '244339',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 187.5,
+    drv_trade_client_account_execution_id: '224157',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 69,
+    drv_trade_client_account_execution_id: '224200',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 30,
+    drv_trade_client_account_execution_id: '224751',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '224870',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '224872',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 20,
+    drv_trade_client_account_execution_id: '224874',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 743.75,
+    drv_trade_client_account_execution_id: '225053',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 290,
+    drv_trade_client_account_execution_id: '225065',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 290,
+    drv_trade_client_account_execution_id: '225067',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: NaN,
+    drv_trade_client_account_execution_id: '225074',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: NaN,
+    drv_trade_client_account_execution_id: '225076',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 690,
+    drv_trade_client_account_execution_id: '225080',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 345,
+    drv_trade_client_account_execution_id: '225082',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 345,
+    drv_trade_client_account_execution_id: '225083',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 51.75,
+    drv_trade_client_account_execution_id: '225271',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 13.8,
+    drv_trade_client_account_execution_id: '225272',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 270,
+    drv_trade_client_account_execution_id: '225489',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 900,
+    drv_trade_client_account_execution_id: '225491',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 270,
+    drv_trade_client_account_execution_id: '225493',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 265,
+    drv_trade_client_account_execution_id: '229463',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 34.5,
+    drv_trade_client_account_execution_id: '225624',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 9.66,
+    drv_trade_client_account_execution_id: '225626',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 157.5,
+    drv_trade_client_account_execution_id: '226034',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 315,
+    drv_trade_client_account_execution_id: '226038',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '226131',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '228010',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '228011',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 50,
+    drv_trade_client_account_execution_id: '228012',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 140,
+    drv_trade_client_account_execution_id: '244384',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 87.5,
+    drv_trade_client_account_execution_id: '244394',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '308271',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 162.5,
+    drv_trade_client_account_execution_id: '226584',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 80,
+    drv_trade_client_account_execution_id: '226800',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 200,
+    drv_trade_client_account_execution_id: '299134',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 200,
+    drv_trade_client_account_execution_id: '299136',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 45.5,
+    drv_trade_client_account_execution_id: '227140',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1487.5,
+    drv_trade_client_account_execution_id: '227160',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1380,
+    drv_trade_client_account_execution_id: '227180',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 345,
+    drv_trade_client_account_execution_id: '227181',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 50,
+    drv_trade_client_account_execution_id: '227232',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2400,
+    drv_trade_client_account_execution_id: '227261',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 528,
+    drv_trade_client_account_execution_id: '227263',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 69,
+    drv_trade_client_account_execution_id: '227391',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 150,
+    drv_trade_client_account_execution_id: '227433',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1069.5,
+    drv_trade_client_account_execution_id: '229623',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2.5,
+    drv_trade_client_account_execution_id: '244404',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2.5,
+    drv_trade_client_account_execution_id: '244406',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 200,
+    drv_trade_client_account_execution_id: '227578',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 200,
+    drv_trade_client_account_execution_id: '227580',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 3450,
+    drv_trade_client_account_execution_id: '227583',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 68,
+    drv_trade_client_account_execution_id: '227624',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 87.5,
+    drv_trade_client_account_execution_id: '227688',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 483,
+    drv_trade_client_account_execution_id: '227913',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 138,
+    drv_trade_client_account_execution_id: '227917',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 997.5,
+    drv_trade_client_account_execution_id: '253879',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 187.5,
+    drv_trade_client_account_execution_id: '228127',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 187.5,
+    drv_trade_client_account_execution_id: '228129',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 103.5,
+    drv_trade_client_account_execution_id: '228133',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 0.69,
+    drv_trade_client_account_execution_id: '228134',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 0.69,
+    drv_trade_client_account_execution_id: '228138',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 120,
+    drv_trade_client_account_execution_id: '228251',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 13.8,
+    drv_trade_client_account_execution_id: '228283',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 690,
+    drv_trade_client_account_execution_id: '228284',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 13.8,
+    drv_trade_client_account_execution_id: '228285',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 175,
+    drv_trade_client_account_execution_id: '228436',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 175,
+    drv_trade_client_account_execution_id: '228438',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 200,
+    drv_trade_client_account_execution_id: '228456',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2070,
+    drv_trade_client_account_execution_id: '228662',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 276,
+    drv_trade_client_account_execution_id: '228804',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 35.88,
+    drv_trade_client_account_execution_id: '228806',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 138,
+    drv_trade_client_account_execution_id: '228807',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 6.9,
+    drv_trade_client_account_execution_id: '229039',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1610,
+    drv_trade_client_account_execution_id: '229144',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1610,
+    drv_trade_client_account_execution_id: '229145',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1400,
+    drv_trade_client_account_execution_id: '229252',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 15.7,
+    drv_trade_client_account_execution_id: '229437',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 87.5,
+    drv_trade_client_account_execution_id: '229448',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 87.5,
+    drv_trade_client_account_execution_id: '229449',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 60,
+    drv_trade_client_account_execution_id: '233258',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 162.5,
+    drv_trade_client_account_execution_id: '230073',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1207.5,
+    drv_trade_client_account_execution_id: '230129',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 345,
+    drv_trade_client_account_execution_id: '230161',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '230173',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '230174',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 63,
+    drv_trade_client_account_execution_id: '230220',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 112,
+    drv_trade_client_account_execution_id: '230546',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '230670',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21,
+    drv_trade_client_account_execution_id: '244430',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21,
+    drv_trade_client_account_execution_id: '244432',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 690,
+    drv_trade_client_account_execution_id: '232610',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1552.5,
+    drv_trade_client_account_execution_id: '232624',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 122.5,
+    drv_trade_client_account_execution_id: '233098',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 245,
+    drv_trade_client_account_execution_id: '233100',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 662.4,
+    drv_trade_client_account_execution_id: '233197',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 16.56,
+    drv_trade_client_account_execution_id: '233781',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 4.14,
+    drv_trade_client_account_execution_id: '233784',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 483,
+    drv_trade_client_account_execution_id: '233797',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 483,
+    drv_trade_client_account_execution_id: '233798',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 23.65,
+    drv_trade_client_account_execution_id: '276261',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 23.65,
+    drv_trade_client_account_execution_id: '276263',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 23.65,
+    drv_trade_client_account_execution_id: '276265',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 38.5,
+    drv_trade_client_account_execution_id: '276271',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2.2,
+    drv_trade_client_account_execution_id: '276273',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 172.5,
+    drv_trade_client_account_execution_id: '233289',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 8.97,
+    drv_trade_client_account_execution_id: '233290',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 192.5,
+    drv_trade_client_account_execution_id: '233456',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1587,
+    drv_trade_client_account_execution_id: '233497',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 207,
+    drv_trade_client_account_execution_id: '233604',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 110,
+    drv_trade_client_account_execution_id: '244510',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 90,
+    drv_trade_client_account_execution_id: '244514',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '244544',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '244546',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 55,
+    drv_trade_client_account_execution_id: '276250',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 7.7,
+    drv_trade_client_account_execution_id: '276251',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 110,
+    drv_trade_client_account_execution_id: '276254',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 24.75,
+    drv_trade_client_account_execution_id: '276255',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 55,
+    drv_trade_client_account_execution_id: '276257',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 24.75,
+    drv_trade_client_account_execution_id: '276260',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 130,
+    drv_trade_client_account_execution_id: '302090',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 350,
+    drv_trade_client_account_execution_id: '234400',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 40,
+    drv_trade_client_account_execution_id: '234756',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 80,
+    drv_trade_client_account_execution_id: '234760',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 40,
+    drv_trade_client_account_execution_id: '234761',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 0.69,
+    drv_trade_client_account_execution_id: '234770',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1400,
+    drv_trade_client_account_execution_id: '235137',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 30,
+    drv_trade_client_account_execution_id: '235156',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: -125,
+    drv_trade_client_account_execution_id: '235229',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: -47.39,
+    drv_trade_client_account_execution_id: '235261',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 34.5,
+    drv_trade_client_account_execution_id: '235215',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 11.73,
+    drv_trade_client_account_execution_id: '235216',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 11.73,
+    drv_trade_client_account_execution_id: '235220',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 250,
+    drv_trade_client_account_execution_id: '235221',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 131.1,
+    drv_trade_client_account_execution_id: '235314',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: -500,
+    drv_trade_client_account_execution_id: '235544',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 300,
+    drv_trade_client_account_execution_id: '235548',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 15,
+    drv_trade_client_account_execution_id: '235629',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 15,
+    drv_trade_client_account_execution_id: '235631',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 132.5,
+    drv_trade_client_account_execution_id: '235626',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 57.24,
+    drv_trade_client_account_execution_id: '235628',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '244628',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '244632',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10,
+    drv_trade_client_account_execution_id: '244634',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 109.6,
+    drv_trade_client_account_execution_id: '235900',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 109.6,
+    drv_trade_client_account_execution_id: '235901',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 125,
+    drv_trade_client_account_execution_id: '235971',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 125,
+    drv_trade_client_account_execution_id: '235973',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1,
+    drv_trade_client_account_execution_id: '236175',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1656,
+    drv_trade_client_account_execution_id: '235994',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 7,
+    drv_trade_client_account_execution_id: '244653',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10.5,
+    drv_trade_client_account_execution_id: '244655',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21,
+    drv_trade_client_account_execution_id: '244665',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 21,
+    drv_trade_client_account_execution_id: '244667',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 85,
+    drv_trade_client_account_execution_id: '236325',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 207,
+    drv_trade_client_account_execution_id: '236361',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 68.31,
+    drv_trade_client_account_execution_id: '236362',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 11,
+    drv_trade_client_account_execution_id: '236536',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1375,
+    drv_trade_client_account_execution_id: '236818',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2,
+    drv_trade_client_account_execution_id: '237980',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1035,
+    drv_trade_client_account_execution_id: '236669',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 3,
+    drv_trade_client_account_execution_id: '238101',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 3,
+    drv_trade_client_account_execution_id: '238103',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1400,
+    drv_trade_client_account_execution_id: '243371',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1400,
+    drv_trade_client_account_execution_id: '243372',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 17.5,
+    drv_trade_client_account_execution_id: '244765',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 17.5,
+    drv_trade_client_account_execution_id: '244767',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 35,
+    drv_trade_client_account_execution_id: '244771',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 35,
+    drv_trade_client_account_execution_id: '244773',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 5,
+    drv_trade_client_account_execution_id: '244817',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 5,
+    drv_trade_client_account_execution_id: '244819',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 414,
+    drv_trade_client_account_execution_id: '237023',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1000,
+    drv_trade_client_account_execution_id: '237122',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1,
+    drv_trade_client_account_execution_id: '237197',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 828,
+    drv_trade_client_account_execution_id: '237204',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 150,
+    drv_trade_client_account_execution_id: '237239',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 150,
+    drv_trade_client_account_execution_id: '237241',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 120,
+    drv_trade_client_account_execution_id: '237253',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 10.5,
+    drv_trade_client_account_execution_id: '237277',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 180,
+    drv_trade_client_account_execution_id: '237281',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 162.75,
+    drv_trade_client_account_execution_id: '237301',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 122.5,
+    drv_trade_client_account_execution_id: '237309',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 122.5,
+    drv_trade_client_account_execution_id: '237311',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 122.5,
+    drv_trade_client_account_execution_id: '237312',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 122.5,
+    drv_trade_client_account_execution_id: '237313',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 32.8,
+    drv_trade_client_account_execution_id: '237399',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 57.7,
+    drv_trade_client_account_execution_id: '237401',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 83,
+    drv_trade_client_account_execution_id: '244859',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 58,
+    drv_trade_client_account_execution_id: '244863',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 345,
+    drv_trade_client_account_execution_id: '246613',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 690,
+    drv_trade_client_account_execution_id: '246614',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 2,
+    drv_trade_client_account_execution_id: '247324',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '253965',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '253969',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '222205',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 275,
+    drv_trade_client_account_execution_id: '222219',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 100,
+    drv_trade_client_account_execution_id: '222221',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 60,
+    drv_trade_client_account_execution_id: '222345',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 70,
+    drv_trade_client_account_execution_id: '222381',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1.16,
+    drv_trade_client_account_execution_id: '225494',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    charge: 1.16,
+    drv_trade_client_account_execution_id: '225495',
+    drv_trade_floor_broker_id: 23
+  },
+  {
+    drv_trade_floor_broker_id: 23,
+    drv_trade_client_account_execution_id: '318104',
+    charge: 40
+  },
+  {
+    drv_trade_floor_broker_id: 23,
+    drv_trade_client_account_execution_id: '318108',
+    charge: 70
+  },
+  {
+    drv_trade_floor_broker_id: 23,
+    drv_trade_client_account_execution_id: '236267',
+    charge: 270
+  },
+  [length]: 234
+]

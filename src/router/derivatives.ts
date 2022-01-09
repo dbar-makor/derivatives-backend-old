@@ -5,7 +5,7 @@ import { auth } from "../middleware/auth";
 import {
   addDerivatives,
   getDerivatives,
-  getDerivativeFiles,
+  downloadFiles,
   getDerivative,
 } from "../controller/derivatives";
 
@@ -17,6 +17,6 @@ router.get("/", auth, getDerivatives);
 
 router.get("/single", auth, getDerivative);
 
-router.get("/download/:fileId", auth, getDerivativeFiles);
+router.get("/download/:fileId", auth, downloadFiles);
 
 export default router;

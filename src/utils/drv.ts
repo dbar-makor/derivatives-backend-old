@@ -1,29 +1,37 @@
 import { IDRV, IDRVObject } from "../model/shared/derivatives";
 
-// Formatting DRV expiry
-export const DRVExpiryFormat = (date: string) => {
-  if (!date) {
-    return date;
-  }
-  const day = date.toString().split("-")[2];
-  const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.toString().split("-")[1];
-  const removeLeadingZeroMonth = parseInt(month, 10);
-  const year = date.toString().split("-")[0];
-  return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
-};
-
 // Formatting DRV date
 export const DRVDateFormat = (date: string) => {
   if (!date) {
     return date;
   }
-  const day = date.split("/")[0];
-  const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.split("/")[1];
+
+  if (date.includes("-")) {
+    const day = date.split("-")[2];
+    const removeLeadingZeroDay = parseInt(day, 10);
+    const month = date.split("-")[1];
+    const removeLeadingZeroMonth = parseInt(month, 10);
+    const year = date.split("-")[0];
+    return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
+  }
+
+  const month = date.split("/")[0];
   const removeLeadingZeroMonth = parseInt(month, 10);
+  const day = date.split("/")[1];
+  const removeLeadingZeroDay = parseInt(day, 10);
   const year = date.split("/")[2];
-  return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);
+  return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
+};
+
+// Modifying DRV expiry to month only
+export const DRVExpiryToMonthOnly = (date: string) => {
+  if (!date) {
+    return date;
+  }
+
+  const month = date.split("/")[0];
+  const removeLeadingZeroMonth = parseInt(month, 10);
+  return (date = removeLeadingZeroMonth.toString());
 };
 
 // Convert DRV to unique dates only
@@ -55,7 +63,7 @@ export const DRVSeparateDatesObject = (array: IDRV[]) => {
 // Grouping DRV
 export const DRVGroupBy = (
   array: IDRV[],
-  f: (element: IDRV) => (string | number | undefined)[]
+  f: (element: IDRV) => (string | number | undefined)[],
 ) => {
   const groups: { [key: string]: IDRV[] } = {};
 

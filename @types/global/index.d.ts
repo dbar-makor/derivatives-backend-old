@@ -10,6 +10,8 @@ declare global {
       readonly MYSQL_USERNAME: string;
       readonly MYSQL_SCHEMA: string;
       readonly JWT_PWD: string;
+      readonly MAKOR_X_URL: string;
+      readonly MAKOR_X_API_KEY: string;
     }
   }
 }
