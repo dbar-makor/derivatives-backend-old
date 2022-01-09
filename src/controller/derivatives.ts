@@ -1937,16 +1937,6 @@ const addDerivatives = async (
         matched1V1,
       );
 
-      var util = require("util");
-      fs.writeFileSync(
-        "baml.txt",
-        util.inspect(reconciliation_charge, {
-          showHidden: true,
-          depth: null,
-          maxArrayLength: null,
-        }),
-      );
-
       // POST request to makor-X API
       const options = {
         method: "POST",
