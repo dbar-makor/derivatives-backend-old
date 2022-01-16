@@ -2,6 +2,7 @@ import { IBAML, IBAMLObject } from "../model/shared/derivatives";
 
 // Format BAML date
 export const BAMLDateFormat = (date: string) => {
+  let addLeadingNumbersYear = "";
   if (!date) {
     return date;
   }
@@ -11,7 +12,11 @@ export const BAMLDateFormat = (date: string) => {
   const month = date.toString().split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.toString().split("/")[2];
-  const addLeadingNumbersYear = `20${year}`;
+  if (year.length === 2) {
+    addLeadingNumbersYear = `20${year}`;
+  } else {
+    addLeadingNumbersYear = year;
+  }
 
   return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${addLeadingNumbersYear}`);
 };
@@ -19,7 +24,7 @@ export const BAMLDateFormat = (date: string) => {
 // Grouping BAML array
 export const BAMLGroupBy = (
   array: IBAML[],
-  f: (element: IBAML) => (string | number | undefined)[],
+  f: (element: IBAML) => (string | number | undefined)[]
 ) => {
   if (!array) {
     return array;
@@ -65,7 +70,7 @@ export const BAMLSeparateDatesObject = (array: IBAML[]) => {
 // Modify total charge
 export const BAMLModifiyTotalCharge = (totalCharge: string) => {
   if (!totalCharge) {
-    return totalCharge;
+    return 0;
   }
 
   if (totalCharge.includes("(")) {

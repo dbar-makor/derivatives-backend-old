@@ -12,7 +12,7 @@ export const WEXUniqueDatesArray = (array: IWEX[]) => {
   return uniqueDates;
 };
 
-// Formatting WEX date
+// Formatting WEX expiry
 export const WEXExpiryFormat = (date: string) => {
   if (!date) {
     return date;
@@ -26,9 +26,9 @@ export const WEXExpiryFormat = (date: string) => {
     return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
   }
 
-  const day = date!.split("/")[1];
+  const day = date!.split("/")[0];
   const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.split("/")[0];
+  const month = date.split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.split("/")[2];
   return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
@@ -51,7 +51,7 @@ export const WEXDateFormat = (date: string) => {
 // Grouping WEX array
 export const WEXGroupBy = (
   array: IWEX[],
-  f: (element: IWEX) => (string | number | undefined)[],
+  f: (element: IWEX) => (string | number | undefined)[]
 ) => {
   if (!array) {
     return array;

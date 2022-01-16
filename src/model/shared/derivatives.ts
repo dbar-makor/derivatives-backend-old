@@ -29,7 +29,7 @@ export interface IDRV {
   quantitySum?: number;
   charge?: number;
   reconciliationCharge?: {
-    drvId?: string;
+    drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
 }
@@ -115,7 +115,7 @@ export interface IBAML {
   modifiedTotalCharges?: number;
   drv_trade_client_account_execution_id?: string;
   reconciliationCharge?: {
-    drvId?: string;
+    drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
 }
@@ -157,7 +157,7 @@ export interface IWEX {
   drv_trade_client_account_execution_id?: string;
   removed?: boolean;
   reconciliationCharge?: {
-    drvId?: string;
+    drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
 }
@@ -180,7 +180,7 @@ export interface IWEXObject {
 
 export interface INVNReconciliationCharge {
   reconciliationCharge?: {
-    drvId?: string;
+    drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
   totalCharge?: number;
