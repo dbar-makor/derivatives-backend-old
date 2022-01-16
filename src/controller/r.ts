@@ -17,12 +17,17 @@ import {
   IReconciliationCharge,
   IWEX,
   IWEXObject,
-  INVNReconciliationCharge,
 } from "../model/shared/derivatives";
 
 import {
+ 
+ 
+ 
+ ,
+
   biggerThanOneGroups,
   equalToOneGroups,
+  groupDivider,
   removeCommas,
 } from "../utils/derivatives";
 import {
@@ -1096,9 +1101,6 @@ const addDerivatives = async (
 
     const BAMLActions = async () => {
       let DRVGroupedCalculated: IDRV[] = [];
-      let DRVGroupedEqualToOneCalculated: IDRV[] = [];
-      let DRVGroupedBiggerThanOneCalculated: IDRV[] = [];
-
       let BAMLByDRVGroup: IBAML[] = [];
       let BAMLGroupedByDRV: IBAML[] = [];
       let BAMLGroupedByBAML: IBAML[] = [];
@@ -1108,8 +1110,6 @@ const addDerivatives = async (
       let BAMLunresolved: IBAML[] = [];
       let BAMLGroupedMatched: IBAML[] = [];
       let BAMLNV1Matched: IBAML[] = [];
-      let BAMLBiggerThanOneGroupsMatched: IBAML[] = [];
-      let BAMLEqualToOneGroupsMatched: IBAML[] = [];
 
       let reconciliation_charge: IReconciliationCharge[] = [];
 
@@ -1203,6 +1203,63 @@ const addDerivatives = async (
         ];
       });
 
+      log(BAMLGrouped);
+
+      const BAMLBiggerThanOneGroups: IBAMLObject = Object.entries(
+        BAMLGrouped,
+      ).reduce(
+        (a, b) => (a = { ...a, ...(b[1].length != 1 ? { [b[0]]: b[1] } : {}) }),
+        {},
+      );
+      const BAMLBiggerThanOneKeys = Object.keys(BAMLBiggerThanOneGroups);
+
+      // Sum exec qty, weight average price and sum total charges
+      for (const key of BAMLBiggerThanOneKeys) {
+        let weightAverageQty = 0;
+        let totalQty = 0;
+        const result: IBAML[] = [
+          ...BAMLBiggerThanOneGroups[key]
+            .reduce((array, object) => {
+              const key = `${object.modifiedTradeDate}-${object.modifiedExch}-${object.modifiedBS}-${object.modifiedPC}-${object.modifiedClass}-${object.modifiedSym}-${object.Mo}-${object.Yr}-${object.modifiedStrike}-${object.modifiedOC}-${object.modifiedCFM}-${object.modifiedExBrok}`;
+              const item: IBAML =
+                array.get(key) ||
+                Object.assign({}, object, {
+                  modifiedQty: 0,
+                  modifiedPrice: 0,
+                  modifiedTotalCharges: 0,
+                });
+
+              // Sum qty
+              item.modifiedQty = item.modifiedQty! + object.modifiedQty!;
+
+              // Weight average price
+              const curWeightAverageQty =
+                object.modifiedQty! * object.modifiedPrice!;
+
+              weightAverageQty += curWeightAverageQty;
+              totalQty += object.modifiedQty!;
+
+              item.modifiedPrice =
+                Math.round(
+                  (weightAverageQty / totalQty + Number.EPSILON) * 100,
+                ) / 100;
+
+              // Sum total charge
+              item.modifiedTotalCharges = Number(
+                (
+                  item.modifiedTotalCharges! + object.modifiedTotalCharges!
+                ).toFixed(2),
+              );
+
+              return array.set(key, item);
+            }, new Map())
+            .values(),
+        ];
+
+        BAMLBiggerThanOneCalculated =
+          BAMLBiggerThanOneCalculated.concat(result);
+      }
+
       // Get BAML group keys
       const BAMLGroupedKeys = Object.keys(BAMLGrouped);
 
@@ -1273,16 +1330,15 @@ const addDerivatives = async (
         ];
       });
 
-      // Get DRV equal to one groups and group keys
-      const DRVEqualToOneGroups = equalToOneGroups(DRVGrouped);
-      const DRVEqualToOneGroupsKeys = Object.keys(DRVEqualToOneGroups);
+      // Get DRV group keys
+      const DRVGroupedKeys = Object.keys(DRVGrouped);
 
-      // Sum quantity, weight average price for equal to one groups
-      for (const key of DRVEqualToOneGroupsKeys) {
+      // Sum quantity, weight average price
+      for (const key of DRVGroupedKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
         const result: IDRV[] = [
-          ...DRVEqualToOneGroups[key]
+          ...DRVGrouped[key]
             .reduce((array, object) => {
               const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
               const item: IDRV =
@@ -1292,7 +1348,7 @@ const addDerivatives = async (
                   modifiedPrice: 0,
                 });
 
-              // Sum qty
+              // Sun qty
               item.modifiedQuantity =
                 item.modifiedQuantity! + object.modifiedQuantity!;
 
@@ -1313,81 +1369,13 @@ const addDerivatives = async (
             .values(),
         ];
 
-        DRVGroupedEqualToOneCalculated =
-          DRVGroupedEqualToOneCalculated.concat(result);
+        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
       }
-
-      // Get DRV bigger than one groups and group keys
-      const DRVBiggerThanOneGroups = biggerThanOneGroups(DRVGrouped);
-      const DRVBiggerThanOneGroupKeys = Object.keys(DRVBiggerThanOneGroups);
-
-      // Sum quantity, weight average price for bigger than one groups
-      for (const key of DRVBiggerThanOneGroupKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...DRVBiggerThanOneGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0,
-                  reconciliationCharge: [],
-                });
-
-              // Get reconciliation charge required fields
-              item.reconciliationCharge = [
-                ...item.reconciliationCharge!,
-                {
-                  drvId: object.drv_trade_client_account_execution_id,
-                  quantity: object.modifiedQuantity,
-                },
-              ];
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values(),
-        ];
-
-        DRVGroupedBiggerThanOneCalculated =
-          DRVGroupedBiggerThanOneCalculated.concat(result);
-      }
-
-      log(DRVGroupedBiggerThanOneCalculated.map((e) => e.reconciliationCharge));
-
-      DRVGroupedCalculated = DRVGroupedCalculated.concat(
-        DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated,
-      );
 
       const DRVGroupedSeparatedByDates =
         DRVSeparateDatesObject(DRVGroupedCalculated);
-      const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated,
-      );
-      const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated,
-      );
 
-      // Get BAML unmatched rows by group BAML V group DRV
+      // Get BAML unmatched & matched rows by group BAML V group DRV
       for (const date of BAMLUniqueDates) {
         // Check if date is valid
         if (!date) {
@@ -1444,100 +1432,8 @@ const addDerivatives = async (
             ),
         );
 
-        BAMLByDRVGrouped = BAMLByDRVGrouped.concat(BAMLUnmatched);
-      }
-
-      const DRVBiggerThanOnGroupUniqueDates = Object.keys(
-        DRVBiggerThanOneGroupedSeparatedByDates,
-      );
-
-      // Get BAML matched rows by group BAML V DRV bigger than one groups
-      for (const date of DRVBiggerThanOnGroupUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
-          DRVBiggerThanOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              modifiedExpiryMonthOnly,
-              modifiedExpiryYearOnly,
-              reconciliationCharge,
-            }) => {
-              row.reconciliationCharge = reconciliationCharge;
-              return (
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
-              );
-            },
-          ),
-        );
-
-        BAMLBiggerThanOneGroupsMatched =
-          BAMLBiggerThanOneGroupsMatched.concat(BAMLmatched);
-      }
-
-      // Return reconciliation charge, total charge and exec qty
-      const BAMLReconciliationChargesNVN: INVNReconciliationCharge[] =
-        BAMLBiggerThanOneGroupsMatched.map((object) => {
-          return {
-            reconciliationCharge: object.reconciliationCharge,
-            totalCharge: object.modifiedTotalCharges,
-            execQtySum: object.modifiedQty,
-          };
-        });
-
-      // Get matched N V N rows object
-      const matchedNVN: IReconciliationCharge[] =
-        BAMLReconciliationChargesNVN.map(
-          ({ reconciliationCharge, totalCharge, execQtySum }) =>
-            reconciliationCharge!.map(({ drvId, quantity }) => ({
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id: drvId,
-              charge: (totalCharge! * quantity!) / execQtySum!,
-            })),
-        ).flat();
-
-      // Get BAML matched rows by group BAML V DRV equal to one groups
-      for (const date of BAMLUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
-          DRVEqualToOneGroupedSeparatedByDates[date].find(
+        const BAMLMatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
+          DRVGroupedSeparatedByDates[date].find(
             ({
               modifiedDate,
               modifiedSide,
@@ -1567,21 +1463,27 @@ const addDerivatives = async (
           ),
         );
 
-        BAMLEqualToOneGroupsMatched =
-          BAMLEqualToOneGroupsMatched.concat(BAMLmatched);
+        BAMLByDRVGrouped = BAMLByDRVGrouped.concat(BAMLUnmatched);
+
+        BAMLGroupedMatched = BAMLGroupedMatched.concat(BAMLMatched);
       }
 
-      // Get matched N V 1 rows object
-      const matchedNV1: IReconciliationCharge[] =
-        BAMLEqualToOneGroupsMatched.map(
-          ({ drv_trade_client_account_execution_id, modifiedTotalCharges }) => {
-            return {
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id,
-              charge: modifiedTotalCharges,
-            };
-          },
-        );
+      log(BAMLByDRVGrouped.length);
+      log(BAMLGroupedMatched.length);
+      log(BAMLGroupedCalculated.length);
+
+      // Reconciliation charge
+      const matchedNV1: IReconciliationCharge[] = BAMLGroupedMatched.map(
+        ({ drv_trade_client_account_execution_id, modifiedTotalCharges }) => {
+          return {
+            charge: modifiedTotalCharges,
+            drv_trade_client_account_execution_id,
+            drv_trade_floor_broker_id: floorBrokerId,
+          };
+        },
+      );
+
+      log(matchedNV1.map((e) => e.charge));
 
       const BAMLByDRVGroupedUniqueDates =
         BAMLUniqueDatesArray(BAMLByDRVGrouped);
@@ -1821,7 +1723,6 @@ const addDerivatives = async (
 
       // Concating matched objects
       reconciliation_charge = reconciliation_charge.concat(
-        matchedNVN,
         matchedNV1,
         matched1V1,
       );
@@ -1955,8 +1856,6 @@ const addDerivatives = async (
 
     const WEXActions = async () => {
       let DRVGroupedCalculated: IDRV[] = [];
-      let DRVGroupedEqualToOneCalculated: IDRV[] = [];
-      let DRVGroupedBiggerThanOneCalculated: IDRV[] = [];
 
       let WEXCanceledPairs: IWEX[] = [];
       let WEXByDRVGroup: IWEX[] = [];
@@ -1965,9 +1864,8 @@ const addDerivatives = async (
       let WEXByDRVGrouped: IWEX[] = [];
       let WEXGroupedCalculated: IWEX[] = [];
       let WEXunresolved: IWEX[] = [];
+      let WEXGroupedMatched: IWEX[] = [];
       let WEXNV1Matched: IWEX[] = [];
-      let WEXBiggerThanOneGroupsMatched: IWEX[] = [];
-      let WEXEqualToOneGroupsMatched: IWEX[] = [];
 
       let reconciliation_charge: IReconciliationCharge[] = [];
 
@@ -2229,62 +2127,21 @@ const addDerivatives = async (
           element.modifiedOption,
           element.client_id,
         ];
-      });
+});
 
       // Get DRV equal to one groups and group keys
-      const DRVEqualToOneGroups = equalToOneGroups(DRVGrouped);
-      const DRVEqualToOneGroupsKeys = Object.keys(DRVEqualToOneGroups);
-
-      // Sum quantity, weight average price for equal to one groups
-      for (const key of DRVEqualToOneGroupsKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...DRVEqualToOneGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0,
-                });
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values(),
-        ];
-
-        DRVGroupedEqualToOneCalculated =
-          DRVGroupedEqualToOneCalculated.concat(result);
-      }
-
-      // Get DRV bigger than one groups and group keys
+      const DRVEqualToOneGroups = equalToOneGroups(DRVGrouped);      // Get DRV bigger than one groups and group keys
       const DRVBiggerThanOneGroups = biggerThanOneGroups(DRVGrouped);
       const DRVBiggerThanOneGroupKeys = Object.keys(DRVBiggerThanOneGroups);
 
-      // Sum quantity, weight average price for bigger than one groups
-      for (const key of DRVBiggerThanOneGroupKeys) {
+      const DRVGroupedKeys = Object.keys(DRVGrouped);
+
+      // Sum quantity, weight average price
+      for (const key of DRVGroupedKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
         const result: IDRV[] = [
-          ...DRVBiggerThanOneGroups[key]
+          ...DRVGrouped[key]
             .reduce((array, object) => {
               const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
               const item: IDRV =
@@ -2325,25 +2182,15 @@ const addDerivatives = async (
             .values(),
         ];
 
-        DRVGroupedBiggerThanOneCalculated =
-          DRVGroupedBiggerThanOneCalculated.concat(result);
+        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
       }
 
-      DRVGroupedCalculated = DRVGroupedCalculated.concat(
-        DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated,
-      );
+      log(DRVGroupedCalculated.map((e) => e.reconciliationCharge));
 
       const DRVGroupedSeparatedByDates =
         DRVSeparateDatesObject(DRVGroupedCalculated);
-      const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated,
-      );
-      const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated,
-      );
 
-      // Get WEX unmatched rows by group WEX V DRV group
+      // Get WEX unmatched & matched rows by group WEX V group DRV
       for (const date of WEXUniqueDates) {
         // Check if date is valid
         if (!date) {
@@ -2398,126 +2245,8 @@ const addDerivatives = async (
             ),
         );
 
-        WEXByDRVGrouped = WEXByDRVGrouped.concat(WEXUnmatched);
-      }
-
-      // Get WEX matched rows by group WEX V DRV bigger than one groups
-      for (const date of WEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        // Check if file is valid
-        if (
-          !DRVGroupedSeparatedByDates[date] ||
-          !WEXGroupedSeparatedByDates[date]
-        ) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because files are invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "files are invalid",
-          });
-          return;
-        }
-
         const WEXMatched = WEXGroupedSeparatedByDates[date].filter((row) =>
-          DRVBiggerThanOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              reconciliationCharge,
-            }) => {
-              row.reconciliationCharge = reconciliationCharge;
-              return (
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-              );
-            },
-          ),
-        );
-
-        WEXBiggerThanOneGroupsMatched =
-          WEXBiggerThanOneGroupsMatched.concat(WEXMatched);
-      }
-
-      // Return reconciliation charge, total charge and exec qty
-      const WEXReconciliationChargesNVN: INVNReconciliationCharge[] =
-        WEXBiggerThanOneGroupsMatched.map((object) => {
-          return {
-            reconciliationCharge: object.reconciliationCharge,
-            totalCharge: object.modifiedTotalCharge,
-            execQtySum: object.modifiedExecQty,
-          };
-        });
-
-      // Get matched N V N rows object
-      const matchedNVN: IReconciliationCharge[] =
-        WEXReconciliationChargesNVN.map(
-          ({ reconciliationCharge, totalCharge, execQtySum }) =>
-            reconciliationCharge!.map(({ drvId, quantity }) => ({
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id: drvId,
-              charge: (totalCharge! * quantity!) / execQtySum!,
-            })),
-        ).flat();
-
-      // Get WEX matched rows by group WEX V DRV equal to one groups
-      for (const date of WEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        // Check if file is valid
-        if (
-          !DRVGroupedSeparatedByDates[date] ||
-          !WEXGroupedSeparatedByDates[date]
-        ) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because files are invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "files are invalid",
-          });
-          return;
-        }
-
-        const WEXMatched = WEXGroupedSeparatedByDates[date].filter((row) =>
-          DRVEqualToOneGroupedSeparatedByDates[date].find(
+          DRVGroupedSeparatedByDates[date].find(
             ({
               modifiedDate,
               modifiedSide,
@@ -2545,21 +2274,21 @@ const addDerivatives = async (
           ),
         );
 
-        WEXEqualToOneGroupsMatched =
-          WEXEqualToOneGroupsMatched.concat(WEXMatched);
+        WEXByDRVGrouped = WEXByDRVGrouped.concat(WEXUnmatched);
+
+        WEXGroupedMatched = WEXGroupedMatched.concat(WEXMatched);
       }
 
-      // Get matched N V 1 rows object
-      const matchedNV1: IReconciliationCharge[] =
-        WEXEqualToOneGroupsMatched.map(
-          ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
-            return {
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id,
-              charge: modifiedTotalCharge,
-            };
-          },
-        );
+      // Get matched rows object
+      const matchedNV1: IReconciliationCharge[] = WEXGroupedMatched.map(
+        ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
+          return {
+            charge: modifiedTotalCharge,
+            drv_trade_client_account_execution_id,
+            drv_trade_floor_broker_id: floorBrokerId,
+          };
+        },
+      );
 
       const WEXByDRVGroupedUniqueDates = WEXUniqueDatesArray(WEXByDRVGrouped);
       const WEXByDRVGroupedSeparatedByDates =
@@ -2689,7 +2418,7 @@ const addDerivatives = async (
         WEXNV1Matched = WEXNV1Matched.concat(WEXMatched);
       }
 
-      // Get matched 1 V 1 rows object
+      // Get matched rows object
       const matched1V1: IReconciliationCharge[] = WEXNV1Matched.map(
         ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
           return {
@@ -2770,7 +2499,7 @@ const addDerivatives = async (
           return;
         }
 
-        const WEXMatched = WEXByGroupedWEXSeparatedByDates[date].filter(
+        const WEXunresolvedByDRV = WEXByGroupedWEXSeparatedByDates[date].filter(
           (row) =>
             !DRVSeparatedByDates[date].find(
               ({
@@ -2794,12 +2523,11 @@ const addDerivatives = async (
             ),
         );
 
-        WEXunresolved = WEXunresolved.concat(WEXMatched);
+        WEXunresolved = WEXunresolved.concat(WEXunresolvedByDRV);
       }
 
       // Concating matched reconciliation_charge
       reconciliation_charge = reconciliation_charge.concat(
-        matchedNVN,
         matchedNV1,
         matched1V1,
       );
@@ -2826,7 +2554,6 @@ const addDerivatives = async (
       //   });
 
       // Total charge
-
       const totalCharge = WEXModified.reduce(
         (n, { modifiedTotalCharge }) => n + modifiedTotalCharge,
         0,
@@ -2872,7 +2599,7 @@ const addDerivatives = async (
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(WEXunresolved, (err, csv) => {
+      converter.json2csv(reconciliation_charge, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
             `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,

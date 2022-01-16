@@ -26,11 +26,12 @@ export const WEXExpiryFormat = (date: string) => {
     return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
   }
 
-  const day = date!.split("/")[0];
-  const month = date.split("/")[1];
+  const day = date!.split("/")[1];
+  const removeLeadingZeroDay = parseInt(day, 10);
+  const month = date.split("/")[0];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.split("/")[2];
-  return (date = `${removeLeadingZeroMonth}/${day}/${year}`);
+  return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
 };
 
 // Format WEX date
@@ -87,7 +88,7 @@ export const WEXModifiyTotalCharge = (totalCharge: string) => {
     return Number(totalCharge);
   }
 
-  if (totalCharge.includes("$(")) {
+  if (totalCharge.includes("(")) {
     return -Math.abs(Number(totalCharge.replace("$", "").replace(/[()]/g, "")));
   }
 

@@ -11,6 +11,7 @@ import {
   ILoginResponse,
   IRegisterResponse,
 } from "../model/express/response/auth";
+import { log } from "console";
 
 const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
   try {

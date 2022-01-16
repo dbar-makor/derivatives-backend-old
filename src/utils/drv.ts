@@ -29,9 +29,28 @@ export const DRVExpiryToMonthOnly = (date: string) => {
     return date;
   }
 
+  if (date.includes("-")) {
+    const month = date.split("-")[1];
+    const removeLeadingZeroMonth = parseInt(month, 10);
+    return (date = removeLeadingZeroMonth.toString());
+  }
+
   const month = date.split("/")[0];
   const removeLeadingZeroMonth = parseInt(month, 10);
   return (date = removeLeadingZeroMonth.toString());
+};
+
+// Modifying DRV expiry to year only
+export const DRVExpiryToYearOnly = (date: string) => {
+  if (!date) {
+    return date;
+  }
+
+  if (date.includes("/")) {
+    return date.split("/")[2];
+  }
+
+  return date.split("-")[0];
 };
 
 // Convert DRV to unique dates only

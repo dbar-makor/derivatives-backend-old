@@ -1,5 +1,0 @@
-﻿Clearing Fee,Date,User,Route,Side,Exec Qty,Security,Root,Expiry,Strike,Call/Put,Average Price,Portfolio,Commission Type,Commission Rate,WEX Connect Rate,Exch\. Fee Rate,Total Charge
-0,05/04/2021,DFilippidis,CBOE-WEX-CONNECT,SLO,"1,374",.VIX,VIX,16/06/2021,$17.00,P,$0.42,UBS-CUST,Per Unit,0.05,0.02,0,$96.1800
-0,5/28/2021,DFilippidis,CBOE-WEX-CONNECT,BYO,"1,692",.VIX,VIX,18/08/2021,$21.00,P,$3.30,UBS-CUST,Per Unit,0.05,0.02,0,$118.4400
-0,5/28/2021,DFilippidis,CBOE-WEX-CONNECT,SLO,"1,692",.VIX,VIX,18/08/2021,$21.00,C,$3.80,UBS-CUST,Per Unit,0.05,0.02,0,$118.4400
-0,5/28/2021,DFilippidis,CBOE-WEX-CONNECT,BYO,"3,600",.VIX,VIX,18/08/2021,$25.00,C,$2.80,UBS-CUST,Per Unit,0.05,0.02,0,$252.0000

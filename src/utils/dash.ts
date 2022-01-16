@@ -16,9 +16,9 @@ export const DASHDateFormat = (date: string) => {
     return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);
   }
 
-  const day = date.split("/")[1];
+  const day = date.split("/")[0];
   const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.split("/")[0];
+  const month = date.split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.split("/")[2];
   return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);

@@ -28,6 +28,10 @@ export interface IDRV {
   modifiedPrice?: number;
   quantitySum?: number;
   charge?: number;
+  reconciliationCharge?: {
+    drvId?: string;
+    quantity?: number;
+  }[];
 }
 
 export interface IDASH {
@@ -56,6 +60,7 @@ export interface IDASH {
   drv_trade_client_account_execution_id?: string;
   quantitySum?: number;
 }
+
 export interface IBAML {
   readonly "Trade Date"?: string;
   readonly Side?: string;
@@ -107,10 +112,12 @@ export interface IBAML {
   modifiedOC?: string;
   modifiedCFM?: string;
   modifiedExBrok?: string;
-  modifiedQuantity?: number;
   modifiedTotalCharges?: number;
   drv_trade_client_account_execution_id?: string;
-  quantitySum?: number;
+  reconciliationCharge?: {
+    drvId?: string;
+    quantity?: number;
+  }[];
 }
 
 export interface IWEX {
@@ -148,14 +155,11 @@ export interface IWEX {
   modifiedTotalCharge?: number;
   modifiedQuantity?: number;
   drv_trade_client_account_execution_id?: string;
-  quantitySum?: number;
   removed?: boolean;
-}
-
-export interface IMatchedRows {
-  drv_trade_floor_broker_id?: number;
-  drv_trade_client_account_execution_id?: string;
-  charge?: number;
+  reconciliationCharge?: {
+    drvId?: string;
+    quantity?: number;
+  }[];
 }
 
 export interface IDRVObject {
@@ -172,4 +176,19 @@ export interface IBAMLObject {
 
 export interface IWEXObject {
   [key: string]: IWEX[];
+}
+
+export interface INVNReconciliationCharge {
+  reconciliationCharge?: {
+    drvId?: string;
+    quantity?: number;
+  }[];
+  totalCharge?: number;
+  execQtySum?: number;
+}
+
+export interface IReconciliationCharge {
+  drv_trade_floor_broker_id?: string;
+  drv_trade_client_account_execution_id?: string;
+  charge?: number;
 }
