@@ -82,7 +82,7 @@ export const DRVSeparateDatesObject = (array: IDRV[]) => {
 // Grouping DRV
 export const DRVGroupBy = (
   array: IDRV[],
-  f: (element: IDRV) => (string | number | undefined)[],
+  f: (element: IDRV) => (string | number | undefined)[]
 ) => {
   const groups: { [key: string]: IDRV[] } = {};
 
@@ -93,4 +93,28 @@ export const DRVGroupBy = (
     groups[group].push(object);
   });
   return groups;
+};
+
+export const equalToOneGroups = (object: IDRVObject) => {
+  const result: IDRVObject = Object.entries(object).reduce(
+    (a, b) =>
+      (a = {
+        ...a,
+        ...(b[1].length === 1 ? { [b[0]]: b[1] } : {}),
+      }),
+    {}
+  );
+  return result;
+};
+
+export const biggerThanOneGroups = (object: IDRVObject) => {
+  const result: IDRVObject = Object.entries(object).reduce(
+    (a, b) =>
+      (a = {
+        ...a,
+        ...(b[1].length !== 1 ? { [b[0]]: b[1] } : {}),
+      }),
+    {}
+  );
+  return result;
 };

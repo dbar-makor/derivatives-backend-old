@@ -18,10 +18,10 @@ interface IVerify {
 const auth = async (
   req: IAuthMiddlewareRequest,
   res: IAuthMiddlewareResponse,
-  next: express.NextFunction,
+  next: express.NextFunction
 ) => {
   ServerGlobal.getInstance().logger.info(
-    "[auth middleware]: Start processing request",
+    "[auth middleware]: Start processing request"
   );
 
   let data: IVerify;
@@ -31,7 +31,7 @@ const auth = async (
   try {
     const token = (req.header("Authorization") as string).replace(
       "Bearer ",
-      "",
+      ""
     );
 
     data = jwt.verify(token, process.env.JWT_PWD) as IVerify;
@@ -51,9 +51,8 @@ because could not find user with id ${data.id}`);
 
     user_id = data.id;
   } catch (e: any) {
-    console.log(e);
     ServerGlobal.getInstance().logger.error(
-      `[auth middleware]: Failed to authenticate because of error: ${e}`,
+      `[auth middleware]: Failed to authenticate because of error: ${e}`
     );
 
     if ((e.message = "jwt malformed")) {
@@ -72,7 +71,7 @@ because could not find user with id ${data.id}`);
   }
 
   ServerGlobal.getInstance().logger.info(
-    `[auth middleware]: Successfully authenticated user with id ${user_id}`,
+    `[auth middleware]: Successfully authenticated user with id ${user_id}`
   );
 
   req.user_id = user_id;
