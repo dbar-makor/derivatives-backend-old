@@ -24,7 +24,7 @@ export const BAMLDateFormat = (date: string) => {
 // Grouping BAML array
 export const BAMLGroupBy = (
   array: IBAML[],
-  f: (element: IBAML) => (string | number | undefined)[]
+  f: (element: IBAML) => (string | number | undefined)[],
 ) => {
   if (!array) {
     return array;
@@ -78,4 +78,28 @@ export const BAMLModifiyTotalCharge = (totalCharge: string) => {
   }
 
   return Number(totalCharge);
+};
+
+export const equalToOneGroupsBAML = (object: IBAMLObject) => {
+  const result: IBAMLObject = Object.entries(object).reduce(
+    (a, b) =>
+      (a = {
+        ...a,
+        ...(b[1].length === 1 ? { [b[0]]: b[1] } : {}),
+      }),
+    {},
+  );
+  return result;
+};
+
+export const biggerThanOneGroupsBAML = (object: IBAMLObject) => {
+  const result: IBAMLObject = Object.entries(object).reduce(
+    (a, b) =>
+      (a = {
+        ...a,
+        ...(b[1].length !== 1 ? { [b[0]]: b[1] } : {}),
+      }),
+    {},
+  );
+  return result;
 };

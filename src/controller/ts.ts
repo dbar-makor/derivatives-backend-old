@@ -9,14 +9,12 @@ import ServerGlobal from "../server-global";
 import User from "../model/user";
 import Derivative from "../model/derivative";
 import {
-  IBAML,
-  IBAMLObject,
   IDASH,
   IDRV,
   IDRVObject,
   IReconciliationCharge,
-  IWEX,
-  IWEXObject,
+  IBAML,
+  IBAMLObject,
   INVNReconciliationCharge,
 } from "../model/shared/derivatives";
 
@@ -35,15 +33,8 @@ import {
   BAMLSeparateDatesObject,
   BAMLGroupBy,
   BAMLModifiyTotalCharge,
+  equalToOneGroupsBAML,
 } from "../utils/baml";
-import {
-  WEXSeparateDatesObject,
-  WEXUniqueDatesArray,
-  WEXGroupBy,
-  WEXDateFormat,
-  WEXModifiyTotalCharge,
-  WEXExpiryFormat,
-} from "../utils/wex";
 import {
   DRVDateFormat,
   DRVSeparateDatesObject,
@@ -51,8 +42,8 @@ import {
   DRVUniqueDatesArray,
   DRVExpiryToMonthOnly,
   DRVExpiryToYearOnly,
-  biggerThanOneGroups,
-  equalToOneGroups,
+  biggerThanOneGroupsDRV,
+  equalToOneGroupsDRV,
 } from "../utils/drv";
 
 import {
@@ -71,10 +62,10 @@ import { log } from "console";
 
 const addDerivatives = async (
   req: IAddDerivativesRequest,
-  res: IAddDerivativesResponse
+  res: IAddDerivativesResponse,
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`
+    `<addDerivatives>: Start processing request`,
   );
 
   // Find user
@@ -82,7 +73,7 @@ const addDerivatives = async (
 
   if (!userByID) {
     ServerGlobal.getInstance().logger.error(
-      `<editProfile>: Failed to get user details for user id ${req.user_id}`
+      `<editProfile>: Failed to get user details for user id ${req.user_id}`,
     );
 
     res.status(401).send({
@@ -95,7 +86,7 @@ const addDerivatives = async (
   try {
     const currentDate = new Date();
     const formattedCurrentDate = moment(currentDate).format(
-      "DD-MM-YYYY-HH-mm-ss"
+      "DD-MM-YYYY-HH-mm-ss",
     );
 
     const floorBrokerId = req.body.floorBrokerId.toString();
@@ -104,12 +95,12 @@ const addDerivatives = async (
     if (floorBrokerId === "6") {
       fileName = "Dash";
     } else if (floorBrokerId === "14") {
-      fileName = "WEX";
+      fileName = "BAML";
     } else if (floorBrokerId === "23") {
       fileName = "Broadcort";
     } else {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed because floorBrokerId is invalid"
+        "<addDerivatives>: Failed because floorBrokerId is invalid",
       );
 
       res.status(400).send({
@@ -137,7 +128,7 @@ const addDerivatives = async (
     // Check if sourceBase64 or DRVBase64 are valid
     if (!sourceBase64 || !DRVBase64) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process base64WEX/base64DRV"
+        "<addDerivatives>: Failed to process base64BAML/base64DRV",
       );
 
       res.status(400).send({
@@ -160,13 +151,13 @@ const addDerivatives = async (
       encoding: "base64",
     });
 
-    let source: IWEX[] | IBAML[] | IDASH[] = [];
+    let source: IBAML[] | IBAML[] | IDASH[] = [];
     const DRV: IDRV[] = [];
 
     // Parsing csv file to JSON
     fs.createReadStream(sourceFileName)
       .pipe(csv())
-      .on("data", (data: IWEX | IBAML | IDASH) => {
+      .on("data", (data: IBAML | IBAML | IDASH) => {
         source.push(data);
       });
     fs.createReadStream(DRVFileName)
@@ -176,9 +167,8 @@ const addDerivatives = async (
       })
       .on("end", () => {
         if (fileName === "Dash") {
-          DASHActions();
-        } else if (fileName === "WEX") {
-          WEXActions();
+        } else if (fileName === "BAML") {
+          BAMLActions();
         } else if (fileName === "Broadcort") {
           BAMLActions();
         }
@@ -189,13 +179,9 @@ const addDerivatives = async (
       let DRVGroupedEqualToOneCalculated: IDRV[] = [];
       let DRVGroupedBiggerThanOneCalculated: IDRV[] = [];
 
-      let BAMLByDRVGroup: IBAML[] = [];
-      let BAMLGroupedByDRV: IBAML[] = [];
-      let BAMLGroupedByBAML: IBAML[] = [];
-      let BAMLByDRVGrouped: IBAML[] = [];
+      let BAMLCanceledPairs: IBAML[] = [];
       let BAMLGroupedCalculated: IBAML[] = [];
-      let BAMLunresolved: IBAML[] = [];
-      let BAML1V1Matched: IBAML[] = [];
+      let BAMLNV1Matched: IBAML[] = [];
       let BAMLBiggerThanOneGroupsMatched: IBAML[] = [];
       let BAMLEqualToOneGroupsMatched: IBAML[] = [];
 
@@ -205,15 +191,15 @@ const addDerivatives = async (
       const DRVModified = DRV.map((element) => {
         const modifiedDate = DRVDateFormat(element.date!);
         const modifiedSide = element.side?.charAt(0).toLowerCase();
-        const modifiedQuantity = Number(removeCommas(element.quantity!));
+        const modifiedQuantity = Number(
+          removeCommas(element.quantity?.toString()!),
+        );
         const modifiedSymbol = element.symbol?.toLowerCase();
         const modifiedExpiry = DRVDateFormat(element.expiry!);
-        const modifiedExpiryMonthOnly = DRVExpiryToMonthOnly(element.expiry!);
-        const modifiedExpiryYearOnly = DRVExpiryToYearOnly(element.expiry!);
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2)
+          Number(removeCommas(element.price?.toString())).toFixed(2),
         );
 
         return {
@@ -223,8 +209,6 @@ const addDerivatives = async (
           modifiedQuantity,
           modifiedSymbol,
           modifiedExpiry,
-          modifiedExpiryMonthOnly,
-          modifiedExpiryYearOnly,
           modifiedStrike,
           modifiedOption,
           modifiedPrice,
@@ -241,7 +225,7 @@ const addDerivatives = async (
         const modifiedSym = element.Sym?.toLowerCase();
         const modifiedStrike = Number(removeCommas(element.Strike));
         const modifiedPrice = Number(
-          Number(removeCommas(element.Price)).toFixed(2)
+          Number(removeCommas(element.Price)).toFixed(2),
         );
         const modifiedQty = Number(removeCommas(element.Qty!));
         const modifiedOC = element["O/C"]?.toLowerCase();
@@ -249,8 +233,8 @@ const addDerivatives = async (
         const modifiedExBrok = element["Ex Brok"]?.toLowerCase();
         const modifiedTotalCharges = Number(
           BAMLModifiyTotalCharge(
-            removeCommas(element["Total Charges"])!.toString()
-          )
+            removeCommas(element["Total Charges"])!.toString(),
+          ),
         );
 
         return {
@@ -272,11 +256,10 @@ const addDerivatives = async (
       });
 
       const BAMLUniqueDates = BAMLUniqueDatesArray(BAMLModified);
-      const BAMLSeparatedByDates = BAMLSeparateDatesObject(BAMLModified);
       const DRVSeparatedByDates = DRVSeparateDatesObject(DRVModified);
 
       // Grouping BAML by Trade Date, Exch, B/S, P/C, Class, Sym, Mo, Yr, Strike, O/C, CFM, Ex Brok
-      const BAMLGrouped = BAMLGroupBy(BAMLModified, (element: IBAML) => {
+      const BAMLGrouped = BAMLGroupBy(BAMLCanceledPairs, (element: IBAML) => {
         return [
           element.modifiedTradeDate,
           element.modifiedExch,
@@ -324,14 +307,14 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageQty / totalQty + Number.EPSILON) * 100
+                  (weightAverageQty / totalQty + Number.EPSILON) * 100,
                 ) / 100;
 
               // Sum total charges
               item.modifiedTotalCharges = Number(
                 (
                   item.modifiedTotalCharges! + object.modifiedTotalCharges!
-                ).toFixed(2)
+                ).toFixed(2),
               );
 
               return array.set(key, item);
@@ -343,7 +326,7 @@ const addDerivatives = async (
       }
 
       const BAMLGroupedSeparatedByDates = BAMLSeparateDatesObject(
-        BAMLGroupedCalculated
+        BAMLGroupedCalculated,
       );
 
       // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
@@ -364,7 +347,7 @@ const addDerivatives = async (
       });
 
       // Get DRV equal to one groups and group keys
-      const DRVEqualToOneGroups = equalToOneGroups(DRVGrouped);
+      const DRVEqualToOneGroups = equalToOneGroupsDRV(DRVGrouped);
       const DRVEqualToOneGroupsKeys = Object.keys(DRVEqualToOneGroups);
 
       // Sum quantity, weight average price for equal to one groups
@@ -395,7 +378,7 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
                 ) / 100;
 
               return array.set(key, item);
@@ -408,7 +391,7 @@ const addDerivatives = async (
       }
 
       // Get DRV bigger than one groups and group keys
-      const DRVBiggerThanOneGroups = biggerThanOneGroups(DRVGrouped);
+      const DRVBiggerThanOneGroups = biggerThanOneGroupsDRV(DRVGrouped);
       const DRVBiggerThanOneGroupKeys = Object.keys(DRVBiggerThanOneGroups);
 
       // Sum quantity, weight average price for bigger than one groups
@@ -450,7 +433,7 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
                 ) / 100;
 
               return array.set(key, item);
@@ -464,24 +447,48 @@ const addDerivatives = async (
 
       DRVGroupedCalculated = DRVGroupedCalculated.concat(
         DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated
+        DRVGroupedEqualToOneCalculated,
       );
 
-      const DRVGroupedSeparatedByDates =
-        DRVSeparateDatesObject(DRVGroupedCalculated);
       const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated
+        DRVGroupedBiggerThanOneCalculated,
       );
       const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated
+        DRVGroupedEqualToOneCalculated,
       );
 
-      // Get BAML unmatched rows by group BAML V DRV group
+      const BAMLByDRVGrouped = BAMLGroupedCalculated.filter(
+        (row) =>
+          !DRVGroupedCalculated.find(
+            ({
+              modifiedDate,
+              modifiedSide,
+              modifiedSymbol,
+              modifiedStrike,
+              modifiedOption,
+              modifiedPrice,
+              modifiedQuantity,
+              modifiedExpiryMonthOnly,
+              modifiedExpiryYearOnly,
+            }) =>
+              row.modifiedTradeDate === modifiedDate &&
+              row.modifiedBS === modifiedSide &&
+              row.modifiedSym === modifiedSymbol &&
+              row.modifiedPC === modifiedOption &&
+              row.modifiedQty === modifiedQuantity &&
+              row.modifiedPrice === modifiedPrice &&
+              row.modifiedStrike === modifiedStrike &&
+              row.Mo === modifiedExpiryMonthOnly &&
+              row.Yr === modifiedExpiryYearOnly,
+          ),
+      );
+
+      // Get BAML matched rows by group BAML V DRV bigger than one groups
       for (const date of BAMLUniqueDates) {
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -493,71 +500,12 @@ const addDerivatives = async (
 
         // Check if file is valid
         if (
-          !DRVGroupedSeparatedByDates[date] ||
-          !BAMLGroupedSeparatedByDates[date]
-        ) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because files are invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "files are invalid",
-          });
-          return;
-        }
-
-        const BAMLUnmatched = BAMLGroupedSeparatedByDates[date].filter(
-          (row) =>
-            !DRVGroupedSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedStrike,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity,
-                modifiedExpiryMonthOnly,
-                modifiedExpiryYearOnly,
-              }) =>
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
-            )
-        );
-
-        BAMLByDRVGrouped = BAMLByDRVGrouped.concat(BAMLUnmatched);
-      }
-
-      // Get BAML matched rows by group BAML V DRV bigger than one groups
-      for (const date of BAMLUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        if (
           !BAMLGroupedSeparatedByDates[date] ||
           !DRVBiggerThanOneGroupedSeparatedByDates[date]
         )
           break;
 
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
+        const BAMLMatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
           DRVBiggerThanOneGroupedSeparatedByDates[date].find(
             ({
               modifiedDate,
@@ -583,12 +531,12 @@ const addDerivatives = async (
                 row.Mo === modifiedExpiryMonthOnly &&
                 row.Yr === modifiedExpiryYearOnly
               );
-            }
-          )
+            },
+          ),
         );
 
         BAMLBiggerThanOneGroupsMatched =
-          BAMLBiggerThanOneGroupsMatched.concat(BAMLmatched);
+          BAMLBiggerThanOneGroupsMatched.concat(BAMLMatched);
       }
 
       // Return reconciliation charge, total charge and exec qty
@@ -611,8 +559,8 @@ const addDerivatives = async (
                 drv_trade_client_account_execution_id:
                   drv_trade_client_account_execution_id,
                 charge: (totalCharge! * quantity!) / execQtySum!,
-              })
-            )
+              }),
+            ),
         ).flat();
 
       // Get BAML matched rows by group BAML V DRV equal to one groups
@@ -620,7 +568,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -630,13 +578,14 @@ const addDerivatives = async (
           return;
         }
 
+        // Check if file is valid
         if (
           !BAMLGroupedSeparatedByDates[date] ||
           !DRVEqualToOneGroupedSeparatedByDates[date]
         )
           break;
 
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
+        const BAMLMatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
           DRVEqualToOneGroupedSeparatedByDates[date].find(
             ({
               modifiedDate,
@@ -663,12 +612,12 @@ const addDerivatives = async (
                 row.Mo === modifiedExpiryMonthOnly &&
                 row.Yr === modifiedExpiryYearOnly
               );
-            }
-          )
+            },
+          ),
         );
 
         BAMLEqualToOneGroupsMatched =
-          BAMLEqualToOneGroupsMatched.concat(BAMLmatched);
+          BAMLEqualToOneGroupsMatched.concat(BAMLMatched);
       }
 
       // Get matched N V 1 rows object
@@ -680,56 +629,33 @@ const addDerivatives = async (
               drv_trade_client_account_execution_id,
               charge: modifiedTotalCharges,
             };
-          }
+          },
         );
 
-      const BAMLByDRVGroupedUniqueDates =
-        BAMLUniqueDatesArray(BAMLByDRVGrouped);
-      const BAMLByDRVGroupedSeparatedByDates =
-        BAMLSeparateDatesObject(BAMLByDRVGrouped);
-
-      // Get BAML unmatched rows by group BAML
-      for (const date of BAMLByDRVGroupedUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLUnmatched = BAMLSeparatedByDates[date].filter((row) =>
-          BAMLByDRVGroupedSeparatedByDates[date].find(
-            ({
-              modifiedTradeDate,
-              modifiedBS,
-              modifiedSym,
-              modifiedPC,
-              modifiedQty,
-              modifiedPrice,
-              modifiedStrike,
-              Mo,
-              Yr,
-            }) =>
-              row.modifiedTradeDate === modifiedTradeDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSym === modifiedSym &&
-              row.modifiedPC === modifiedPC &&
-              row.modifiedQty === modifiedQty &&
-              row.modifiedPrice === modifiedPrice &&
-              row.modifiedStrike === modifiedStrike &&
-              row.Mo === Mo &&
-              row.Yr === Yr
-          )
-        );
-
-        BAMLByDRVGroup = BAMLByDRVGroup.concat(BAMLUnmatched);
-      }
+      const BAMLByDRVGroup = BAMLModified.filter((row) =>
+        BAMLByDRVGrouped.find(
+          ({
+            modifiedTradeDate,
+            modifiedBS,
+            modifiedSym,
+            modifiedPC,
+            modifiedQty,
+            modifiedPrice,
+            modifiedStrike,
+            Mo,
+            Yr,
+          }) =>
+            row.modifiedTradeDate === modifiedTradeDate &&
+            row.modifiedBS === modifiedBS &&
+            row.modifiedSym === modifiedSym &&
+            row.modifiedPC === modifiedPC &&
+            row.modifiedQty === modifiedQty &&
+            row.modifiedPrice === modifiedPrice &&
+            row.modifiedStrike === modifiedStrike &&
+            row.Mo === Mo &&
+            row.Yr === Yr,
+        ),
+      );
 
       const BAMLVDRVUniqueDates = BAMLUniqueDatesArray(BAMLByDRVGroup);
       const BAMLVDRVSeparatedByDates = BAMLSeparateDatesObject(BAMLByDRVGroup);
@@ -739,7 +665,7 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
+            "<addDerivatives>: Failed because date is invalid",
           );
 
           res.status(400).send({
@@ -748,32 +674,6 @@ const addDerivatives = async (
           });
           return;
         }
-
-        const BAMLUnmatched = BAMLVDRVSeparatedByDates[date].filter(
-          (row) =>
-            !DRVSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedStrike,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity,
-                modifiedExpiryMonthOnly,
-                modifiedExpiryYearOnly,
-              }) =>
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
-            )
-        );
 
         const BAMLMatched = BAMLVDRVSeparatedByDates[date].filter((row) =>
           DRVSeparatedByDates[date].find(
@@ -802,136 +702,106 @@ const addDerivatives = async (
                 row.Mo === modifiedExpiryMonthOnly &&
                 row.Yr === modifiedExpiryYearOnly
               );
-            }
-          )
+            },
+          ),
         );
 
-        BAMLGroupedByDRV = BAMLGroupedByDRV.concat(BAMLUnmatched);
-
-        BAML1V1Matched = BAML1V1Matched.concat(BAMLMatched);
+        BAMLNV1Matched = BAMLNV1Matched.concat(BAMLMatched);
       }
 
-      // Get matched rows object
-      const matched1V1: IReconciliationCharge[] = BAML1V1Matched.map(
+      // Get matched 1 V 1 rows object
+      const matched1V1: IReconciliationCharge[] = BAMLNV1Matched.map(
         ({ drv_trade_client_account_execution_id, modifiedTotalCharges }) => {
           return {
             drv_trade_floor_broker_id: floorBrokerId,
             drv_trade_client_account_execution_id,
             charge: modifiedTotalCharges,
           };
-        }
+        },
       );
 
-      const BAMLGroupedByDRVUniqueDates =
-        BAMLUniqueDatesArray(BAMLGroupedByDRV);
-      const BAMLGroupedByDRVSeparatedByDates =
-        BAMLSeparateDatesObject(BAMLGroupedByDRV);
-
-      // 1 BAML V 1 BAML
-      for (const date of BAMLGroupedByDRVUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLUnmatched = BAMLVDRVSeparatedByDates[date!].filter((row) =>
-          BAMLGroupedByDRVSeparatedByDates[date!].find(
+      const BAMLGroupedByDRV = BAMLByDRVGroup.filter(
+        (row) =>
+          !DRVModified.find(
             ({
-              modifiedTradeDate,
-              modifiedBS,
-              modifiedSym,
-              modifiedPC,
-              modifiedQty,
-              modifiedPrice,
+              modifiedDate,
+              modifiedSide,
+              modifiedSymbol,
               modifiedStrike,
-              Mo,
-              Yr,
+              modifiedOption,
+              modifiedPrice,
+              modifiedQuantity,
+              modifiedExpiryMonthOnly,
+              modifiedExpiryYearOnly,
             }) =>
-              row.modifiedTradeDate === modifiedTradeDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSym === modifiedSym &&
-              row.modifiedPC === modifiedPC &&
-              row.modifiedQty === modifiedQty &&
+              row.modifiedTradeDate === modifiedDate &&
+              row.modifiedBS === modifiedSide &&
+              row.modifiedSym === modifiedSymbol &&
+              row.modifiedPC === modifiedOption &&
+              row.modifiedQty === modifiedQuantity &&
               row.modifiedPrice === modifiedPrice &&
               row.modifiedStrike === modifiedStrike &&
-              row.Mo === Mo &&
-              row.Yr === Yr
-          )
-        );
+              row.Mo === modifiedExpiryMonthOnly &&
+              row.Yr === modifiedExpiryYearOnly,
+          ),
+      );
 
-        BAMLGroupedByBAML = BAMLGroupedByBAML.concat(BAMLUnmatched);
-      }
+      const BAMLGroupedByBAML = BAMLByDRVGroup.filter((row) =>
+        BAMLGroupedByDRV.find(
+          ({
+            modifiedTradeDate,
+            modifiedBS,
+            modifiedSym,
+            modifiedPC,
+            modifiedQty,
+            modifiedPrice,
+            modifiedStrike,
+            Mo,
+            Yr,
+          }) =>
+            row.modifiedTradeDate === modifiedTradeDate &&
+            row.modifiedBS === modifiedBS &&
+            row.modifiedSym === modifiedSym &&
+            row.modifiedPC === modifiedPC &&
+            row.modifiedQty === modifiedQty &&
+            row.modifiedPrice === modifiedPrice &&
+            row.modifiedStrike === modifiedStrike &&
+            row.Mo === Mo &&
+            row.Yr === Yr,
+        ),
+      );
 
-      const BAMLByGroupedBAMLUniqueDates =
-        BAMLUniqueDatesArray(BAMLGroupedByBAML);
-      const BAMLByGroupedBAMLSeparatedByDates =
-        BAMLSeparateDatesObject(BAMLGroupedByBAML);
+      const BAMLunresolved = BAMLGroupedByBAML.filter(
+        (row) =>
+          !DRVModified.find(
+            ({
+              modifiedDate,
+              modifiedSide,
+              modifiedSymbol,
+              modifiedStrike,
+              modifiedOption,
+              modifiedPrice,
+              modifiedQuantity,
+              modifiedExpiryMonthOnly,
+              modifiedExpiryYearOnly,
+            }) =>
+              row.modifiedTradeDate === modifiedDate &&
+              row.modifiedBS === modifiedSide &&
+              row.modifiedSym === modifiedSymbol &&
+              row.modifiedPC === modifiedOption &&
+              row.modifiedQty === modifiedQuantity &&
+              row.modifiedPrice === modifiedPrice &&
+              row.modifiedStrike === modifiedStrike &&
+              row.Mo === modifiedExpiryMonthOnly &&
+              row.Yr === modifiedExpiryYearOnly,
+          ),
+      );
 
-      // 1 BAML V 1 DRV
-      for (const date of BAMLByGroupedBAMLUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLUnmatched = BAMLByGroupedBAMLSeparatedByDates[date].filter(
-          (row) =>
-            !DRVSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedStrike,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity,
-                modifiedExpiryMonthOnly,
-                modifiedExpiryYearOnly,
-              }) =>
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
-            )
-        );
-
-        BAMLunresolved = BAMLunresolved.concat(BAMLUnmatched);
-      }
-
-      // Concating matched objects
+      // Concating matched reconciliation_charge
       reconciliation_charge = reconciliation_charge.concat(
         matchedNVN,
         matchedNV1,
-        matched1V1
-      );
-
-      let y: IBAML[] = [];
-
-      y = y.concat(
-        BAMLBiggerThanOneGroupsMatched,
-        BAMLEqualToOneGroupsMatched,
-        BAML1V1Matched
+        matched1V1,
       );
 
       // // POST request to makor-X API
@@ -957,18 +827,18 @@ const addDerivatives = async (
 
       // Total charge
       const totalCharge = BAMLModified.reduce(
-        (a, b) => a + (b.modifiedTotalCharges || 0),
-        0
+        (n, { modifiedTotalCharges }) => n + modifiedTotalCharges,
+        0,
       );
 
-      // Unmatched charge
-      const unmatchedCharge = BAMLunresolved.reduce(
-        (prev, { modifiedTotalCharges }) => prev + modifiedTotalCharges!,
-        0
+      // Unmatched unresolved charge
+      const unmatchedUnresolvedCharge = BAMLunresolved.reduce(
+        (n, { modifiedTotalCharges }) => n + modifiedTotalCharges!,
+        0,
       );
 
       // Matched Sum Charge
-      const matchedSumCharge = totalCharge - unmatchedCharge;
+      const matchedSumCharge = totalCharge - unmatchedUnresolvedCharge;
 
       // Unmatched Sum Charge
       const unmatchedSumCharge = totalCharge - matchedSumCharge;
@@ -983,29 +853,29 @@ const addDerivatives = async (
       const unmatchedSumPercentage = (unmatchedSumCharge / totalCharge) * 100;
 
       // Delete all modified fields
-      BAMLunresolved.forEach((element) => {
-        delete element.modifiedTradeDate;
-        delete element.modifiedExch;
-        delete element.modifiedBS;
-        delete element.modifiedPC;
-        delete element.modifiedClass;
-        delete element.modifiedSym;
-        delete element.modifiedStrike;
-        delete element.modifiedPrice;
-        delete element.modifiedQty;
-        delete element.modifiedOC;
-        delete element.modifiedCFM;
-        delete element.modifiedExBrok;
-        delete element.modifiedTotalCharges;
-        delete element.drv_trade_client_account_execution_id;
-        delete element.reconciliationCharge;
-      });
+      // BAMLunresolved.forEach((element) => {
+      //   delete element.modifiedTradeDate;
+      //   delete element.modifiedExch;
+      //   delete element.modifiedBS;
+      //   delete element.modifiedPC;
+      //   delete element.modifiedClass;
+      //   delete element.modifiedSym;
+      //   delete element.modifiedStrike;
+      //   delete element.modifiedPrice;
+      //   delete element.modifiedQty;
+      //   delete element.modifiedOC;
+      //   delete element.modifiedCFM;
+      //   delete element.modifiedExBrok;
+      //   delete element.modifiedTotalCharges;
+      //   delete element.drv_trade_client_account_execution_id;
+      //   delete element.reconciliationCharge;
+      // });
 
       // Convert JSON to CSV file
       converter.json2csv(reconciliation_charge, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
           );
 
           res.status(400).send({
@@ -1017,7 +887,7 @@ const addDerivatives = async (
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv"
+            "<addDerivatives>: Failed to convert file to csv",
           );
 
           res.status(400).send({
@@ -1029,11 +899,11 @@ const addDerivatives = async (
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv
+          csv,
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
         );
       });
 
@@ -1064,7 +934,7 @@ const addDerivatives = async (
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
     );
 
     res.status(500).send({
@@ -1074,5 +944,3 @@ const addDerivatives = async (
     return;
   }
 };
-
-export { addDerivatives };
