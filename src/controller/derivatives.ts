@@ -17,7 +17,7 @@ import {
   IReconciliationCharge,
   IWEX,
   IWEXObject,
-  INVNReconciliationCharge,
+  INVNReconciliationCharge
 } from "../model/shared/derivatives";
 
 import { removeCommas } from "../utils/derivatives";
@@ -27,7 +27,7 @@ import {
   DASHModifiyDollarSign,
   DASHModifiyTotalExchangeFees,
   DASHSeparateDatesObject,
-  DASHUniqueDatesArray,
+  DASHUniqueDatesArray
 } from "../utils/dash";
 import {
   BAMLDateFormat,
@@ -35,7 +35,7 @@ import {
   BAMLSeparateDatesObject,
   BAMLGroupBy,
   BAMLModifiyTotalCharge,
-  equalToOneGroupsBAML,
+  equalToOneGroupsBAML
 } from "../utils/baml";
 import {
   WEXSeparateDatesObject,
@@ -43,7 +43,7 @@ import {
   WEXGroupBy,
   WEXDateFormat,
   WEXModifiyTotalCharge,
-  WEXExpiryFormat,
+  WEXExpiryFormat
 } from "../utils/wex";
 import {
   DRVDateFormat,
@@ -53,29 +53,29 @@ import {
   DRVExpiryToMonthOnly,
   DRVExpiryToYearOnly,
   biggerThanOneGroupsDRV,
-  equalToOneGroupsDRV,
+  equalToOneGroupsDRV
 } from "../utils/drv";
 
 import {
   IAddDerivativesRequest,
   IGetDerivativesRequest,
   IGetDerivativeRequest,
-  IDownloadFilesRequest,
+  IDownloadFilesRequest
 } from "../model/express/request/derivatives";
 import {
   IAddDerivativesResponse,
   IGetDerivativesResponse,
-  IGetDerivativeResponse,
+  IGetDerivativeResponse
 } from "../model/express/response/derivatives";
 
 import { log } from "console";
 
 const addDerivatives = async (
   req: IAddDerivativesRequest,
-  res: IAddDerivativesResponse,
+  res: IAddDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`,
+    `<addDerivatives>: Start processing request`
   );
 
   // Find user
@@ -83,12 +83,12 @@ const addDerivatives = async (
 
   if (!userByID) {
     ServerGlobal.getInstance().logger.error(
-      `<editProfile>: Failed to get user details for user id ${req.user_id}`,
+      `<editProfile>: Failed to get user details for user id ${req.user_id}`
     );
 
     res.status(401).send({
       success: false,
-      message: "Could not find user",
+      message: "Could not find user"
     });
     return;
   }
@@ -96,7 +96,7 @@ const addDerivatives = async (
   try {
     const currentDate = new Date();
     const formattedCurrentDate = moment(currentDate).format(
-      "DD-MM-YYYY-HH-mm-ss",
+      "DD-MM-YYYY-HH-mm-ss"
     );
 
     const floorBrokerId = req.body.floorBrokerId.toString();
@@ -110,12 +110,12 @@ const addDerivatives = async (
       fileName = "Broadcort";
     } else {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed because floorBrokerId is invalid",
+        "<addDerivatives>: Failed because floorBrokerId is invalid"
       );
 
       res.status(400).send({
         success: false,
-        message: "invalid floorBrokerId",
+        message: "invalid floorBrokerId"
       });
       return;
     }
@@ -138,12 +138,12 @@ const addDerivatives = async (
     // Check if sourceBase64 or DRVBase64 are valid
     if (!sourceBase64 || !DRVBase64) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process base64WEX/base64DRV",
+        "<addDerivatives>: Failed to process base64WEX/base64DRV"
       );
 
       res.status(400).send({
         success: false,
-        message: "invalid files",
+        message: "invalid files"
       });
       return;
     }
@@ -155,10 +155,10 @@ const addDerivatives = async (
 
     // Writing files to dir
     fs.writeFileSync(sourceFileName, sourceBase64Splited!, {
-      encoding: "base64",
+      encoding: "base64"
     });
     fs.writeFileSync(DRVFileName, DRVBase64Splited!, {
-      encoding: "base64",
+      encoding: "base64"
     });
 
     let source: IWEX[] | IBAML[] | IDASH[] = [];
@@ -186,7 +186,7 @@ const addDerivatives = async (
       });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully created the files to dir`,
+      `<addDerivatives>: Successfully created the files to dir`
     );
 
     // var util = require("util");
@@ -201,21 +201,11 @@ const addDerivatives = async (
 
     const DASHActions = async () => {
       let DRVGroupedCalculated: IDRV[] = [];
-      let DVRSeparatedGroups: IDRV[] = [];
-      let DRVGroupedMatched: IDRV[] = [];
-      let DRVGroupedWithSum: IDRV[] = [];
 
-      let DASHByDRVGroup: IDASH[] = [];
-      let DASHSeparatedGroups: IDASH[] = [];
       let DASHGroupedByDRV: IDASH[] = [];
-      let DASHGroupedByDASH: IDASH[] = [];
-      let DASHByDRVGrouped: IDASH[] = [];
       let DASHGroupedCalculated: IDASH[] = [];
       let DASHunresolved: IDASH[] = [];
-      let DASHGroupedMatched: IDASH[] = [];
-      let DASHNV1Matched: IDASH[] = [];
-      let DASHMatched: IDASH[] = [];
-      let DASHGroupedMatchedWithQtySum: IDASH[] = [];
+      let DASH1V1Matched: IDASH[] = [];
 
       let reconciliation_charge: IReconciliationCharge[] = [];
 
@@ -227,11 +217,11 @@ const addDerivatives = async (
         const modifiedSymbol = element.symbol?.toLowerCase();
         const modifiedExpiry = DRVDateFormat(element.expiry!);
         const modifiedExpiryMonthOnly = DRVExpiryToMonthOnly(element.expiry!);
-        const modifiedExpiryYearOnly = element.expiry!.split("/")[2];
+        const modifiedExpiryYearOnly = DRVExpiryToYearOnly(element.expiry!);
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2),
+          Number(removeCommas(element.price!)).toFixed(2)
         );
 
         return {
@@ -245,7 +235,7 @@ const addDerivatives = async (
           modifiedExpiryYearOnly,
           modifiedStrike,
           modifiedOption,
-          modifiedPrice,
+          modifiedPrice
         };
       });
 
@@ -262,7 +252,7 @@ const addDerivatives = async (
         const modifiedPremium = DASHModifiyDollarSign(element.PREMIUM!);
         const modifiedFilledQty = Number(removeCommas(element["FILLED QTY"]));
         const modifiedTotalExchangeFees = DASHModifiyTotalExchangeFees(
-          element["TOTAL EXCHANGE FEES"]!,
+          element["TOTAL EXCHANGE FEES"]!
         );
 
         return {
@@ -277,21 +267,19 @@ const addDerivatives = async (
           modifiedCP,
           modifiedPremium,
           modifiedFilledQty,
-          modifiedTotalExchangeFees,
+          modifiedTotalExchangeFees
         };
       });
 
-      const DASHUniqueDates = DASHUniqueDatesArray(DASHModified);
-      const DASHSeparatedByDates = DASHSeparateDatesObject(DASHModified);
       const DRVSeparatedByDates = DRVSeparateDatesObject(DRVModified);
 
-      // Grouping DASH by USER, EXCHANGE, SYMBOL, EXPIRATION
+      // Grouping DASH by Trade Date, Exch, B/S, P/C, Class, Sym, Mo, Yr, Strike, O/C, CFM, Ex Brok
       const DASHGrouped = DASHGroupBy(DASHModified, (element: IDASH) => {
         return [
           element.modifiedUser,
           element.modifiedExchange,
           element.modifiedSymbol,
-          element.modifiedExpiration,
+          element.modifiedExpiration
         ];
       });
 
@@ -302,7 +290,7 @@ const addDerivatives = async (
       for (const key of DASHGroupedKeys) {
         let weightAverageQty = 0;
         let totalQty = 0;
-        const result: IWEX[] = [
+        const result: IDASH[] = [
           ...DASHGrouped[key]
             .reduce((array, object) => {
               const key = `${object.USER}-${object.EXCHANGE}-${object.SYMBOL}-${object.EXPIRATION}`;
@@ -312,7 +300,11 @@ const addDerivatives = async (
                   modifiedFilledQty: 0,
                   modifiedPremium: 0,
                   modifiedTotalExchangeFees: 0,
+                  groupsSeparated: []
                 });
+
+              // Get reconciliation charge fields
+              item.groupsSeparated = [...item.groupsSeparated!, object];
 
               // Sum filled qty
               item.modifiedFilledQty =
@@ -327,7 +319,7 @@ const addDerivatives = async (
 
               item.modifiedPremium =
                 Math.round(
-                  (weightAverageQty / totalQty + Number.EPSILON) * 100,
+                  (weightAverageQty / totalQty + Number.EPSILON) * 100
                 ) / 100;
 
               // Sum total exchange fees
@@ -335,20 +327,16 @@ const addDerivatives = async (
                 (
                   item.modifiedTotalExchangeFees! +
                   object.modifiedTotalExchangeFees!
-                ).toFixed(2),
+                ).toFixed(2)
               );
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         DASHGroupedCalculated = DASHGroupedCalculated.concat(result);
       }
-
-      const DASHGroupedSeparatedByDates = DASHSeparateDatesObject(
-        DASHGroupedCalculated,
-      );
 
       // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
       const DRVGrouped = DRVGroupBy(DRVModified, (element: IDRV) => {
@@ -363,15 +351,15 @@ const addDerivatives = async (
           element.modifiedExpiry,
           element.modifiedStrike,
           element.modifiedOption,
-          element.client_id,
+          element.client_id
         ];
       });
 
       // Get DRV group keys
-      const DRVGroupedKeys = Object.keys(DRVGrouped);
+      const DRVGroupKeys = Object.keys(DRVGrouped);
 
       // Sum quantity, weight average price
-      for (const key of DRVGroupedKeys) {
+      for (const key of DRVGroupKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
         const result: IDRV[] = [
@@ -383,9 +371,20 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
                   modifiedPrice: 0,
+                  reconciliationCharge: []
                 });
 
-              // Sun qty
+              // Get reconciliation charge fields
+              item.reconciliationCharge = [
+                ...item.reconciliationCharge!,
+                {
+                  drv_trade_client_account_execution_id:
+                    object.drv_trade_client_account_execution_id,
+                  quantity: object.modifiedQuantity
+                }
+              ];
+
+              // Sum qty
               item.modifiedQuantity =
                 item.modifiedQuantity! + object.modifiedQuantity!;
 
@@ -398,386 +397,146 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
       }
 
-      const DRVGroupedSeparatedByDates =
-        DRVSeparateDatesObject(DRVGroupedCalculated);
+      let DASHByDRVGroupedMatched: IDASH[] = [];
+      let DASHByDRVGrouped: IDASH[] = [];
 
-      // Get DASH unmatched rows by group DASH V group DRV
-      for (const date of DASHUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        // Check if file is valid
-        if (
-          !DRVGroupedSeparatedByDates[date] ||
-          !DASHGroupedSeparatedByDates[date]
-        ) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because files are invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "files are invalid",
-          });
-          return;
-        }
-
-        const DASHUnmatched = DASHGroupedSeparatedByDates[date].filter(
-          (row) =>
-            !DRVGroupedSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedStrike,
-                modifiedExpiry,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity,
-              }) =>
-                row.modifiedDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSymbol === modifiedSymbol &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiration === modifiedExpiry &&
-                row.modifiedCP === modifiedOption &&
-                row.modifiedPremium === modifiedPrice &&
-                row.modifiedFilledQty === modifiedQuantity,
-            ),
-        );
-
-        const DASHMatched = DASHGroupedSeparatedByDates[date].filter((row) =>
-          DRVGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedExpiry,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedBS === modifiedSide &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiration === modifiedExpiry &&
-              row.modifiedCP === modifiedOption &&
-              row.modifiedPremium === modifiedPrice &&
-              row.modifiedFilledQty === modifiedQuantity,
-          ),
-        );
-
-        const DRVMatched = DRVGroupedSeparatedByDates[date].filter((row) =>
-          DASHGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedBS,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedExpiration,
-              modifiedCP,
-              modifiedPremium,
-              modifiedFilledQty,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedSide === modifiedBS &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiration &&
-              row.modifiedOption === modifiedCP &&
-              row.modifiedPrice === modifiedPremium &&
-              row.modifiedQuantity === modifiedFilledQty,
-          ),
-        );
-
-        DASHByDRVGrouped = DASHByDRVGrouped.concat(DASHUnmatched);
-
-        DASHGroupedMatched = DASHGroupedMatched.concat(DASHMatched);
-        DRVGroupedMatched = DRVGroupedMatched.concat(DRVMatched);
-      }
-
-      const DASHMatchedUniqueDates = DASHUniqueDatesArray(DASHGroupedMatched);
-      const DASHMatchedSeparatedByDates =
-        DASHSeparateDatesObject(DASHGroupedMatched);
-
-      // Get DASH matched rows
-      for (const date of DASHMatchedUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const DASHMatched = DASHGroupedSeparatedByDates[date].filter((row) =>
-          DASHMatchedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedBS,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedExpiration,
-              modifiedCP,
-              modifiedPremium,
-              modifiedFilledQty,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiration === modifiedExpiration &&
-              row.modifiedCP === modifiedCP &&
-              row.modifiedPremium === modifiedPremium &&
-              row.modifiedFilledQty === modifiedFilledQty,
-          ),
-        );
-
-        DASHSeparatedGroups = DASHSeparatedGroups.concat(DASHMatched);
-      }
-
-      const DRVMatchedUniqueDates = DRVUniqueDatesArray(DRVGroupedMatched);
-      const DRVMatchedSeparatedByDates =
-        DRVSeparateDatesObject(DRVGroupedMatched);
-
-      // Get DRV matched rows
-      for (const date of DRVMatchedUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const DRVMatched = DRVSeparatedByDates[date].filter((row) =>
-          DRVMatchedSeparatedByDates[date].find(
-            ({
-              drv_trade_id,
-              floor_broker,
-              modifiedDate,
-              modifiedSide,
-              component_type,
-              contract_type,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              client_id,
-            }) =>
-              row.drv_trade_id === drv_trade_id &&
-              row.floor_broker === floor_broker &&
-              row.modifiedDate === modifiedDate &&
-              row.modifiedSide === modifiedSide &&
-              row.component_type === component_type &&
-              row.contract_type === contract_type &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedExpiry === modifiedExpiry &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedOption === modifiedOption &&
-              row.client_id === client_id,
-          ),
-        );
-
-        DVRSeparatedGroups = DVRSeparatedGroups.concat(DRVMatched);
-      }
-
-      // Push separated groups into DASHMatched
-      for (let i = 0; i < DVRSeparatedGroups.length; i++) {
-        DASHMatched.push({
-          ...DVRSeparatedGroups[i],
-          ...DASHSeparatedGroups.find(
-            (row) =>
-              row.modifiedDate === DVRSeparatedGroups[i].modifiedDate &&
-              row.modifiedBS === DVRSeparatedGroups[i].modifiedSide &&
-              row.modifiedSymbol === DVRSeparatedGroups[i].modifiedSymbol &&
-              row.modifiedStrike === DVRSeparatedGroups[i].modifiedStrike &&
-              row.modifiedExpiration === DVRSeparatedGroups[i].modifiedExpiry &&
-              row.modifiedCP === DVRSeparatedGroups[i].modifiedOption &&
-              row.modifiedPremium === DVRSeparatedGroups[i].modifiedPrice &&
-              row.modifiedFilledQty === DVRSeparatedGroups[i].modifiedQuantity,
-          ),
-        });
-      }
-
-      // Get matched rows object
-      const DRVMatched: IReconciliationCharge[] = DASHMatched.map(
-        ({
-          drv_trade_client_account_execution_id,
-          modifiedTotalExchangeFees,
-        }) => {
-          return {
-            charge: modifiedTotalExchangeFees,
-            drv_trade_client_account_execution_id,
-            drv_trade_floor_broker_id: floorBrokerId,
-          };
-        },
-      );
-
-      // Get DASH bigger than one groups
-      const DASHMatchedUndefined = DASHMatched.filter(
-        (e) => e.modifiedExchange === undefined,
-      );
-
-      // Get DASH groups equal to one
-      const matchedNV1 = DRVMatched.filter((e) => e.charge !== undefined);
-
-      // Group bigger than one groups
-      const DRVMatchedGrouped = DRVGroupBy(
-        DASHMatchedUndefined,
-        (element: IDRV) => {
-          return [
-            element.drv_trade_id,
-            element.floor_broker,
-            element.modifiedDate,
-            element.modifiedSide,
-            element.component_type,
-            element.contract_type,
-            element.modifiedSymbol,
-            element.modifiedExpiry,
-            element.modifiedStrike,
-            element.modifiedOption,
-            element.client_id,
-          ];
-        },
-      );
-
-      // Get DRV group keys
-      const DRVMatchedGroupedKeys = Object.keys(DRVMatchedGrouped);
-
-      // Give DRV sum array
-      for (const key of DRVMatchedGroupedKeys) {
-        const qty = DRVMatchedGrouped[key].map(({ modifiedQuantity }) => {
-          return modifiedQuantity;
-        });
-
-        const qtySum = qty.reduce((a, b) => a! + b!, 0);
-
-        for (let i = 0; i < DRVMatchedGrouped[key].length; i++) {
-          DRVMatchedGrouped[key][i].quantitySum = qtySum;
-          DRVGroupedWithSum = DRVGroupedWithSum.concat(
-            DRVMatchedGrouped[key][i],
-          );
-        }
-      }
-
-      // Push separated groups into DASHGroupedMatchedWithQtySum
-      for (let i = 0; i < DRVGroupedWithSum.length; i++) {
-        DASHGroupedMatchedWithQtySum.push({
-          ...DRVGroupedWithSum[i],
-          ...DASHSeparatedGroups.find(
-            (row) =>
-              row.modifiedDate === DVRSeparatedGroups[i].modifiedDate &&
-              row.modifiedBS === DVRSeparatedGroups[i].modifiedSide &&
-              row.modifiedSymbol === DVRSeparatedGroups[i].modifiedSymbol &&
-              row.modifiedStrike === DVRSeparatedGroups[i].modifiedStrike &&
-              row.modifiedExpiration === DVRSeparatedGroups[i].modifiedExpiry &&
-              row.modifiedCP === DVRSeparatedGroups[i].modifiedOption &&
-              row.modifiedPremium === DVRSeparatedGroups[i].modifiedPrice &&
-              row.modifiedFilledQty === DVRSeparatedGroups[i].modifiedQuantity,
-          ),
-        });
-      }
-
-      // Get matched rows object
-      const matchedNVN: IReconciliationCharge[] =
-        DASHGroupedMatchedWithQtySum.map(
+      const map = new Map(
+        DRVGroupedCalculated.map(
           ({
-            drv_trade_client_account_execution_id,
-            modifiedTotalExchangeFees,
-            quantitySum,
-            modifiedFilledQty,
-          }) => {
-            const chargeCalc =
-              (Number(modifiedFilledQty!) * modifiedTotalExchangeFees!) /
-              quantitySum!;
+            modifiedDate,
+            modifiedSide,
+            modifiedSymbol,
+            modifiedStrike,
+            modifiedExpiry,
+            modifiedOption,
+            modifiedPrice,
+            modifiedQuantity,
+            reconciliationCharge
+          }) => [
+            modifiedDate +
+              "/" +
+              modifiedSide +
+              "/" +
+              modifiedSymbol +
+              "/" +
+              modifiedStrike +
+              "/" +
+              modifiedExpiry +
+              "/" +
+              modifiedOption +
+              "/" +
+              modifiedPrice +
+              "/" +
+              modifiedQuantity,
+            reconciliationCharge
+          ]
+        )
+      );
 
-            return {
-              charge: chargeCalc,
-              drv_trade_client_account_execution_id,
-              drv_trade_floor_broker_id: floorBrokerId,
-            };
-          },
+      for (const object of DASHGroupedCalculated) {
+        const match = map.get(
+          object.modifiedDate +
+            "/" +
+            object.modifiedBS +
+            "/" +
+            object.modifiedSymbol +
+            "/" +
+            object.modifiedStrike +
+            "/" +
+            object.modifiedExpiration +
+            "/" +
+            object.modifiedCP +
+            "/" +
+            object.modifiedPremium +
+            "/" +
+            object.modifiedFilledQty
         );
 
-      const DASHByDRVGroupedUniqueDates =
-        DASHUniqueDatesArray(DASHByDRVGrouped);
-      const DASHByDRVGroupedSeparatedByDates =
-        DASHSeparateDatesObject(DASHByDRVGrouped);
+        if (match) {
+          object.reconciliationCharge = match;
+          DASHByDRVGroupedMatched.push(object);
+        } else {
+          DASHByDRVGrouped.push(object);
+        }
+      }
+
+      const result2 = DASHByDRVGroupedMatched.map(
+        ({ groupsSeparated }) => groupsSeparated!
+      ).flat();
+
+      // Return reconciliation charge, total charge and exec qty
+      const DASHReconciliationChargesNVNAndNV1: INVNReconciliationCharge[] =
+        DASHByDRVGroupedMatched.map((object) => {
+          return {
+            drvId: object.drv_trade_client_account_execution_id,
+            reconciliationCharge: object.reconciliationCharge,
+            totalCharge: object.modifiedTotalExchangeFees,
+            execQtySum: object.modifiedFilledQty
+          };
+        });
+
+      // Get matched N V N rows object
+      const matchedNVNAndNV1: IReconciliationCharge[] =
+        DASHReconciliationChargesNVNAndNV1.map(
+          ({ reconciliationCharge, totalCharge, execQtySum }) => {
+            const quantity = reconciliationCharge!.map((e) => e.quantity);
+
+            if (quantity.length === 1) {
+              return reconciliationCharge!.map(
+                ({ drv_trade_client_account_execution_id }) => ({
+                  drv_trade_floor_broker_id: floorBrokerId,
+                  drv_trade_client_account_execution_id:
+                    drv_trade_client_account_execution_id,
+                  charge: totalCharge
+                })
+              );
+            } else {
+              return reconciliationCharge!.map(
+                ({ drv_trade_client_account_execution_id, quantity }) => ({
+                  drv_trade_floor_broker_id: floorBrokerId,
+                  drv_trade_client_account_execution_id:
+                    drv_trade_client_account_execution_id,
+                  charge: (totalCharge! * quantity!) / execQtySum!
+                })
+              );
+            }
+          }
+        ).flat();
 
       // Get DASH unmatched rows by group DASH
-      for (const date of DASHByDRVGroupedUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const DASHUnmatched = DASHSeparatedByDates[date].filter((row) =>
-          DASHByDRVGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedBS,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedExpiration,
-              modifiedCP,
-              modifiedPremium,
-              modifiedFilledQty,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiration === modifiedExpiration &&
-              row.modifiedCP === modifiedCP &&
-              row.modifiedPremium === modifiedPremium &&
-              row.modifiedFilledQty === modifiedFilledQty,
-          ),
-        );
-
-        DASHByDRVGroup = DASHByDRVGroup.concat(DASHUnmatched);
-      }
+      const DASHByDRVGroup = DASHModified.filter((row) =>
+        DASHByDRVGrouped.find(
+          ({
+            modifiedDate,
+            modifiedBS,
+            modifiedSymbol,
+            modifiedStrike,
+            modifiedExpiration,
+            modifiedCP,
+            modifiedPremium,
+            modifiedFilledQty
+          }) =>
+            row.modifiedDate === modifiedDate &&
+            row.modifiedBS === modifiedBS &&
+            row.modifiedSymbol === modifiedSymbol &&
+            row.modifiedStrike === modifiedStrike &&
+            row.modifiedExpiration === modifiedExpiration &&
+            row.modifiedCP === modifiedCP &&
+            row.modifiedPremium === modifiedPremium &&
+            row.modifiedFilledQty === modifiedFilledQty
+        )
+      );
 
       const DASHVDRVUniqueDates = DASHUniqueDatesArray(DASHByDRVGroup);
       const DASHVDRVSeparatedByDates = DASHSeparateDatesObject(DASHByDRVGroup);
@@ -787,12 +546,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -808,7 +567,7 @@ const addDerivatives = async (
                 modifiedExpiry,
                 modifiedOption,
                 modifiedPrice,
-                modifiedQuantity,
+                modifiedQuantity
               }) =>
                 row.modifiedDate === modifiedDate &&
                 row.modifiedBS === modifiedSide &&
@@ -817,8 +576,8 @@ const addDerivatives = async (
                 row.modifiedExpiration === modifiedExpiry &&
                 row.modifiedCP === modifiedOption &&
                 row.modifiedPremium === modifiedPrice &&
-                row.modifiedFilledQty === modifiedQuantity,
-            ),
+                row.modifiedFilledQty === modifiedQuantity
+            )
         );
 
         const DASHMatched = DASHVDRVSeparatedByDates[date].filter((row) =>
@@ -832,82 +591,65 @@ const addDerivatives = async (
               modifiedOption,
               modifiedPrice,
               modifiedQuantity,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedBS === modifiedSide &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiration === modifiedExpiry &&
-              row.modifiedCP === modifiedOption &&
-              row.modifiedPremium === modifiedPrice &&
-              row.modifiedFilledQty === modifiedQuantity,
-          ),
+              drv_trade_client_account_execution_id
+            }) => {
+              row.drv_trade_client_account_execution_id =
+                drv_trade_client_account_execution_id;
+              return (
+                row.modifiedDate === modifiedDate &&
+                row.modifiedBS === modifiedSide &&
+                row.modifiedSymbol === modifiedSymbol &&
+                row.modifiedStrike === modifiedStrike &&
+                row.modifiedExpiration === modifiedExpiry &&
+                row.modifiedCP === modifiedOption &&
+                row.modifiedPremium === modifiedPrice &&
+                row.modifiedFilledQty === modifiedQuantity
+              );
+            }
+          )
         );
 
         DASHGroupedByDRV = DASHGroupedByDRV.concat(DASHUnmatched);
 
-        DASHNV1Matched = DASHNV1Matched.concat(DASHMatched);
+        DASH1V1Matched = DASH1V1Matched.concat(DASHMatched);
       }
 
       // Get matched rows object
-      const matched1V1: IReconciliationCharge[] = DASHNV1Matched.map(
+      const matched1V1: IReconciliationCharge[] = DASH1V1Matched.map(
         ({
           drv_trade_client_account_execution_id,
-          modifiedTotalExchangeFees,
+          modifiedTotalExchangeFees
         }) => {
           return {
             drv_trade_floor_broker_id: floorBrokerId,
             drv_trade_client_account_execution_id,
-            charge: modifiedTotalExchangeFees,
+            charge: modifiedTotalExchangeFees
           };
-        },
+        }
       );
 
-      const DASHGroupedByDRVUniqueDates =
-        DASHUniqueDatesArray(DASHGroupedByDRV);
-      const DASHGroupedByDRVSeparatedByDates =
-        DASHSeparateDatesObject(DASHGroupedByDRV);
-
-      // 1 DASH V 1 DASH
-      for (const date of DASHGroupedByDRVUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const DASHUnmatched = DASHVDRVSeparatedByDates[date!].filter((row) =>
-          DASHGroupedByDRVSeparatedByDates[date!].find(
-            ({
-              modifiedDate,
-              modifiedBS,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedExpiration,
-              modifiedCP,
-              modifiedPremium,
-              modifiedFilledQty,
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSymbol === modifiedSymbol &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiration === modifiedExpiration &&
-              row.modifiedCP === modifiedCP &&
-              row.modifiedPremium === modifiedPremium &&
-              row.modifiedFilledQty === modifiedFilledQty,
-          ),
-        );
-
-        DASHGroupedByDASH = DASHGroupedByDASH.concat(DASHUnmatched);
-      }
+      const DASHGroupedByDASH = DASHByDRVGroup.filter((row) =>
+        DASHGroupedByDRV.find(
+          ({
+            modifiedDate,
+            modifiedBS,
+            modifiedSymbol,
+            modifiedStrike,
+            modifiedExpiration,
+            modifiedCP,
+            modifiedPremium,
+            modifiedFilledQty
+          }) =>
+            row.modifiedDate === modifiedDate &&
+            row.modifiedBS === modifiedBS &&
+            row.modifiedSymbol === modifiedSymbol &&
+            row.modifiedStrike === modifiedStrike &&
+            row.modifiedExpiration === modifiedExpiration &&
+            row.modifiedCP === modifiedCP &&
+            row.modifiedPremium === modifiedPremium &&
+            row.modifiedFilledQty === modifiedFilledQty
+        )
+      );
 
       const DASHByGroupedDASHUniqueDates =
         DASHUniqueDatesArray(DASHGroupedByDASH);
@@ -919,19 +661,17 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
 
-        const DASHunresolvedByDRV = DASHByGroupedDASHSeparatedByDates[
-          date
-        ].filter(
+        const DASHUnmatched = DASHByGroupedDASHSeparatedByDates[date].filter(
           (row) =>
             !DRVSeparatedByDates[date].find(
               ({
@@ -942,7 +682,7 @@ const addDerivatives = async (
                 modifiedExpiry,
                 modifiedOption,
                 modifiedPrice,
-                modifiedQuantity,
+                modifiedQuantity
               }) =>
                 row.modifiedDate === modifiedDate &&
                 row.modifiedBS === modifiedSide &&
@@ -951,18 +691,17 @@ const addDerivatives = async (
                 row.modifiedExpiration === modifiedExpiry &&
                 row.modifiedCP === modifiedOption &&
                 row.modifiedPremium === modifiedPrice &&
-                row.modifiedFilledQty === modifiedQuantity,
-            ),
+                row.modifiedFilledQty === modifiedQuantity
+            )
         );
 
-        DASHunresolved = DASHunresolved.concat(DASHunresolvedByDRV);
+        DASHunresolved = DASHunresolved.concat(DASHUnmatched);
       }
 
       // Concating matched objects
       reconciliation_charge = reconciliation_charge.concat(
-        matchedNVN,
-        matchedNV1,
-        matched1V1,
+        matchedNVNAndNV1,
+        matched1V1
       );
 
       // // POST request to makor-X API
@@ -989,18 +728,18 @@ const addDerivatives = async (
       // Total charge
       const totalCharge = DASHModified.reduce(
         (a, b) => a + (b.modifiedTotalExchangeFees || 0),
-        0,
+        0
       );
 
-      // Unmatched unresolved charge
-      const unmatchedUnresolvedCharge = DASHunresolved.reduce(
+      // Unmatched charge
+      const unmatchedCharge = DASHunresolved.reduce(
         (prev, { modifiedTotalExchangeFees }) =>
           prev + modifiedTotalExchangeFees!,
-        0,
+        0
       );
 
       // Matched Sum Charge
-      const matchedSumCharge = totalCharge - unmatchedUnresolvedCharge;
+      const matchedSumCharge = totalCharge - unmatchedCharge;
 
       // Unmatched Sum Charge
       const unmatchedSumCharge = totalCharge - matchedSumCharge;
@@ -1029,41 +768,43 @@ const addDerivatives = async (
         delete element.modifiedTotalExchangeFees;
         delete element.drv_trade_client_account_execution_id;
         delete element.quantitySum;
+        delete element.drv_trade_client_account_execution_id;
+        delete element.reconciliationCharge;
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(DASHunresolved, (err, csv) => {
+      converter.json2csv(result2, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
+            "<addDerivatives>: Failed to convert file to csv"
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv,
+          csv
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
         );
       });
 
@@ -1083,28 +824,23 @@ const addDerivatives = async (
         unmatchedGroupCount: DASHByDRVGrouped.length,
         unmatchedSumCharge: unmatchedSumCharge,
         unmatchedSumPercentage: unmatchedSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
+        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
       res.status(200).send({
         success: true,
-        message: "Successfully added derivative",
+        message: "Successfully added derivative"
       });
       return;
     };
 
     const BAMLActions = async () => {
       let DRVGroupedCalculated: IDRV[] = [];
-      let DRVGroupedEqualToOneCalculated: IDRV[] = [];
-      let DRVGroupedBiggerThanOneCalculated: IDRV[] = [];
 
       let BAMLGroupedByDRV: IBAML[] = [];
-      let BAMLGroupedByBAML: IBAML[] = [];
       let BAMLGroupedCalculated: IBAML[] = [];
       let BAMLunresolved: IBAML[] = [];
       let BAML1V1Matched: IBAML[] = [];
-      let BAMLBiggerThanOneGroupsMatched: IBAML[] = [];
-      let BAMLEqualToOneGroupsMatched: IBAML[] = [];
 
       let reconciliation_charge: IReconciliationCharge[] = [];
 
@@ -1120,7 +856,7 @@ const addDerivatives = async (
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2),
+          Number(removeCommas(element.price!)).toFixed(2)
         );
 
         return {
@@ -1134,7 +870,7 @@ const addDerivatives = async (
           modifiedExpiryYearOnly,
           modifiedStrike,
           modifiedOption,
-          modifiedPrice,
+          modifiedPrice
         };
       });
 
@@ -1148,7 +884,7 @@ const addDerivatives = async (
         const modifiedSym = element.Sym?.toLowerCase();
         const modifiedStrike = Number(removeCommas(element.Strike));
         const modifiedPrice = Number(
-          Number(removeCommas(element.Price)).toFixed(2),
+          Number(removeCommas(element.Price)).toFixed(2)
         );
         const modifiedQty = Number(removeCommas(element.Qty!));
         const modifiedOC = element["O/C"]?.toLowerCase();
@@ -1156,8 +892,8 @@ const addDerivatives = async (
         const modifiedExBrok = element["Ex Brok"]?.toLowerCase();
         const modifiedTotalCharges = Number(
           BAMLModifiyTotalCharge(
-            removeCommas(element["Total Charges"])!.toString(),
-          ),
+            removeCommas(element["Total Charges"])!.toString()
+          )
         );
 
         return {
@@ -1174,11 +910,10 @@ const addDerivatives = async (
           modifiedOC,
           modifiedCFM,
           modifiedExBrok,
-          modifiedTotalCharges,
+          modifiedTotalCharges
         };
       });
 
-      const BAMLUniqueDates = BAMLUniqueDatesArray(BAMLModified);
       const DRVSeparatedByDates = DRVSeparateDatesObject(DRVModified);
 
       // Grouping BAML by Trade Date, Exch, B/S, P/C, Class, Sym, Mo, Yr, Strike, O/C, CFM, Ex Brok
@@ -1195,7 +930,7 @@ const addDerivatives = async (
           element.modifiedStrike,
           element.modifiedOC,
           element.modifiedCFM,
-          element.modifiedExBrok,
+          element.modifiedExBrok
         ];
       });
 
@@ -1216,7 +951,11 @@ const addDerivatives = async (
                   modifiedQty: 0,
                   modifiedPrice: 0,
                   modifiedTotalCharges: 0,
+                  groupsSeparated: []
                 });
+
+              // Get reconciliation charge fields
+              item.groupsSeparated = [...item.groupsSeparated!, object];
 
               // Sum qty
               item.modifiedQty = item.modifiedQty! + object.modifiedQty!;
@@ -1230,27 +969,23 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageQty / totalQty + Number.EPSILON) * 100,
+                  (weightAverageQty / totalQty + Number.EPSILON) * 100
                 ) / 100;
 
               // Sum total charges
               item.modifiedTotalCharges = Number(
                 (
                   item.modifiedTotalCharges! + object.modifiedTotalCharges!
-                ).toFixed(2),
+                ).toFixed(2)
               );
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         BAMLGroupedCalculated = BAMLGroupedCalculated.concat(result);
       }
-
-      const BAMLGroupedSeparatedByDates = BAMLSeparateDatesObject(
-        BAMLGroupedCalculated,
-      );
 
       // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
       const DRVGrouped = DRVGroupBy(DRVModified, (element: IDRV) => {
@@ -1265,20 +1000,19 @@ const addDerivatives = async (
           element.modifiedExpiry,
           element.modifiedStrike,
           element.modifiedOption,
-          element.client_id,
+          element.client_id
         ];
       });
 
-      // Get DRV equal to one groups and group keys
-      const DRVEqualToOneGroups = equalToOneGroupsDRV(DRVGrouped);
-      const DRVEqualToOneGroupsKeys = Object.keys(DRVEqualToOneGroups);
+      // Get DRV group keys
+      const DRVGroupKeys = Object.keys(DRVGrouped);
 
-      // Sum quantity, weight average price for equal to one groups
-      for (const key of DRVEqualToOneGroupsKeys) {
+      // Sum quantity, weight average price
+      for (const key of DRVGroupKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
         const result: IDRV[] = [
-          ...DRVEqualToOneGroups[key]
+          ...DRVGrouped[key]
             .reduce((array, object) => {
               const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
               const item: IDRV =
@@ -1286,51 +1020,7 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
                   modifiedPrice: 0,
-                });
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values(),
-        ];
-
-        DRVGroupedEqualToOneCalculated =
-          DRVGroupedEqualToOneCalculated.concat(result);
-      }
-
-      // Get DRV bigger than one groups and group keys
-      const DRVBiggerThanOneGroups = biggerThanOneGroupsDRV(DRVGrouped);
-      const DRVBiggerThanOneGroupKeys = Object.keys(DRVBiggerThanOneGroups);
-
-      // Sum quantity, weight average price for bigger than one groups
-      for (const key of DRVBiggerThanOneGroupKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...DRVBiggerThanOneGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0,
-                  reconciliationCharge: [],
+                  reconciliationCharge: []
                 });
 
               // Get reconciliation charge fields
@@ -1339,8 +1029,8 @@ const addDerivatives = async (
                 {
                   drv_trade_client_account_execution_id:
                     object.drv_trade_client_account_execution_id,
-                  quantity: object.modifiedQuantity,
-                },
+                  quantity: object.modifiedQuantity
+                }
               ];
 
               // Sum qty
@@ -1356,35 +1046,22 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
-        DRVGroupedBiggerThanOneCalculated =
-          DRVGroupedBiggerThanOneCalculated.concat(result);
+        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
       }
-
-      DRVGroupedCalculated = DRVGroupedCalculated.concat(
-        DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated,
-      );
-
-      const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated,
-      );
-      const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated,
-      );
 
       let BAMLByDRVGroupedMatched: IBAML[] = [];
       let BAMLByDRVGrouped: IBAML[] = [];
 
-      const set = new Set(
-        DRVGroupedBiggerThanOneCalculated.map(
+      const map = new Map(
+        DRVGroupedCalculated.map(
           ({
             modifiedDate,
             modifiedSide,
@@ -1395,203 +1072,101 @@ const addDerivatives = async (
             modifiedStrike,
             modifiedExpiryMonthOnly,
             modifiedExpiryYearOnly,
-          }) =>
+            reconciliationCharge
+          }) => [
             modifiedDate +
-            "/" +
-            modifiedSide +
-            "/" +
-            modifiedSymbol +
-            "/" +
-            modifiedOption +
-            "/" +
-            modifiedQuantity +
-            "/" +
-            modifiedPrice +
-            "/" +
-            modifiedStrike +
-            "/" +
-            modifiedExpiryMonthOnly +
-            "/" +
-            modifiedExpiryYearOnly,
-        ),
+              "/" +
+              modifiedSide +
+              "/" +
+              modifiedSymbol +
+              "/" +
+              modifiedOption +
+              "/" +
+              modifiedQuantity +
+              "/" +
+              modifiedPrice +
+              "/" +
+              modifiedStrike +
+              "/" +
+              modifiedExpiryMonthOnly +
+              "/" +
+              modifiedExpiryYearOnly,
+            reconciliationCharge
+          ]
+        )
       );
 
-      for (let obj of BAMLGroupedCalculated) {
-        if (
-          set.has(
-            obj.modifiedTradeDate +
-              "/" +
-              obj.modifiedBS +
-              "/" +
-              obj.modifiedSym +
-              "/" +
-              obj.modifiedPC +
-              "/" +
-              obj.modifiedQty +
-              "/" +
-              obj.modifiedPrice +
-              "/" +
-              obj.modifiedStrike +
-              "/" +
-              obj.Mo +
-              "/" +
-              obj.Yr,
-          )
-        ) {
-          BAMLByDRVGroupedMatched.push(obj);
-        } else {
-          BAMLByDRVGrouped.push(obj);
-        }
-      }
-
-      log(BAMLByDRVGroupedMatched.map((e) => e.reconciliationCharge));
-
-      // Get BAML matched rows by group BAML V DRV bigger than one groups
-      for (const date of BAMLUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        if (
-          !BAMLGroupedSeparatedByDates[date] ||
-          !DRVBiggerThanOneGroupedSeparatedByDates[date]
-        )
-          break;
-
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
-          DRVBiggerThanOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              modifiedExpiryMonthOnly,
-              modifiedExpiryYearOnly,
-              reconciliationCharge,
-            }) => {
-              row.reconciliationCharge = reconciliationCharge;
-              return (
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
-              );
-            },
-          ),
+      for (const object of BAMLGroupedCalculated) {
+        const match = map.get(
+          object.modifiedTradeDate +
+            "/" +
+            object.modifiedBS +
+            "/" +
+            object.modifiedSym +
+            "/" +
+            object.modifiedPC +
+            "/" +
+            object.modifiedQty +
+            "/" +
+            object.modifiedPrice +
+            "/" +
+            object.modifiedStrike +
+            "/" +
+            object.Mo +
+            "/" +
+            object.Yr
         );
 
-        BAMLBiggerThanOneGroupsMatched =
-          BAMLBiggerThanOneGroupsMatched.concat(BAMLmatched);
+        if (match) {
+          object.reconciliationCharge = match;
+          BAMLByDRVGroupedMatched.push(object);
+        } else {
+          BAMLByDRVGrouped.push(object);
+        }
       }
 
+      const result2 = BAMLByDRVGroupedMatched.map(
+        ({ groupsSeparated }) => groupsSeparated!
+      ).flat();
+
       // Return reconciliation charge, total charge and exec qty
-      const BAMLReconciliationChargesNVN: INVNReconciliationCharge[] =
-        BAMLBiggerThanOneGroupsMatched.map((object) => {
+      const BAMLReconciliationChargesNVNAndNV1: INVNReconciliationCharge[] =
+        BAMLByDRVGroupedMatched.map((object) => {
           return {
+            drvId: object.drv_trade_client_account_execution_id,
             reconciliationCharge: object.reconciliationCharge,
             totalCharge: object.modifiedTotalCharges,
-            execQtySum: object.modifiedQty,
+            execQtySum: object.modifiedQty
           };
         });
 
       // Get matched N V N rows object
-      const matchedNVN: IReconciliationCharge[] =
-        BAMLReconciliationChargesNVN.map(
-          ({ reconciliationCharge, totalCharge, execQtySum }) =>
-            reconciliationCharge!.map(
-              ({ drv_trade_client_account_execution_id, quantity }) => ({
-                drv_trade_floor_broker_id: floorBrokerId,
-                drv_trade_client_account_execution_id:
-                  drv_trade_client_account_execution_id,
-                charge: (totalCharge! * quantity!) / execQtySum!,
-              }),
-            ),
-        ).flat();
+      const matchedNVNAndNV1: IReconciliationCharge[] =
+        BAMLReconciliationChargesNVNAndNV1.map(
+          ({ reconciliationCharge, totalCharge, execQtySum }) => {
+            const quantity = reconciliationCharge!.map((e) => e.quantity);
 
-      // Get BAML matched rows by group BAML V DRV equal to one groups
-      for (const date of BAMLUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invali1d",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        if (
-          !BAMLGroupedSeparatedByDates[date] ||
-          !DRVEqualToOneGroupedSeparatedByDates[date]
-        )
-          break;
-
-        const BAMLmatched = BAMLGroupedSeparatedByDates[date].filter((row) =>
-          DRVEqualToOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              modifiedExpiryMonthOnly,
-              modifiedExpiryYearOnly,
-              drv_trade_client_account_execution_id,
-            }) => {
-              row.drv_trade_client_account_execution_id =
-                drv_trade_client_account_execution_id;
-              return (
-                row.modifiedTradeDate === modifiedDate &&
-                row.modifiedBS === modifiedSide &&
-                row.modifiedSym === modifiedSymbol &&
-                row.modifiedPC === modifiedOption &&
-                row.modifiedQty === modifiedQuantity &&
-                row.modifiedPrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly
+            if (quantity.length === 1) {
+              return reconciliationCharge!.map(
+                ({ drv_trade_client_account_execution_id }) => ({
+                  drv_trade_floor_broker_id: floorBrokerId,
+                  drv_trade_client_account_execution_id:
+                    drv_trade_client_account_execution_id,
+                  charge: totalCharge
+                })
               );
-            },
-          ),
-        );
-
-        BAMLEqualToOneGroupsMatched =
-          BAMLEqualToOneGroupsMatched.concat(BAMLmatched);
-      }
-
-      // Get matched N V 1 rows object
-      const matchedNV1: IReconciliationCharge[] =
-        BAMLEqualToOneGroupsMatched.map(
-          ({ drv_trade_client_account_execution_id, modifiedTotalCharges }) => {
-            return {
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id,
-              charge: modifiedTotalCharges,
-            };
-          },
-        );
+            } else {
+              return reconciliationCharge!.map(
+                ({ drv_trade_client_account_execution_id, quantity }) => ({
+                  drv_trade_floor_broker_id: floorBrokerId,
+                  drv_trade_client_account_execution_id:
+                    drv_trade_client_account_execution_id,
+                  charge: (totalCharge! * quantity!) / execQtySum!
+                })
+              );
+            }
+          }
+        ).flat();
 
       // Get BAML unmatched rows by group BAML
       const BAMLByDRVGroup = BAMLModified.filter((row) =>
@@ -1605,7 +1180,7 @@ const addDerivatives = async (
             modifiedPrice,
             modifiedStrike,
             Mo,
-            Yr,
+            Yr
           }) =>
             row.modifiedTradeDate === modifiedTradeDate &&
             row.modifiedBS === modifiedBS &&
@@ -1615,8 +1190,8 @@ const addDerivatives = async (
             row.modifiedPrice === modifiedPrice &&
             row.modifiedStrike === modifiedStrike &&
             row.Mo === Mo &&
-            row.Yr === Yr,
-        ),
+            row.Yr === Yr
+        )
       );
 
       const BAMLVDRVUniqueDates = BAMLUniqueDatesArray(BAMLByDRVGroup);
@@ -1627,12 +1202,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -1649,7 +1224,7 @@ const addDerivatives = async (
                 modifiedPrice,
                 modifiedQuantity,
                 modifiedExpiryMonthOnly,
-                modifiedExpiryYearOnly,
+                modifiedExpiryYearOnly
               }) =>
                 row.modifiedTradeDate === modifiedDate &&
                 row.modifiedBS === modifiedSide &&
@@ -1659,8 +1234,8 @@ const addDerivatives = async (
                 row.modifiedPrice === modifiedPrice &&
                 row.modifiedStrike === modifiedStrike &&
                 row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly,
-            ),
+                row.Yr === modifiedExpiryYearOnly
+            )
         );
 
         const BAMLMatched = BAMLVDRVSeparatedByDates[date].filter((row) =>
@@ -1675,7 +1250,7 @@ const addDerivatives = async (
               modifiedQuantity,
               modifiedExpiryMonthOnly,
               modifiedExpiryYearOnly,
-              drv_trade_client_account_execution_id,
+              drv_trade_client_account_execution_id
             }) => {
               row.drv_trade_client_account_execution_id =
                 drv_trade_client_account_execution_id;
@@ -1690,8 +1265,8 @@ const addDerivatives = async (
                 row.Mo === modifiedExpiryMonthOnly &&
                 row.Yr === modifiedExpiryYearOnly
               );
-            },
-          ),
+            }
+          )
         );
 
         BAMLGroupedByDRV = BAMLGroupedByDRV.concat(BAMLUnmatched);
@@ -1705,58 +1280,35 @@ const addDerivatives = async (
           return {
             drv_trade_floor_broker_id: floorBrokerId,
             drv_trade_client_account_execution_id,
-            charge: modifiedTotalCharges,
+            charge: modifiedTotalCharges
           };
-        },
+        }
       );
 
-      const BAMLGroupedByDRVUniqueDates =
-        BAMLUniqueDatesArray(BAMLGroupedByDRV);
-      const BAMLGroupedByDRVSeparatedByDates =
-        BAMLSeparateDatesObject(BAMLGroupedByDRV);
-
-      // 1 BAML V 1 BAML
-      for (const date of BAMLGroupedByDRVUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid",
-          });
-          return;
-        }
-
-        const BAMLUnmatched = BAMLVDRVSeparatedByDates[date!].filter((row) =>
-          BAMLGroupedByDRVSeparatedByDates[date!].find(
-            ({
-              modifiedTradeDate,
-              modifiedBS,
-              modifiedSym,
-              modifiedPC,
-              modifiedQty,
-              modifiedPrice,
-              modifiedStrike,
-              Mo,
-              Yr,
-            }) =>
-              row.modifiedTradeDate === modifiedTradeDate &&
-              row.modifiedBS === modifiedBS &&
-              row.modifiedSym === modifiedSym &&
-              row.modifiedPC === modifiedPC &&
-              row.modifiedQty === modifiedQty &&
-              row.modifiedPrice === modifiedPrice &&
-              row.modifiedStrike === modifiedStrike &&
-              row.Mo === Mo &&
-              row.Yr === Yr,
-          ),
-        );
-
-        BAMLGroupedByBAML = BAMLGroupedByBAML.concat(BAMLUnmatched);
-      }
+      const BAMLGroupedByBAML = BAMLByDRVGroup.filter((row) =>
+        BAMLGroupedByDRV.find(
+          ({
+            modifiedTradeDate,
+            modifiedBS,
+            modifiedSym,
+            modifiedPC,
+            modifiedQty,
+            modifiedPrice,
+            modifiedStrike,
+            Mo,
+            Yr
+          }) =>
+            row.modifiedTradeDate === modifiedTradeDate &&
+            row.modifiedBS === modifiedBS &&
+            row.modifiedSym === modifiedSym &&
+            row.modifiedPC === modifiedPC &&
+            row.modifiedQty === modifiedQty &&
+            row.modifiedPrice === modifiedPrice &&
+            row.modifiedStrike === modifiedStrike &&
+            row.Mo === Mo &&
+            row.Yr === Yr
+        )
+      );
 
       const BAMLByGroupedBAMLUniqueDates =
         BAMLUniqueDatesArray(BAMLGroupedByBAML);
@@ -1768,12 +1320,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -1790,7 +1342,7 @@ const addDerivatives = async (
                 modifiedPrice,
                 modifiedQuantity,
                 modifiedExpiryMonthOnly,
-                modifiedExpiryYearOnly,
+                modifiedExpiryYearOnly
               }) =>
                 row.modifiedTradeDate === modifiedDate &&
                 row.modifiedBS === modifiedSide &&
@@ -1800,8 +1352,8 @@ const addDerivatives = async (
                 row.modifiedPrice === modifiedPrice &&
                 row.modifiedStrike === modifiedStrike &&
                 row.Mo === modifiedExpiryMonthOnly &&
-                row.Yr === modifiedExpiryYearOnly,
-            ),
+                row.Yr === modifiedExpiryYearOnly
+            )
         );
 
         BAMLunresolved = BAMLunresolved.concat(BAMLUnmatched);
@@ -1809,9 +1361,8 @@ const addDerivatives = async (
 
       // Concating matched objects
       reconciliation_charge = reconciliation_charge.concat(
-        matchedNVN,
-        matchedNV1,
-        matched1V1,
+        matchedNVNAndNV1,
+        matched1V1
       );
 
       // // POST request to makor-X API
@@ -1838,13 +1389,13 @@ const addDerivatives = async (
       // Total charge
       const totalCharge = BAMLModified.reduce(
         (a, b) => a + (b.modifiedTotalCharges || 0),
-        0,
+        0
       );
 
       // Unmatched charge
       const unmatchedCharge = BAMLunresolved.reduce(
         (prev, { modifiedTotalCharges }) => prev + modifiedTotalCharges!,
-        0,
+        0
       );
 
       // Matched Sum Charge
@@ -1882,38 +1433,38 @@ const addDerivatives = async (
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(reconciliation_charge, (err, csv) => {
+      converter.json2csv(result2, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
+            "<addDerivatives>: Failed to convert file to csv"
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv,
+          csv
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
         );
       });
 
@@ -1933,12 +1484,12 @@ const addDerivatives = async (
         unmatchedGroupCount: BAMLByDRVGrouped.length,
         unmatchedSumCharge: unmatchedSumCharge,
         unmatchedSumPercentage: unmatchedSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
+        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
       res.status(200).send({
         success: true,
-        message: "Successfully added derivative",
+        message: "Successfully added derivative"
       });
       return;
     };
@@ -1961,14 +1512,14 @@ const addDerivatives = async (
         const modifiedDate = DRVDateFormat(element.date!);
         const modifiedSide = element.side?.charAt(0).toLowerCase();
         const modifiedQuantity = Number(
-          removeCommas(element.quantity?.toString()!),
+          removeCommas(element.quantity?.toString()!)
         );
         const modifiedSymbol = element.symbol?.toLowerCase();
         const modifiedExpiry = DRVDateFormat(element.expiry!);
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price?.toString())).toFixed(2),
+          Number(removeCommas(element.price?.toString())).toFixed(2)
         );
 
         return {
@@ -1980,7 +1531,7 @@ const addDerivatives = async (
           modifiedExpiry,
           modifiedStrike,
           modifiedOption,
-          modifiedPrice,
+          modifiedPrice
         };
       });
 
@@ -1990,19 +1541,19 @@ const addDerivatives = async (
         const modifiedUser = element.User?.toLowerCase();
         const modifiedSide = element.Side?.charAt(0).toLowerCase();
         const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!),
+          removeCommas(element["Exec Qty"]?.toString()!)
         );
         const modifiedSecurity = element.Security?.toLowerCase();
         const modifiedRoot = element.Root?.toLowerCase();
         const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
         const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", "")),
+          removeCommas(element.Strike?.toString().replace("$", ""))
         );
         const modifiedCallPut = element["Call/Put"]?.toLowerCase();
         const modifiedAveragePrice = Number(
           Number(
-            removeCommas(element["Average Price"]?.replace("$", "")),
-          ).toFixed(2),
+            removeCommas(element["Average Price"]?.replace("$", ""))
+          ).toFixed(2)
         );
         const modifiedPortfolio =
           element.Portfolio?.split("-")[0].toLowerCase();
@@ -2010,7 +1561,7 @@ const addDerivatives = async (
           element["Commission Type"]?.toLowerCase();
         const modifiedCommissionRate = Number(element["Commission Rate"]);
         const modifiedTotalCharge = WEXModifiyTotalCharge(
-          element["Total Charge"]!,
+          element["Total Charge"]!
         );
 
         return {
@@ -2028,7 +1579,7 @@ const addDerivatives = async (
           modifiedPortfolio,
           modifiedCommissionType,
           modifiedCommissionRate,
-          modifiedTotalCharge,
+          modifiedTotalCharge
         };
       });
 
@@ -2041,12 +1592,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -2070,7 +1621,7 @@ const addDerivatives = async (
               modifiedPortfolio: portfolio_i,
               modifiedCommissionType: commissionType_i,
               modifiedExecQty: execQty_i,
-              removed: removed_i,
+              removed: removed_i
             } = WEXSeparatedByDates[date][i];
             const {
               modifiedUser: user_j,
@@ -2087,7 +1638,7 @@ const addDerivatives = async (
               modifiedPortfolio: portfolio_j,
               modifiedCommissionType: commissionType_j,
               modifiedExecQty: execQty_j,
-              removed: removed_j,
+              removed: removed_j
             } = WEXSeparatedByDates[date][j];
             if (
               !removed_i &&
@@ -2118,11 +1669,11 @@ const addDerivatives = async (
         WEXCanceledPairsSeparatedByDates = WEXSeparatedByDates[date].filter(
           (element) => {
             return !element.removed;
-          },
+          }
         );
 
         WEXCanceledPairs = WEXCanceledPairs.concat(
-          WEXCanceledPairsSeparatedByDates,
+          WEXCanceledPairsSeparatedByDates
         );
       }
 
@@ -2139,7 +1690,7 @@ const addDerivatives = async (
           element.modifiedCallPut,
           element.modifiedPortfolio,
           element.modifiedCommissionType,
-          element.modifiedCommissionRate,
+          element.modifiedCommissionRate
         ];
       });
 
@@ -2159,7 +1710,7 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedExecQty: 0,
                   modifiedAveragePrice: 0,
-                  modifiedTotalCharge: 0,
+                  modifiedTotalCharge: 0
                 });
 
               // Sum qty
@@ -2175,19 +1726,19 @@ const addDerivatives = async (
 
               item.modifiedAveragePrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               // Sum total charge
               item.modifiedTotalCharge = Number(
                 (
                   item.modifiedTotalCharge! + object.modifiedTotalCharge!
-                ).toFixed(2),
+                ).toFixed(2)
               );
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         WEXGroupedCalculated = WEXGroupedCalculated.concat(result);
@@ -2209,7 +1760,7 @@ const addDerivatives = async (
           element.modifiedExpiry,
           element.modifiedStrike,
           element.modifiedOption,
-          element.client_id,
+          element.client_id
         ];
       });
 
@@ -2229,7 +1780,7 @@ const addDerivatives = async (
                 array.get(key) ||
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
-                  modifiedPrice: 0,
+                  modifiedPrice: 0
                 });
 
               // Sum qty
@@ -2245,12 +1796,12 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         DRVGroupedEqualToOneCalculated =
@@ -2274,7 +1825,7 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
                   modifiedPrice: 0,
-                  reconciliationCharge: [],
+                  reconciliationCharge: []
                 });
 
               // Get reconciliation charge fields
@@ -2283,8 +1834,8 @@ const addDerivatives = async (
                 {
                   drv_trade_client_account_execution_id:
                     object.drv_trade_client_account_execution_id,
-                  quantity: object.modifiedQuantity,
-                },
+                  quantity: object.modifiedQuantity
+                }
               ];
 
               // Sum qty
@@ -2300,12 +1851,12 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         DRVGroupedBiggerThanOneCalculated =
@@ -2314,16 +1865,16 @@ const addDerivatives = async (
 
       DRVGroupedCalculated = DRVGroupedCalculated.concat(
         DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated,
+        DRVGroupedEqualToOneCalculated
       );
 
       const DRVGroupedSeparatedByDates =
         DRVSeparateDatesObject(DRVGroupedCalculated);
       const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated,
+        DRVGroupedBiggerThanOneCalculated
       );
       const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated,
+        DRVGroupedEqualToOneCalculated
       );
 
       const WEXByDRVGrouped = WEXGroupedCalculated.filter(
@@ -2337,7 +1888,7 @@ const addDerivatives = async (
               modifiedStrike,
               modifiedOption,
               modifiedPrice,
-              modifiedQuantity,
+              modifiedQuantity
             }) =>
               row.modifiedDate === modifiedDate &&
               row.modifiedSide === modifiedSide &&
@@ -2346,8 +1897,8 @@ const addDerivatives = async (
               row.modifiedExecQty === modifiedQuantity &&
               row.modifiedAveragePrice === modifiedPrice &&
               row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry,
-          ),
+              row.modifiedExpiry === modifiedExpiry
+          )
       );
 
       // Get WEX matched rows by group WEX V DRV bigger than one groups
@@ -2355,12 +1906,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -2383,7 +1934,7 @@ const addDerivatives = async (
               modifiedOption,
               modifiedPrice,
               modifiedQuantity,
-              reconciliationCharge,
+              reconciliationCharge
             }) => {
               row.reconciliationCharge = reconciliationCharge;
               return (
@@ -2396,8 +1947,8 @@ const addDerivatives = async (
                 row.modifiedStrike === modifiedStrike &&
                 row.modifiedExpiry === modifiedExpiry
               );
-            },
-          ),
+            }
+          )
         );
 
         WEXBiggerThanOneGroupsMatched =
@@ -2410,7 +1961,7 @@ const addDerivatives = async (
           return {
             reconciliationCharge: object.reconciliationCharge,
             totalCharge: object.modifiedTotalCharge,
-            execQtySum: object.modifiedExecQty,
+            execQtySum: object.modifiedExecQty
           };
         });
 
@@ -2423,9 +1974,9 @@ const addDerivatives = async (
                 drv_trade_floor_broker_id: floorBrokerId,
                 drv_trade_client_account_execution_id:
                   drv_trade_client_account_execution_id,
-                charge: (totalCharge! * quantity!) / execQtySum!,
-              }),
-            ),
+                charge: (totalCharge! * quantity!) / execQtySum!
+              })
+            )
         ).flat();
 
       // Get WEX matched rows by group WEX V DRV equal to one groups
@@ -2433,12 +1984,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -2461,7 +2012,7 @@ const addDerivatives = async (
               modifiedOption,
               modifiedPrice,
               modifiedQuantity,
-              drv_trade_client_account_execution_id,
+              drv_trade_client_account_execution_id
             }) => {
               row.drv_trade_client_account_execution_id =
                 drv_trade_client_account_execution_id;
@@ -2475,8 +2026,8 @@ const addDerivatives = async (
                 row.modifiedStrike === modifiedStrike &&
                 row.modifiedExpiry === modifiedExpiry
               );
-            },
-          ),
+            }
+          )
         );
 
         WEXEqualToOneGroupsMatched =
@@ -2490,9 +2041,9 @@ const addDerivatives = async (
             return {
               drv_trade_floor_broker_id: floorBrokerId,
               drv_trade_client_account_execution_id,
-              charge: modifiedTotalCharge,
+              charge: modifiedTotalCharge
             };
-          },
+          }
         );
 
       const WEXByDRVGroup = WEXCanceledPairs.filter((row) =>
@@ -2508,7 +2059,7 @@ const addDerivatives = async (
             modifiedCallPut,
             modifiedPortfolio,
             modifiedCommissionType,
-            modifiedCommissionRate,
+            modifiedCommissionRate
           }) =>
             row.modifiedDate === modifiedDate &&
             row.modifiedUser === modifiedUser &&
@@ -2520,8 +2071,8 @@ const addDerivatives = async (
             row.modifiedCallPut === modifiedCallPut &&
             row.modifiedPortfolio === modifiedPortfolio &&
             row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate,
-        ),
+            row.modifiedCommissionRate === modifiedCommissionRate
+        )
       );
 
       const WEXVDRVUniqueDates = WEXUniqueDatesArray(WEXByDRVGroup);
@@ -2532,12 +2083,12 @@ const addDerivatives = async (
         // Check if date is valid
         if (!date) {
           ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid",
+            "<addDerivatives>: Failed because date is invalid"
           );
 
           res.status(400).send({
             success: false,
-            message: "date is invalid",
+            message: "date is invalid"
           });
           return;
         }
@@ -2553,7 +2104,7 @@ const addDerivatives = async (
               modifiedOption,
               modifiedPrice,
               modifiedQuantity,
-              drv_trade_client_account_execution_id,
+              drv_trade_client_account_execution_id
             }) => {
               row.drv_trade_client_account_execution_id =
                 drv_trade_client_account_execution_id;
@@ -2567,8 +2118,8 @@ const addDerivatives = async (
                 row.modifiedStrike === modifiedStrike &&
                 row.modifiedExpiry === modifiedExpiry
               );
-            },
-          ),
+            }
+          )
         );
 
         WEXNV1Matched = WEXNV1Matched.concat(WEXMatched);
@@ -2580,9 +2131,9 @@ const addDerivatives = async (
           return {
             drv_trade_floor_broker_id: floorBrokerId,
             drv_trade_client_account_execution_id,
-            charge: modifiedTotalCharge,
+            charge: modifiedTotalCharge
           };
-        },
+        }
       );
 
       const WEXGroupedByDRV = WEXByDRVGroup.filter(
@@ -2596,7 +2147,7 @@ const addDerivatives = async (
               modifiedStrike,
               modifiedOption,
               modifiedPrice,
-              modifiedQuantity,
+              modifiedQuantity
             }) =>
               row.modifiedDate === modifiedDate &&
               row.modifiedSide === modifiedSide &&
@@ -2605,8 +2156,8 @@ const addDerivatives = async (
               row.modifiedExecQty === modifiedQuantity &&
               row.modifiedAveragePrice === modifiedPrice &&
               row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry,
-          ),
+              row.modifiedExpiry === modifiedExpiry
+          )
       );
 
       const WEXGroupedByWEX = WEXByDRVGroup.filter((row) =>
@@ -2622,7 +2173,7 @@ const addDerivatives = async (
             modifiedCallPut,
             modifiedPortfolio,
             modifiedCommissionType,
-            modifiedCommissionRate,
+            modifiedCommissionRate
           }) =>
             row.modifiedDate === modifiedDate &&
             row.modifiedUser === modifiedUser &&
@@ -2634,8 +2185,8 @@ const addDerivatives = async (
             row.modifiedCallPut === modifiedCallPut &&
             row.modifiedPortfolio === modifiedPortfolio &&
             row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate,
-        ),
+            row.modifiedCommissionRate === modifiedCommissionRate
+        )
       );
 
       const WEXunresolved = WEXGroupedByWEX.filter(
@@ -2649,7 +2200,7 @@ const addDerivatives = async (
               modifiedStrike,
               modifiedOption,
               modifiedPrice,
-              modifiedQuantity,
+              modifiedQuantity
             }) =>
               row.modifiedDate === modifiedDate &&
               row.modifiedSide === modifiedSide &&
@@ -2658,15 +2209,15 @@ const addDerivatives = async (
               row.modifiedExecQty === modifiedQuantity &&
               row.modifiedAveragePrice === modifiedPrice &&
               row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry,
-          ),
+              row.modifiedExpiry === modifiedExpiry
+          )
       );
 
       // Concating matched reconciliation_charge
       reconciliation_charge = reconciliation_charge.concat(
         matchedNVN,
         matchedNV1,
-        matched1V1,
+        matched1V1
       );
 
       // // POST request to makor-X API
@@ -2693,13 +2244,13 @@ const addDerivatives = async (
       // Total charge
       const totalCharge = WEXModified.reduce(
         (n, { modifiedTotalCharge }) => n + modifiedTotalCharge,
-        0,
+        0
       );
 
       // Unmatched unresolved charge
       const unmatchedUnresolvedCharge = WEXunresolved.reduce(
         (n, { modifiedTotalCharge }) => n + modifiedTotalCharge!,
-        0,
+        0
       );
 
       // Matched Sum Charge
@@ -2741,35 +2292,35 @@ const addDerivatives = async (
       converter.json2csv(WEXunresolved, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
+            "<addDerivatives>: Failed to convert file to csv"
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv,
+          csv
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
         );
       });
 
@@ -2789,23 +2340,23 @@ const addDerivatives = async (
         unmatchedGroupCount: WEXByDRVGrouped.length,
         unmatchedSumCharge: unmatchedSumCharge,
         unmatchedSumPercentage: unmatchedSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
+        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
       res.status(200).send({
         success: true,
-        message: "Successfully added derivative",
+        message: "Successfully added derivative"
       });
       return;
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -2813,10 +2364,10 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse,
+  res: IGetDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`,
+    `<getDerivatives>: Start processing request`
   );
 
   try {
@@ -2826,18 +2377,18 @@ const getDerivatives = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivatives>: Failed to get derivatives",
+        "<getDerivatives>: Failed to get derivatives"
       );
 
       res.status(400).send({
         success: false,
-        message: "derivatives are invalid",
+        message: "derivatives are invalid"
       });
       return;
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`,
+      `<getDerivatives>: Successfully got the derivatives`
     );
 
     res.status(200).send({
@@ -2852,18 +2403,18 @@ const getDerivatives = async (
         matchedCount: derivative.matchedCount,
         matchedSumPercentage: derivative.matchedSumPercentage,
         unmatchedCount: derivative.unmatchedCount,
-        unresolved: derivative.unresolved,
-      })),
+        unresolved: derivative.unresolved
+      }))
     });
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -2871,33 +2422,33 @@ const getDerivatives = async (
 
 const getDerivative = async (
   req: IGetDerivativeRequest,
-  res: IGetDerivativeResponse,
+  res: IGetDerivativeResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivative>: Start processing request`,
+    `<getDerivative>: Start processing request`
   );
 
   try {
     // Get derivative
     const derivative = await Derivative.findOne({
-      order: [["id", "DESC"]],
+      order: [["id", "DESC"]]
     });
 
     // Check if derivatives are valid
     if (!derivative) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get derivatives",
+        "<getDerivative>: Failed to get derivatives"
       );
 
       res.status(400).send({
         success: false,
-        message: "derivatives are invalid",
+        message: "derivatives are invalid"
       });
       return;
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivative>: Successfully got derivative`,
+      `<getDerivative>: Successfully got derivative`
     );
 
     res.status(200).send({
@@ -2915,18 +2466,18 @@ const getDerivative = async (
         unmatchedGroupCount: derivative.unmatchedGroupCount,
         unmatchedSumCharge: derivative.unmatchedSumCharge,
         unmatchedSumPercentage: derivative.unmatchedSumPercentage,
-        unresolved: derivative.unresolved,
-      },
+        unresolved: derivative.unresolved
+      }
     });
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -2934,7 +2485,7 @@ const getDerivative = async (
 
 const downloadFiles = async (req: IDownloadFilesRequest, res: any) => {
   ServerGlobal.getInstance().logger.info(
-    `<downloadFiles>: Start processing request`,
+    `<downloadFiles>: Start processing request`
   );
 
   try {
@@ -2944,12 +2495,12 @@ const downloadFiles = async (req: IDownloadFilesRequest, res: any) => {
     // Check file path
     if (!filePath) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get file",
+        "<getDerivative>: Failed to get file"
       );
 
       res.status(400).send({
         success: false,
-        message: "file is invalid",
+        message: "file is invalid"
       });
       return;
     }
@@ -2957,12 +2508,12 @@ const downloadFiles = async (req: IDownloadFilesRequest, res: any) => {
     res.download(filePath, fileName);
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to download files because of server error: ${e}`,
+      `<getDerivatives>: Failed to download files because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
