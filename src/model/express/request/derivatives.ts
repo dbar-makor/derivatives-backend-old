@@ -16,7 +16,7 @@ interface IGetDerivativesRequest extends express.Request {}
 
 interface IGetDerivativeRequest extends express.Request {}
 
-interface IDownloadFilesRequest extends express.Request {
+interface IDownloadFileRequest extends express.Request {
   readonly params: Readonly<{ fileId: string }>;
 }
 
@@ -24,5 +24,5 @@ export {
   IAddDerivativesRequest,
   IGetDerivativesRequest,
   IGetDerivativeRequest,
-  IDownloadFilesRequest,
+  IDownloadFileRequest
 };

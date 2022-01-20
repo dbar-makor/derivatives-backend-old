@@ -26,7 +26,7 @@ const auth = async (
 
   let data: IVerify;
   let userDocument: Readonly<Omit<User, "id">> | null;
-  let user_id: string;
+  let userId: string;
 
   try {
     const token = (req.header("Authorization") as string).replace(
@@ -44,12 +44,12 @@ because could not find user with id ${data.id}`);
 
       res.status(401).send({
         success: false,
-        message: "Unable to authenticate",
+        message: "Unable to authenticate"
       });
       return;
     }
 
-    user_id = data.id;
+    userId = data.id;
   } catch (e: any) {
     ServerGlobal.getInstance().logger.error(
       `[auth middleware]: Failed to authenticate because of error: ${e}`
@@ -58,23 +58,23 @@ because could not find user with id ${data.id}`);
     if ((e.message = "jwt malformed")) {
       res.status(401).send({
         success: false,
-        message: "Unable to authenticate",
+        message: "Unable to authenticate"
       });
       return;
     }
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
 
   ServerGlobal.getInstance().logger.info(
-    `[auth middleware]: Successfully authenticated user with id ${user_id}`
+    `[auth middleware]: Successfully authenticated user with id ${userId}`
   );
 
-  req.user_id = user_id;
+  req.userId = userId;
 
   next();
 };

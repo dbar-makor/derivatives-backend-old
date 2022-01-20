@@ -9,7 +9,7 @@ import Token from "../model/token";
 import { ILoginRequest, IRegisterRequest } from "../model/express/request/auth";
 import {
   ILoginResponse,
-  IRegisterResponse,
+  IRegisterResponse
 } from "../model/express/response/auth";
 
 const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
@@ -20,17 +20,17 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
     // Saving the user document in DB
     const newUser = await User.create({
       username: req.body.username,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
     // Creating the user document
     const newToken = jwt.sign({ id: newUser.id }, process.env.JWT_PWD, {
-      expiresIn: "7 days",
+      expiresIn: "7 days"
     });
 
     await Token.create({
       token: newToken,
-      user_id: newUser.id,
+      userId: newUser.id
     });
 
     ServerGlobal.getInstance().logger.info(
@@ -42,8 +42,8 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
       message: "Successfully created a new user",
       data: {
         username: req.body.username,
-        token: newToken,
-      },
+        token: newToken
+      }
     });
     return;
   } catch (e) {
@@ -53,7 +53,7 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -67,7 +67,7 @@ const login = async (req: ILoginRequest, res: ILoginResponse) => {
   try {
     // Find matching user by username
     const userByUsername = await User.findOne({
-      where: { username: req.body.username },
+      where: { username: req.body.username }
     });
 
     // There is no such user with the provided username
@@ -78,7 +78,7 @@ const login = async (req: ILoginRequest, res: ILoginResponse) => {
 
       res.status(400).send({
         success: false,
-        message: "Authentication failed",
+        message: "Authentication failed"
       });
       return;
     }
@@ -97,19 +97,19 @@ with username ${req.body.username}`
 
       res.status(400).send({
         success: false,
-        message: "Authentication failed",
+        message: "Authentication failed"
       });
       return;
     }
 
     // Finding user token
     const tokenByUserId = await Token.findOne({
-      where: { user_id: userByUsername.id },
+      where: { userId: userByUsername.id }
     });
 
     // Create new token to insert
     let newToken = jwt.sign({ id: userByUsername.id }, process.env.JWT_PWD, {
-      expiresIn: "7 days",
+      expiresIn: "7 days"
     });
 
     newToken = tokenByUserId?.token!;
@@ -122,7 +122,7 @@ with username ${req.body.username}`
 
       res.status(400).send({
         success: false,
-        message: "Token error",
+        message: "Token error"
       });
       return;
     }
@@ -140,8 +140,8 @@ with username: ${req.body.username} to user id: ${userByUsername.id}`
       message: "Successfully authenticated",
       data: {
         username: userByUsername.username,
-        token: newToken,
-      },
+        token: newToken
+      }
     });
     return;
   } catch (e) {
@@ -151,7 +151,7 @@ with username: ${req.body.username} to user id: ${userByUsername.id}`
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }

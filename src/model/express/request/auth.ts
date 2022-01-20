@@ -1,11 +1,11 @@
 import express from "express";
 
 interface IAuthMiddlewareRequest extends express.Request {
-  user_id?: string;
+  userId?: string;
 }
 
 interface IAuthenticatedRequest extends express.Request {
-  readonly user_id?: string;
+  readonly userId?: string;
 }
 
 interface ILoginRequest extends express.Request {
@@ -26,5 +26,5 @@ export {
   IAuthMiddlewareRequest,
   IAuthenticatedRequest,
   ILoginRequest,
-  IRegisterRequest,
+  IRegisterRequest
 };

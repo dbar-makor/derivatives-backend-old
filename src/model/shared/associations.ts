@@ -2,7 +2,7 @@ import User from "../user";
 import Token from "../token";
 
 Token.belongsTo(User, {
-  foreignKey: "user_id",
+  foreignKey: "userId",
   constraints: true,
-  onDelete: "CASCADE",
+  onDelete: "CASCADE"
 });

@@ -5,8 +5,8 @@ import { auth } from "../middleware/auth";
 import {
   addDerivatives,
   getDerivatives,
-  downloadFiles,
-  getDerivative,
+  downloadFile,
+  getDerivative
 } from "../controller/derivatives";
 
 const router = express.Router();
@@ -17,6 +17,6 @@ router.get("/", auth, getDerivatives);
 
 router.get("/single", auth, getDerivative);
 
-router.get("/download/:fileId", auth, downloadFiles);
+router.get("/download/:fileId", auth, downloadFile);
 
 export default router;

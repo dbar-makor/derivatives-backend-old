@@ -5,7 +5,7 @@ import IDBAttribute from "./shared/db-table";
 
 interface ITokenAttributes extends IDBAttribute {
   readonly token: string;
-  readonly user_id: number;
+  readonly userId: number;
 }
 
 class Token
@@ -14,7 +14,7 @@ class Token
 {
   public id!: number;
   public token!: string;
-  public user_id!: number;
+  public userId!: number;
   public readonly createdAt!: Date;
 }
 
@@ -25,18 +25,18 @@ Token.init(
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     token: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
-    user_id: {
+    userId: {
       type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: false
     },
-    createdAt: Sequelize.DATE,
+    createdAt: Sequelize.DATE
   },
   {
     tableName: "tokens",
@@ -44,9 +44,9 @@ Token.init(
     updatedAt: false,
     indexes: [
       {
-        fields: ["user_id"],
-      },
-    ],
+        fields: ["userId"]
+      }
+    ]
   }
 );
 

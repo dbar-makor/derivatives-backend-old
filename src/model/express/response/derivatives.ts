@@ -39,8 +39,11 @@ type IGetDerivativeResponse = express.Response<
   }
 >;
 
+type IDownloadFileResponse = express.Response;
+
 export {
   IAddDerivativesResponse,
   IGetDerivativesResponse,
   IGetDerivativeResponse,
+  IDownloadFileResponse
 };

@@ -16,9 +16,9 @@ export const DASHDateFormat = (date: string) => {
     return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);
   }
 
-  const day = date.split("/")[0];
+  const day = date.split("/")[1];
   const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.split("/")[1];
+  const month = date.split("/")[0];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.split("/")[2];
   return (date = `${removeLeadingZeroDay}/${removeLeadingZeroMonth}/${year}`);
@@ -34,7 +34,7 @@ export const DASHModifiyDollarSign = (number: string) => {
 };
 
 // Modify total exchange fees
-export const DASHModifiyTotalExchangeFees = (number: string) => {
+export const DASHModifiyTotalCharge = (number: string) => {
   if (isNaN(Number(number))) {
     return 0;
   }
@@ -71,7 +71,7 @@ export const DASHSeparateDatesObject = (array: IDASH[]) => {
 // Grouping DASH array
 export const DASHGroupBy = (
   array: IDASH[],
-  f: (element: IDASH) => (string | number | undefined)[],
+  f: (element: IDASH) => (string | number | undefined)[]
 ) => {
   if (!array) {
     return array;

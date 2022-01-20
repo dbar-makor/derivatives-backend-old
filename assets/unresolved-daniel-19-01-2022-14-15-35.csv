@@ -1,0 +1,19 @@
+﻿WEX Connect Rate,Date,User,Route,Side,Exec Qty,Security,Root,Expiry,Strike,Call/Put,Average Price,Portfolio,Commission Type,Commission Rate,Exch\. Fee Rate,Clearing Fee,Total Charge,modifiedDate,modifiedUser,modifiedSide,modifiedExecQty,modifiedSecurity,modifiedRoot,modifiedExpiry,modifiedStrike,modifiedCallPut,modifiedAveragePrice,modifiedPortfolio,modifiedCommissionType,modifiedCommissionRate,modifiedTotalCharge
+0,1/22/2021,EMureau,ISE-OPT,SLO,50,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.5000,1/22/2021,emureau,s,50,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,44,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.2000,1/22/2021,emureau,s,44,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.2
+0,1/22/2021,EMureau,ISE-OPT,SLO,6,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.3000,1/22/2021,emureau,s,6,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.3
+0,1/22/2021,EMureau,ISE-OPT,SLO,50,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.5000,1/22/2021,emureau,s,50,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,50,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.5000,1/22/2021,emureau,s,50,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,8,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.4000,1/22/2021,emureau,s,8,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.4
+0,1/22/2021,EMureau,ISE-OPT,SLO,31,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$1.5500,1/22/2021,emureau,s,31,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,1.55
+0,1/22/2021,EMureau,ISE-OPT,SLO,1,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.0500,1/22/2021,emureau,s,1,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.05
+0,1/22/2021,EMureau,ISE-OPT,SLO,4,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.2000,1/22/2021,emureau,s,4,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.2
+0,1/22/2021,EMureau,ISE-OPT,SLO,1,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.0500,1/22/2021,emureau,s,1,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.05
+0,1/22/2021,EMureau,ISE-OPT,SLO,5,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.2500,1/22/2021,emureau,s,5,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.25
+0,1/22/2021,EMureau,ISE-OPT,SLO,50,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.5000,1/22/2021,emureau,s,50,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,50,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$2.5000,1/22/2021,emureau,s,50,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,2.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,10,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.5000,1/22/2021,emureau,s,10,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.5
+0,1/22/2021,EMureau,ISE-OPT,SLO,2,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.1000,1/22/2021,emureau,s,2,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.1
+0,1/22/2021,EMureau,ISE-OPT,SLO,1,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.0500,1/22/2021,emureau,s,1,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.05
+0,1/22/2021,EMureau,ISE-OPT,SLO,3,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$0.1500,1/22/2021,emureau,s,3,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,0.15
+0,1/22/2021,EMureau,ISE-OPT,SLO,34,PFE,PFE,20/01/2023,$35.00,P,$5.65,BNP,Per Unit,0.05,0,0,$1.7000,1/22/2021,emureau,s,34,pfe,pfe,1/20/2023,35,p,5.65,bnp,per unit,0.05,1.7

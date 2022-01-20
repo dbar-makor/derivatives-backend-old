@@ -32,6 +32,7 @@ export interface IDRV {
     drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
+  groupsSeparated?: IDRV[];
 }
 
 export interface IDASH {
@@ -46,6 +47,7 @@ export interface IDASH {
   readonly PREMIUM?: string;
   readonly "FILLED QTY"?: string;
   readonly "TOTAL EXCHANGE FEES"?: string;
+  readonly BPCR$?: string;
   modifiedUser?: string;
   modifiedExchange?: string;
   modifiedSymbol?: string;
@@ -57,41 +59,15 @@ export interface IDASH {
   modifiedPremium?: number;
   modifiedFilledQty?: number;
   modifiedTotalExchangeFees?: number;
+  modifiedBPCR$?: number;
+  totalCharge?: number;
   drv_trade_client_account_execution_id?: string;
   quantitySum?: number;
   reconciliationCharge?: {
     drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
-  groupsSeparated?: {
-    readonly USER?: string;
-    readonly EXCHANGE?: string;
-    readonly SYMBOL?: string;
-    readonly EXPIRATION?: string;
-    readonly DATE?: string;
-    readonly "B/S"?: string;
-    readonly STRIKE?: string;
-    readonly "C/P"?: string;
-    readonly PREMIUM?: string;
-    readonly "FILLED QTY"?: string;
-    readonly "TOTAL EXCHANGE FEES"?: string;
-    modifiedUser?: string;
-    modifiedExchange?: string;
-    modifiedSymbol?: string;
-    modifiedExpiration?: string;
-    modifiedDate?: string;
-    modifiedBS?: string;
-    modifiedStrike?: number;
-    modifiedCP?: string;
-    modifiedPremium?: number;
-    modifiedFilledQty?: number;
-    modifiedTotalExchangeFees?: number;
-    drv_trade_client_account_execution_id?: string;
-    reconciliationCharge?: {
-      drv_trade_client_account_execution_id?: string;
-      quantity?: number;
-    }[];
-  }[];
+  groupsSeparated?: IDASH[];
 }
 
 export interface IBAML {
@@ -151,64 +127,7 @@ export interface IBAML {
     drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
-  groupsSeparated?: {
-    readonly "Trade Date"?: string;
-    readonly Side?: string;
-    readonly Exch?: string;
-    readonly "B/S"?: string;
-    readonly "P/C"?: string;
-    readonly Qty?: string;
-    readonly Class?: string;
-    readonly Sym?: string;
-    readonly Mo?: string;
-    readonly Yr?: string;
-    readonly Strike?: string;
-    readonly Price?: string;
-    readonly "O/C"?: string;
-    readonly CFM?: string;
-    readonly "Optional data"?: string;
-    readonly Client_Order_ID?: string;
-    readonly "Ex Brok"?: string;
-    readonly "MM ID"?: string;
-    readonly CMTA?: string;
-    readonly "Ex Firm"?: string;
-    readonly "Client ID"?: string;
-    readonly "Billing ID"?: string;
-    readonly Account?: string;
-    readonly Trader?: string;
-    readonly CompID?: string;
-    readonly "Cust ID"?: string;
-    readonly "Product Code"?: string;
-    readonly Penny?: string;
-    readonly Parent_Type?: string;
-    readonly ise_mt?: string;
-    readonly phlx_mt?: string;
-    readonly Liquidity?: string;
-    readonly "Exec Rate"?: string;
-    readonly "Exec Charge"?: string;
-    readonly "Exch Trans Fees"?: string;
-    readonly "OCC Clrg Fees"?: string;
-    readonly "Total Charges"?: string;
-    readonly transaction_ID?: string;
-    modifiedTradeDate?: string;
-    modifiedExch?: string;
-    modifiedBS?: string;
-    modifiedPC?: string;
-    modifiedClass?: string;
-    modifiedSym?: string;
-    modifiedStrike?: number;
-    modifiedPrice?: number;
-    modifiedQty?: number;
-    modifiedOC?: string;
-    modifiedCFM?: string;
-    modifiedExBrok?: string;
-    modifiedTotalCharges?: number;
-    drv_trade_client_account_execution_id?: string;
-    reconciliationCharge?: {
-      drv_trade_client_account_execution_id?: string;
-      quantity?: number;
-    }[];
-  }[];
+  groupsSeparated?: IBAML[];
 }
 
 export interface IWEX {
@@ -251,6 +170,7 @@ export interface IWEX {
     drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
+  groupsSeparated?: IWEX[];
 }
 
 export interface IDRVObject {
