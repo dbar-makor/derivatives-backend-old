@@ -210,10 +210,18 @@ const addDerivatives = async (
     // );
 
     const DASHActions = async () => {
+      let DASHGroupedMatched: IDASH[] = [];
+      let DASHGroupedUnmatched: IDASH[] = [];
+
+      let DRVGroupedMatched: IDRV[] = [];
+
       let DRVGroupedCalculated: IDRV[] = [];
+      let DRVUniqueCalculated: IDRV[] = [];
+
+      let DASHGroupedCalculated: IDASH[] = [];
+      let DASHUniqueCalculated: IDASH[] = [];
 
       let DASHGroupedByDRV: IDASH[] = [];
-      let DASHGroupedCalculated: IDASH[] = [];
       let DASHunresolved: IDASH[] = [];
       let DASH1V1Matched: IDASH[] = [];
 
@@ -304,6 +312,7 @@ const addDerivatives = async (
       for (const key of DASHGroupedKeys) {
         let weightAverageQty = 0;
         let totalQty = 0;
+
         const result: IDASH[] = [
           ...DASHGrouped[key]
             .reduce((array, object) => {
@@ -346,7 +355,11 @@ const addDerivatives = async (
             .values()
         ];
 
-        DASHGroupedCalculated = DASHGroupedCalculated.concat(result);
+        if (DASHGrouped[key].length === 1) {
+          DASHUniqueCalculated = DASHUniqueCalculated.concat(result);
+        } else {
+          DASHGroupedCalculated = DASHGroupedCalculated.concat(result);
+        }
       }
 
       // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
@@ -382,8 +395,12 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
                   modifiedPrice: 0,
-                  reconciliationCharge: []
+                  reconciliationCharge: [],
+                  groupsSeparated: []
                 });
+
+              // Get reconciliation charge fields
+              item.groupsSeparated = [...item.groupsSeparated!, object];
 
               // Get reconciliation charge fields
               item.reconciliationCharge = [
@@ -416,47 +433,43 @@ const addDerivatives = async (
             .values()
         ];
 
-        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
+        if (DRVGrouped[key].length === 1) {
+          DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
+        } else {
+          DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
+        }
       }
 
-      let DASHByDRVGroupedMatched: IDASH[] = [];
-      let DASHByDRVGrouped: IDASH[] = [];
-
-      const map = new Map(
-        DRVGroupedCalculated.map(
-          ({
-            modifiedDate,
-            modifiedSide,
-            modifiedSymbol,
-            modifiedStrike,
-            modifiedExpiry,
-            modifiedOption,
-            modifiedPrice,
-            modifiedQuantity,
-            reconciliationCharge
-          }) => [
-            modifiedDate +
-              "|" +
-              modifiedSide +
-              "|" +
-              modifiedSymbol +
-              "|" +
-              modifiedStrike +
-              "|" +
-              modifiedExpiry +
-              "|" +
-              modifiedOption +
-              "|" +
-              modifiedPrice +
-              "|" +
-              modifiedQuantity,
-            reconciliationCharge
-          ]
-        )
+      const map = DRVGroupedCalculated.map(
+        ({
+          modifiedDate,
+          modifiedSide,
+          modifiedSymbol,
+          modifiedStrike,
+          modifiedExpiry,
+          modifiedOption,
+          modifiedPrice,
+          modifiedQuantity
+        }) =>
+          modifiedDate +
+          "|" +
+          modifiedSide +
+          "|" +
+          modifiedSymbol +
+          "|" +
+          modifiedStrike +
+          "|" +
+          modifiedExpiry +
+          "|" +
+          modifiedOption +
+          "|" +
+          modifiedPrice +
+          "|" +
+          modifiedQuantity
       );
 
       for (const object of DASHGroupedCalculated) {
-        const match = map.get(
+        const match = map.indexOf(
           object.modifiedDate +
             "|" +
             object.modifiedBS +
@@ -475,20 +488,17 @@ const addDerivatives = async (
         );
 
         if (match) {
-          object.reconciliationCharge = match;
-          DASHByDRVGroupedMatched.push(object);
+          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
+          DASHGroupedMatched.push(object);
         } else {
-          DASHByDRVGrouped.push(object);
+          DASHGroupedUnmatched.push(object);
         }
       }
-
-      const result2 = DASHByDRVGroupedMatched.map(
-        ({ groupsSeparated }) => groupsSeparated!
-      ).flat();
+      const DRVGroupedUnmatched = DRVGroupedCalculated;
 
       // Return reconciliation charge, total charge and exec qty
-      const DASHReconciliationChargesNVNAndNV1: INVNReconciliationCharge[] =
-        DASHByDRVGroupedMatched.map((object) => {
+      const DASHReconciliationCharge: INVNReconciliationCharge[] =
+        DASHGroupedMatched.map((object) => {
           return {
             drvId: object.drv_trade_client_account_execution_id,
             reconciliationCharge: object.reconciliationCharge,
@@ -499,7 +509,7 @@ const addDerivatives = async (
 
       // Get matched N V N rows object
       const matchedNVNAndNV1: IReconciliationCharge[] =
-        DASHReconciliationChargesNVNAndNV1.map(
+        DASHReconciliationCharge.map(
           ({ reconciliationCharge, totalCharge, execQtySum }) => {
             const quantity = reconciliationCharge!.map((e) => e.quantity);
 
@@ -527,7 +537,7 @@ const addDerivatives = async (
 
       // Get DASH unmatched rows by group DASH
       const DASHByDRVGroup = DASHModified.filter((row) =>
-        DASHByDRVGrouped.find(
+        DASHGroupedUnmatched.find(
           ({
             modifiedDate,
             modifiedBS,
@@ -833,7 +843,7 @@ const addDerivatives = async (
         matchSumCharge: matchedSumCharge,
         matchedSumPercentage: matchedSumPercentage,
         unmatchedCount: DASHunresolved.length,
-        unmatchedGroupCount: DASHByDRVGrouped.length,
+        unmatchedGroupCount: DASHGroupedUnmatched.length,
         unmatchedSumCharge: unmatchedSumCharge,
         unmatchedSumPercentage: unmatchedSumPercentage,
         unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
