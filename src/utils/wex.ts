@@ -40,9 +40,9 @@ export const WEXDateFormat = (date: string) => {
     return date;
   }
 
-  const day = date.toString().split("/")[1];
+  const day = date.toString().split("/")[0];
   const removeLeadingZeroDay = parseInt(day, 10);
-  const month = date.toString().split("/")[0];
+  const month = date.toString().split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
   const year = date.toString().split("/")[2];
   return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);

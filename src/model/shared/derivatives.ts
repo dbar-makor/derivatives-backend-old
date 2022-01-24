@@ -63,10 +63,13 @@ export interface IDASH {
   totalCharge?: number;
   drv_trade_client_account_execution_id?: string;
   quantitySum?: number;
-  reconciliationCharge?: {
-    drv_trade_client_account_execution_id?: string;
-    quantity?: number;
-  }[];
+  reconciliationCharge?: (
+    | {
+        drv_trade_client_account_execution_id?: string | undefined;
+        quantity?: number | undefined;
+      }
+    | undefined
+  )[];
   groupsSeparated?: IDASH[];
 }
 
@@ -123,10 +126,13 @@ export interface IBAML {
   modifiedExBrok?: string;
   modifiedTotalCharges?: number;
   drv_trade_client_account_execution_id?: string;
-  reconciliationCharge?: {
-    drv_trade_client_account_execution_id?: string;
-    quantity?: number;
-  }[];
+  reconciliationCharge?: (
+    | {
+        drv_trade_client_account_execution_id?: string | undefined;
+        quantity?: number | undefined;
+      }
+    | undefined
+  )[];
   groupsSeparated?: IBAML[];
 }
 
@@ -166,10 +172,13 @@ export interface IWEX {
   modifiedQuantity?: number;
   drv_trade_client_account_execution_id?: string;
   removed?: boolean;
-  reconciliationCharge?: {
-    drv_trade_client_account_execution_id?: string;
-    quantity?: number;
-  }[];
+  reconciliationCharge?: (
+    | {
+        drv_trade_client_account_execution_id?: string | undefined;
+        quantity?: number | undefined;
+      }
+    | undefined
+  )[];
   groupsSeparated?: IWEX[];
 }
 
@@ -190,11 +199,13 @@ export interface IWEXObject {
 }
 
 export interface INVNReconciliationCharge {
-  drv_trade_client_account_execution_id?: string;
-  reconciliationCharge?: {
-    drv_trade_client_account_execution_id?: string;
-    quantity?: number;
-  }[];
+  reconciliationCharge?: (
+    | {
+        drv_trade_client_account_execution_id?: string | undefined;
+        quantity?: number | undefined;
+      }
+    | undefined
+  )[];
   totalCharge?: number;
   execQtySum?: number;
 }

@@ -15,9 +15,9 @@ export const DRVDateFormat = (date: string) => {
     return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);
   }
 
-  const month = date.split("/")[0];
+  const month = date.split("/")[1];
   const removeLeadingZeroMonth = parseInt(month, 10);
-  const day = date.split("/")[1];
+  const day = date.split("/")[0];
   const removeLeadingZeroDay = parseInt(day, 10);
   const year = date.split("/")[2];
   return (date = `${removeLeadingZeroMonth}/${removeLeadingZeroDay}/${year}`);

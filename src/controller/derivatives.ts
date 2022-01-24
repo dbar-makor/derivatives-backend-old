@@ -18,7 +18,7 @@ import {
   INVNReconciliationCharge
 } from "../model/shared/derivatives";
 
-import { removeCommas } from "../utils/derivatives";
+import { removeCommas, separateGroups } from "../utils/derivatives";
 import {
   DASHDateFormat,
   DASHGroupBy,
@@ -187,11 +187,11 @@ const addDerivatives = async (
       })
       .on("end", () => {
         if (fileName === "Dash") {
-          DASHActions();
+          // DASHActions();
         } else if (fileName === "WEX") {
           WEXActions();
         } else {
-          BAMLActions();
+          // BAMLActions();
         }
       });
 
@@ -209,6 +209,7 @@ const addDerivatives = async (
     //   }),
     // );
 
+    /** 
     const DASHActions = async () => {
       let DASHGroupedMatched: IDASH[] = [];
       let DASHGroupedUnmatched: IDASH[] = [];
@@ -440,7 +441,7 @@ const addDerivatives = async (
         }
       }
 
-      const map = DRVGroupedCalculated.map(
+      const DRVGroupedCalculatedKey = DRVGroupedCalculated.map(
         ({
           modifiedDate,
           modifiedSide,
@@ -469,32 +470,45 @@ const addDerivatives = async (
       );
 
       for (const object of DASHGroupedCalculated) {
-        const match = map.indexOf(
+        const string =
           object.modifiedDate +
-            "|" +
-            object.modifiedBS +
-            "|" +
-            object.modifiedSymbol +
-            "|" +
-            object.modifiedStrike +
-            "|" +
-            object.modifiedExpiration +
-            "|" +
-            object.modifiedCP +
-            "|" +
-            object.modifiedPremium +
-            "|" +
-            object.modifiedFilledQty
-        );
+          "|" +
+          object.modifiedBS +
+          "|" +
+          object.modifiedSymbol +
+          "|" +
+          object.modifiedStrike +
+          "|" +
+          object.modifiedExpiration +
+          "|" +
+          object.modifiedCP +
+          "|" +
+          object.modifiedPremium +
+          "|" +
+          object.modifiedFilledQty;
 
-        if (match) {
-          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
+        const match = DRVGroupedCalculatedKey.indexOf(string);
+
+        if (match >= 0) {
+          const reconciliationCharge = DRVGroupedCalculated.splice(match, 1)
+            .map((e) => e.reconciliationCharge)
+            .flat();
+          log("hey: " + JSON.stringify(reconciliationCharge));
+          // object.reconciliationCharge = reconciliationCharge;
           DASHGroupedMatched.push(object);
+          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
         } else {
           DASHGroupedUnmatched.push(object);
         }
       }
+
       const DRVGroupedUnmatched = DRVGroupedCalculated;
+
+      log("drv match: " + DRVGroupedMatched.length);
+      log("dash match: " + DASHGroupedMatched.length);
+
+      log("drv unmatch: " + DRVGroupedUnmatched.length);
+      log("dash unmatch: " + DASHGroupedUnmatched.length);
 
       // Return reconciliation charge, total charge and exec qty
       const DASHReconciliationCharge: INVNReconciliationCharge[] =
@@ -1516,11 +1530,21 @@ const addDerivatives = async (
       return;
     };
 
-    const WEXActions = async () => {
-      let DRVGroupedCalculated: IDRV[] = [];
+    */
 
-      let WEXGroupedByDRV: IWEX[] = [];
+    const WEXActions = async () => {
+      let WEXGroupedMatched: IWEX[] = [];
+      let WEXGroupedUnmatched: IWEX[] = [];
+
+      let DRVGroupedMatched: IDRV[] = [];
+      let DRVGroupedUnmatched: IDRV[] = [];
+
+      let DRVGroupedCalculated: IDRV[] = [];
+      let DRVUniqueCalculated: IDRV[] = [];
+
       let WEXGroupedCalculated: IWEX[] = [];
+      let WEXUniqueCalculated: IWEX[] = [];
+
       let WEXunresolved: IWEX[] = [];
       let WEX1V1Matched: IWEX[] = [];
 
@@ -1620,8 +1644,6 @@ const addDerivatives = async (
         return;
       }
 
-      const DRVSeparatedByDates = DRVSeparateDatesObject(DRVModified);
-
       // Grouping WEX by Date, User, Side, Security, Root, Expiry, Strike, CallPut, Portfolio, CommissionType, CommissionRate
       const WEXGrouped = WEXGroupBy(WEXModified, (element: IWEX) => {
         return [
@@ -1690,7 +1712,11 @@ const addDerivatives = async (
             .values()
         ];
 
-        WEXGroupedCalculated = WEXGroupedCalculated.concat(result);
+        if (WEXGrouped[key].length === 1) {
+          WEXUniqueCalculated = WEXUniqueCalculated.concat(result);
+        } else {
+          WEXGroupedCalculated = WEXGroupedCalculated.concat(result);
+        }
       }
 
       // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
@@ -1764,333 +1790,251 @@ const addDerivatives = async (
             .values()
         ];
 
-        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
-      }
-
-      let WEXByDRVGroupedMatched: IWEX[] = [];
-      let WEXByDRVGrouped: IWEX[] = [];
-
-      const map = new Map<string, IReconciliationCharge[] | undefined>(
-        DRVGroupedCalculated.map(
-          ({
-            modifiedDate,
-            modifiedSide,
-            modifiedSymbol,
-            modifiedExpiry,
-            modifiedStrike,
-            modifiedOption,
-            modifiedPrice,
-            modifiedQuantity,
-            reconciliationCharge
-          }) => [
-            modifiedDate +
-              "|" +
-              modifiedSide +
-              "|" +
-              modifiedSymbol +
-              "|" +
-              modifiedExpiry +
-              "|" +
-              modifiedStrike +
-              "|" +
-              modifiedOption +
-              "|" +
-              modifiedPrice +
-              "|" +
-              modifiedQuantity,
-            reconciliationCharge
-          ]
-        )
-      );
-
-      for (const object of WEXGroupedCalculated) {
-        const match = map.get(
-          object.modifiedDate +
-            "|" +
-            object.modifiedSide +
-            "|" +
-            object.modifiedRoot +
-            "|" +
-            object.modifiedExpiry +
-            "|" +
-            object.modifiedStrike +
-            "|" +
-            object.modifiedCallPut +
-            "|" +
-            object.modifiedAveragePrice +
-            "|" +
-            object.modifiedExecQty
-        );
-
-        if (match) {
-          object.reconciliationCharge = match;
-          WEXByDRVGroupedMatched.push(object);
+        if (DRVGrouped[key].length === 1) {
+          DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
         } else {
-          WEXByDRVGrouped.push(object);
+          DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
         }
       }
 
-      const result2 = WEXByDRVGroupedMatched.map(
-        ({ groupsSeparated }) => groupsSeparated!
-      ).flat();
+      log(1);
+      // ----- N VS N ----- //
+
+      // Return DRV grouped calculated keys
+      const DRVGroupedCalculatedKeys = DRVGroupedCalculated.map(
+        ({
+          modifiedDate,
+          modifiedSide,
+          modifiedSymbol,
+          modifiedStrike,
+          modifiedExpiry,
+          modifiedOption,
+          modifiedPrice,
+          modifiedQuantity
+        }) =>
+          modifiedDate +
+          "|" +
+          modifiedSide +
+          "|" +
+          modifiedSymbol +
+          "|" +
+          modifiedStrike +
+          "|" +
+          modifiedExpiry +
+          "|" +
+          modifiedOption +
+          "|" +
+          modifiedPrice +
+          "|" +
+          modifiedQuantity
+      );
+
+      // Loop through WEX grouped calculated
+      for (const object of WEXGroupedCalculated) {
+        const string =
+          object.modifiedDate +
+          "|" +
+          object.modifiedSide +
+          "|" +
+          object.modifiedRoot +
+          "|" +
+          object.modifiedStrike +
+          "|" +
+          object.modifiedExpiry +
+          "|" +
+          object.modifiedCallPut +
+          "|" +
+          object.modifiedAveragePrice +
+          "|" +
+          object.modifiedExecQty;
+
+        const match = DRVGroupedCalculatedKeys.indexOf(string);
+
+        if (match >= 0) {
+          const reconciliationCharge = DRVGroupedCalculated.splice(match, 1)
+            .map((e) => e.reconciliationCharge)
+            .flat();
+
+          object.reconciliationCharge = reconciliationCharge;
+
+          WEXGroupedMatched.push(object);
+          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
+        } else {
+          WEXGroupedUnmatched.push(object);
+        }
+      }
+
+      // ----- N VS 1 ----- //
+
+      // Assign DRV grouped calculated to DRV grouped unmatched
+      DRVGroupedUnmatched = DRVGroupedCalculated;
+
+      // Separate DRV grouped unmatched
+      const DRVUnmatched = separateGroups(DRVGroupedUnmatched);
+
+      // Concat DRV unmatched to DRV unique calculated
+      DRVUniqueCalculated = DRVUniqueCalculated.concat(DRVUnmatched as IDRV[]);
+
+      // Return DRV unique calculated keys
+      const DRVUniqueCalculatedKeys = DRVUniqueCalculated.map(
+        ({
+          modifiedDate,
+          modifiedSide,
+          modifiedSymbol,
+          modifiedStrike,
+          modifiedExpiry,
+          modifiedOption,
+          modifiedPrice,
+          modifiedQuantity
+        }) =>
+          modifiedDate +
+          "|" +
+          modifiedSide +
+          "|" +
+          modifiedSymbol +
+          "|" +
+          modifiedStrike +
+          "|" +
+          modifiedExpiry +
+          "|" +
+          modifiedOption +
+          "|" +
+          modifiedPrice +
+          "|" +
+          modifiedQuantity
+      );
+
+      // Loop through WEX grouped unmatched
+      for (const object of WEXGroupedUnmatched) {
+        const string =
+          object.modifiedDate +
+          "|" +
+          object.modifiedSide +
+          "|" +
+          object.modifiedRoot +
+          "|" +
+          object.modifiedStrike +
+          "|" +
+          object.modifiedExpiry +
+          "|" +
+          object.modifiedCallPut +
+          "|" +
+          object.modifiedAveragePrice +
+          "|" +
+          object.modifiedExecQty;
+
+        const match = DRVUniqueCalculatedKeys.indexOf(string);
+
+        if (match >= 0) {
+          const reconciliationCharge = DRVUniqueCalculated.splice(match, 1)
+            .map((e) => e.reconciliationCharge)
+            .flat();
+
+          object.reconciliationCharge = reconciliationCharge;
+
+          WEXGroupedMatched.push(object);
+          DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
+        } else {
+          WEXGroupedUnmatched.push(object);
+        }
+      }
+
+      // ----- 1 VS 1 ----- //
+
+      // Separate WEX grouped unmatched
+      const WEXUnmatched = separateGroups(WEXGroupedUnmatched);
+
+      // Concat wex unmatched to WEX unique calculated
+      WEXUniqueCalculated = WEXUniqueCalculated.concat(WEXUnmatched as IWEX[]);
+
+      // Return DRV unique calculated keys
+      const DRVUniqueCalculatedKeys1V1 = DRVUniqueCalculated.map(
+        ({
+          modifiedDate,
+          modifiedSide,
+          modifiedSymbol,
+          modifiedStrike,
+          modifiedExpiry,
+          modifiedOption,
+          modifiedPrice,
+          modifiedQuantity
+        }) =>
+          modifiedDate +
+          "|" +
+          modifiedSide +
+          "|" +
+          modifiedSymbol +
+          "|" +
+          modifiedStrike +
+          "|" +
+          modifiedExpiry +
+          "|" +
+          modifiedOption +
+          "|" +
+          modifiedPrice +
+          "|" +
+          modifiedQuantity
+      );
+
+      // Loop through WEX unique calculated
+      for (const object of WEXUniqueCalculated) {
+        const string =
+          object.modifiedDate +
+          "|" +
+          object.modifiedSide +
+          "|" +
+          object.modifiedRoot +
+          "|" +
+          object.modifiedStrike +
+          "|" +
+          object.modifiedExpiry +
+          "|" +
+          object.modifiedCallPut +
+          "|" +
+          object.modifiedAveragePrice +
+          "|" +
+          object.modifiedExecQty;
+
+        const match = DRVUniqueCalculatedKeys1V1.indexOf(string);
+
+        if (match >= 0) {
+          const reconciliationCharge = DRVUniqueCalculated.splice(match, 1)
+            .map((e) => e.reconciliationCharge)
+            .flat();
+
+          object.reconciliationCharge = reconciliationCharge;
+
+          WEXGroupedMatched.push(object);
+          DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
+        } else {
+          WEXGroupedUnmatched.push(object);
+        }
+      }
 
       // Return reconciliation charge, total charge and exec qty
-      const WEXReconciliationChargesNVNAndNV1: INVNReconciliationCharge[] =
-        WEXByDRVGroupedMatched.map((object) => {
+      const WEXReconciliationCharges: INVNReconciliationCharge[] =
+        WEXGroupedMatched.map((object) => {
           return {
-            drvId: object.drv_trade_client_account_execution_id,
             reconciliationCharge: object.reconciliationCharge,
             totalCharge: object.modifiedTotalCharge,
             execQtySum: object.modifiedExecQty
           };
         });
 
-      // Get matched N V N rows object
-      const matchedNVNAndNV1: IReconciliationCharge[] =
-        WEXReconciliationChargesNVNAndNV1.map(
+      // Return matched reconciliation charge N V N rows object
+      const reconciliationCharge: IReconciliationCharge[] =
+        WEXReconciliationCharges.map(
           ({ reconciliationCharge, totalCharge, execQtySum }) => {
-            const quantity = reconciliationCharge!.map((e) => e.quantity);
-
-            if (quantity.length === 1) {
-              return reconciliationCharge!.map(
-                ({ drv_trade_client_account_execution_id }) => ({
-                  drv_trade_floor_broker_id: floorBrokerId,
-                  drv_trade_client_account_execution_id:
-                    drv_trade_client_account_execution_id,
-                  charge: totalCharge
-                })
-              );
-            } else {
-              return reconciliationCharge!.map(
-                ({ drv_trade_client_account_execution_id, quantity }) => ({
-                  drv_trade_floor_broker_id: floorBrokerId,
-                  drv_trade_client_account_execution_id:
-                    drv_trade_client_account_execution_id,
-                  charge: (totalCharge! * quantity!) / execQtySum!
-                })
-              );
-            }
+            return reconciliationCharge!.map((element) => ({
+              drv_trade_floor_broker_id: floorBrokerId,
+              drv_trade_client_account_execution_id:
+                element!.drv_trade_client_account_execution_id,
+              charge: (totalCharge! * element!.quantity!) / execQtySum!
+            }));
           }
         ).flat();
 
-      // Get WEX unmatched rows by group WEX
-      const WEXByDRVGroup = WEXModified.filter((row) =>
-        WEXByDRVGrouped.find(
-          ({
-            modifiedDate,
-            modifiedUser,
-            modifiedSide,
-            modifiedSecurity,
-            modifiedRoot,
-            modifiedExpiry,
-            modifiedStrike,
-            modifiedCallPut,
-            modifiedPortfolio,
-            modifiedCommissionType,
-            modifiedCommissionRate
-          }) =>
-            row.modifiedDate === modifiedDate &&
-            row.modifiedUser === modifiedUser &&
-            row.modifiedSide === modifiedSide &&
-            row.modifiedSecurity === modifiedSecurity &&
-            row.modifiedRoot === modifiedRoot &&
-            row.modifiedExpiry === modifiedExpiry &&
-            row.modifiedStrike === modifiedStrike &&
-            row.modifiedCallPut === modifiedCallPut &&
-            row.modifiedPortfolio === modifiedPortfolio &&
-            row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate
-        )
-      );
-
-      const WEXVDRVUniqueDates = WEXUniqueDatesArray(WEXByDRVGroup);
-      const WEXVDRVSeparatedByDates = WEXSeparateDatesObject(WEXByDRVGroup);
-
-      // Group WEX V 1 DRV
-      for (const date of WEXVDRVUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        const WEXUnmatched = WEXVDRVSeparatedByDates[date].filter(
-          (row) =>
-            !DRVSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedExpiry,
-                modifiedStrike,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity
-              }) =>
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-            )
-        );
-
-        const WEXMatched = WEXVDRVSeparatedByDates[date].filter((row) =>
-          DRVSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              drv_trade_client_account_execution_id
-            }) => {
-              row.drv_trade_client_account_execution_id =
-                drv_trade_client_account_execution_id;
-              return (
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-              );
-            }
-          )
-        );
-
-        WEXGroupedByDRV = WEXGroupedByDRV.concat(WEXUnmatched);
-
-        WEX1V1Matched = WEX1V1Matched.concat(WEXMatched);
-      }
-
-      // Get matched rows object
-      const matched1V1: IReconciliationCharge[] = WEX1V1Matched.map(
-        ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
-          return {
-            drv_trade_floor_broker_id: floorBrokerId,
-            drv_trade_client_account_execution_id,
-            charge: modifiedTotalCharge
-          };
-        }
-      );
-
-      const WEXGroupedByWEX = WEXByDRVGroup.filter((row) =>
-        WEXGroupedByDRV.find(
-          ({
-            modifiedDate,
-            modifiedUser,
-            modifiedSide,
-            modifiedSecurity,
-            modifiedRoot,
-            modifiedExpiry,
-            modifiedStrike,
-            modifiedCallPut,
-            modifiedPortfolio,
-            modifiedCommissionType,
-            modifiedCommissionRate
-          }) =>
-            row.modifiedDate === modifiedDate &&
-            row.modifiedUser === modifiedUser &&
-            row.modifiedSide === modifiedSide &&
-            row.modifiedSecurity === modifiedSecurity &&
-            row.modifiedRoot === modifiedRoot &&
-            row.modifiedExpiry === modifiedExpiry &&
-            row.modifiedStrike === modifiedStrike &&
-            row.modifiedCallPut === modifiedCallPut &&
-            row.modifiedPortfolio === modifiedPortfolio &&
-            row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate
-        )
-      );
-
-      const WEXByGroupedWEXUniqueDates = WEXUniqueDatesArray(WEXGroupedByWEX);
-      const WEXByGroupedWEXSeparatedByDates =
-        WEXSeparateDatesObject(WEXGroupedByWEX);
-
-      // 1 WEX V 1 DRV
-      for (const date of WEXByGroupedWEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        const WEXUnmatched = WEXByGroupedWEXSeparatedByDates[date].filter(
-          (row) =>
-            !DRVSeparatedByDates[date].find(
-              ({
-                modifiedDate,
-                modifiedSide,
-                modifiedSymbol,
-                modifiedExpiry,
-                modifiedStrike,
-                modifiedOption,
-                modifiedPrice,
-                modifiedQuantity
-              }) =>
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-            )
-        );
-
-        WEXunresolved = WEXunresolved.concat(WEXUnmatched);
-      }
-
-      // Concating matched objects
-      reconciliation_charge = reconciliation_charge.concat(
-        matchedNVNAndNV1,
-        matched1V1
-      );
-
-      // // POST request to makor-X API
-      // const options = {
-      //   method: "POST",
-      //   uri: `${process.env.MAKOR_X_URL}${process.env.MAKOR_X_API_KEY}`,
-      //   body: {
-      //     reconciliation_charge,
-      //   },
-      //   json: true,
-      // };
-      // rp(options)
-      //   .then(() => {
-      //     ServerGlobal.getInstance().logger.error(
-      //       "<addDerivatives>: Successfully sent reconciliation_charge to makor-x API",
-      //     );
-      //   })
-      //   .catch(() => {
-      //     ServerGlobal.getInstance().logger.error(
-      //       "<addDerivatives>: Falied to send the reconciliation_charge to makor-x API",
-      //     );
-      //   });
+      log(reconciliationCharge);
 
       // Total charge
       const totalCharge = WEXModified.reduce(
@@ -2099,7 +2043,7 @@ const addDerivatives = async (
       );
 
       // Unmatched charge
-      const unmatchedCharge = WEXunresolved.reduce(
+      const unmatchedCharge = WEXGroupedUnmatched.reduce(
         (prev, { modifiedTotalCharge }) => prev + modifiedTotalCharge!,
         0
       );
@@ -2111,7 +2055,7 @@ const addDerivatives = async (
       const unmatchedSumCharge = totalCharge - matchedSumCharge;
 
       // Matched count
-      const matchedCount = WEXModified.length - WEXunresolved.length;
+      const matchedCount = WEXModified.length - WEXGroupedUnmatched.length;
 
       // matched Sum Percentage
       const matchedSumPercentage = (matchedCount * 100) / WEXModified.length;
@@ -2121,10 +2065,8 @@ const addDerivatives = async (
         ((unmatchedSumCharge / totalCharge) * 100).toFixed(2)
       );
 
-      log(unmatchedSumPercentage);
-
       // Delete all modified fields
-      WEXunresolved.forEach((element) => {
+      WEXGroupedUnmatched.forEach((element) => {
         delete element.modifiedDate;
         delete element.modifiedUser;
         delete element.modifiedSide;
@@ -2144,7 +2086,7 @@ const addDerivatives = async (
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(reconciliation_charge, (err, csv) => {
+      converter.json2csv(WEXGroupedUnmatched, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
             `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
@@ -2192,863 +2134,9 @@ const addDerivatives = async (
         matchSumCharge: matchedSumCharge,
         matchedSumPercentage: matchedSumPercentage,
         unmatchedCount: WEXunresolved.length,
-        unmatchedGroupCount: WEXByDRVGrouped.length,
+        unmatchedGroupCount: WEXGroupedUnmatched.length,
         unmatchedSumCharge,
         unmatchedSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
-      });
-
-      res.status(200).send({
-        success: true,
-        message: "Successfully added derivative"
-      });
-      return;
-    };
-
-    const WEXActions1 = async () => {
-      let DRVGroupedCalculated: IDRV[] = [];
-      let DRVGroupedEqualToOneCalculated: IDRV[] = [];
-      let DRVGroupedBiggerThanOneCalculated: IDRV[] = [];
-
-      let WEXCanceledPairs: IWEX[] = [];
-      let WEXGroupedCalculated: IWEX[] = [];
-      let WEXNV1Matched: IWEX[] = [];
-      let WEXBiggerThanOneGroupsMatched: IWEX[] = [];
-      let WEXEqualToOneGroupsMatched: IWEX[] = [];
-
-      let reconciliation_charge: IReconciliationCharge[] = [];
-
-      // Modifing DRV
-      const DRVModified = DRV.map((element) => {
-        const modifiedDate = DRVDateFormat(element.date!);
-        const modifiedSide = element.side?.charAt(0).toLowerCase();
-        const modifiedQuantity = Number(
-          removeCommas(element.quantity?.toString()!)
-        );
-        const modifiedSymbol = element.symbol?.toLowerCase();
-        const modifiedExpiry = DRVDateFormat(element.expiry!);
-        const modifiedStrike = Number(removeCommas(element.strike));
-        const modifiedOption = element.option?.charAt(0).toLowerCase();
-        const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2)
-        );
-
-        return {
-          ...element,
-          modifiedDate,
-          modifiedSide,
-          modifiedQuantity,
-          modifiedSymbol,
-          modifiedExpiry,
-          modifiedStrike,
-          modifiedOption,
-          modifiedPrice
-        };
-      });
-
-      // Modifing WEX
-      const WEXModified = source.map((element: IWEX) => {
-        const modifiedDate = WEXDateFormat(element.Date!);
-        const modifiedUser = element.User?.toLowerCase();
-        const modifiedSide = element.Side?.charAt(0).toLowerCase();
-        const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!)
-        );
-        const modifiedSecurity = element.Security?.toLowerCase();
-        const modifiedRoot = element.Root?.toLowerCase();
-        const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
-        const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", ""))
-        );
-        const modifiedCallPut = element["Call/Put"]?.toLowerCase();
-        const modifiedAveragePrice = Number(
-          Number(
-            removeCommas(element["Average Price"]?.replace("$", ""))
-          ).toFixed(2)
-        );
-        const modifiedPortfolio =
-          element.Portfolio?.split("-")[0].toLowerCase();
-        const modifiedCommissionType =
-          element["Commission Type"]?.toLowerCase();
-        const modifiedCommissionRate = Number(element["Commission Rate"]);
-        const modifiedTotalCharge = WEXModifiyTotalCharge(
-          element["Total Charge"]!
-        );
-
-        return {
-          ...element,
-          modifiedDate,
-          modifiedUser,
-          modifiedSide,
-          modifiedExecQty,
-          modifiedSecurity,
-          modifiedRoot,
-          modifiedExpiry,
-          modifiedStrike,
-          modifiedCallPut,
-          modifiedAveragePrice,
-          modifiedPortfolio,
-          modifiedCommissionType,
-          modifiedCommissionRate,
-          modifiedTotalCharge
-        };
-      });
-
-      const WEXUniqueDates = WEXUniqueDatesArray(WEXModified);
-      const WEXSeparatedByDates = WEXSeparateDatesObject(WEXModified);
-      const DRVSeparatedByDates = DRVSeparateDatesObject(DRVModified);
-
-      // Remove cancelling pairs from WEX
-      for (const date of WEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        // Run over each row in date
-        for (let i = 0; i < WEXSeparatedByDates[date].length; i++) {
-          // Run over each row starting from the outer element's position
-          for (let j = i + 1; j < WEXSeparatedByDates[date].length; j++) {
-            const {
-              modifiedUser: user_i,
-              modifiedDate: date_i,
-              Route: route_i,
-              modifiedSide: side_i,
-              modifiedSecurity: security_i,
-              modifiedRoot: root_i,
-              modifiedExpiry: expiry_i,
-              modifiedStrike: strike_i,
-              modifiedCallPut: callPut_i,
-              modifiedAveragePrice: averagePrice_i,
-              modifiedTotalCharge: totalCharge_i,
-              modifiedPortfolio: portfolio_i,
-              modifiedCommissionType: commissionType_i,
-              modifiedExecQty: execQty_i,
-              removed: removed_i
-            } = WEXSeparatedByDates[date][i];
-            const {
-              modifiedUser: user_j,
-              modifiedDate: date_j,
-              Route: route_j,
-              modifiedSide: side_j,
-              modifiedSecurity: security_j,
-              modifiedRoot: root_j,
-              modifiedExpiry: expiry_j,
-              modifiedStrike: strike_j,
-              modifiedCallPut: callPut_j,
-              modifiedAveragePrice: averagePrice_j,
-              modifiedTotalCharge: totalCharge_j,
-              modifiedPortfolio: portfolio_j,
-              modifiedCommissionType: commissionType_j,
-              modifiedExecQty: execQty_j,
-              removed: removed_j
-            } = WEXSeparatedByDates[date][j];
-            if (
-              !removed_i &&
-              !removed_j &&
-              execQty_i === execQty_j! * -1 &&
-              totalCharge_i === totalCharge_j! * -1 &&
-              user_i === user_j &&
-              date_i === date_j &&
-              route_i === route_j &&
-              side_i === side_j &&
-              security_i === security_j &&
-              root_i === root_j &&
-              expiry_i === expiry_j &&
-              strike_i === strike_j &&
-              callPut_i === callPut_j &&
-              averagePrice_i === averagePrice_j &&
-              commissionType_i === commissionType_j &&
-              portfolio_i === portfolio_j
-            ) {
-              WEXSeparatedByDates[date!][i].removed = true;
-              WEXSeparatedByDates[date!][j].removed = true;
-            }
-          }
-        }
-
-        let WEXCanceledPairsSeparatedByDates: IWEX[] = [];
-
-        WEXCanceledPairsSeparatedByDates = WEXSeparatedByDates[date].filter(
-          (element) => {
-            return !element.removed;
-          }
-        );
-
-        WEXCanceledPairs = WEXCanceledPairs.concat(
-          WEXCanceledPairsSeparatedByDates
-        );
-      }
-
-      // Grouping WEX by date, user, side, security, root, expiry, strike, call/put, portfolio, commission type, commission rate
-      const WEXGrouped = WEXGroupBy(WEXCanceledPairs, (element: IWEX) => {
-        return [
-          element.modifiedDate,
-          element.modifiedUser,
-          element.modifiedSide,
-          element.modifiedSecurity,
-          element.modifiedRoot,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedCallPut,
-          element.modifiedPortfolio,
-          element.modifiedCommissionType,
-          element.modifiedCommissionRate
-        ];
-      });
-
-      // Get WEX group keys
-      const WEXGroupedKeys = Object.keys(WEXGrouped);
-
-      // Sum exec qty, weight average price and sum total charge
-      for (const key of WEXGroupedKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IWEX[] = [
-          ...WEXGrouped[key]
-            .reduce((array, object) => {
-              const key = `${object.modifiedDate}-${object.modifiedSide}-${object.modifiedSecurity}-${object.modifiedRoot}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedCallPut}-${object.modifiedPortfolio}-${object.modifiedCommissionType}-${object.modifiedCommissionRate}`;
-              const item: IWEX =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedExecQty: 0,
-                  modifiedAveragePrice: 0,
-                  modifiedTotalCharge: 0
-                });
-
-              // Sum qty
-              item.modifiedExecQty =
-                item.modifiedExecQty! + object.modifiedExecQty!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedExecQty! * object.modifiedAveragePrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedExecQty!;
-
-              item.modifiedAveragePrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
-                ) / 100;
-
-              // Sum total charge
-              item.modifiedTotalCharge = Number(
-                (
-                  item.modifiedTotalCharge! + object.modifiedTotalCharge!
-                ).toFixed(2)
-              );
-
-              return array.set(key, item);
-            }, new Map())
-            .values()
-        ];
-
-        WEXGroupedCalculated = WEXGroupedCalculated.concat(result);
-      }
-
-      const WEXGroupedSeparatedByDates =
-        WEXSeparateDatesObject(WEXGroupedCalculated);
-
-      // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
-      const DRVGrouped = DRVGroupBy(DRVModified, (element: IDRV) => {
-        return [
-          element.drv_trade_id,
-          element.floor_broker,
-          element.modifiedDate,
-          element.modifiedSide,
-          element.component_type,
-          element.contract_type,
-          element.modifiedSymbol,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedOption,
-          element.client_id
-        ];
-      });
-
-      // Get DRV equal to one groups and group keys
-      const DRVEqualToOneGroups = equalToOneGroupsDRV(DRVGrouped);
-      const DRVEqualToOneGroupsKeys = Object.keys(DRVEqualToOneGroups);
-
-      // Sum quantity, weight average price for equal to one groups
-      for (const key of DRVEqualToOneGroupsKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...DRVEqualToOneGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0
-                });
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values()
-        ];
-
-        DRVGroupedEqualToOneCalculated =
-          DRVGroupedEqualToOneCalculated.concat(result);
-      }
-
-      // Get DRV bigger than one groups and group keys
-      const DRVBiggerThanOneGroups = biggerThanOneGroupsDRV(DRVGrouped);
-      const DRVBiggerThanOneGroupKeys = Object.keys(DRVBiggerThanOneGroups);
-
-      // Sum quantity, weight average price for bigger than one groups
-      for (const key of DRVBiggerThanOneGroupKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...DRVBiggerThanOneGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0,
-                  reconciliationCharge: []
-                });
-
-              // Get reconciliation charge fields
-              item.reconciliationCharge = [
-                ...item.reconciliationCharge!,
-                {
-                  drv_trade_client_account_execution_id:
-                    object.drv_trade_client_account_execution_id,
-                  quantity: object.modifiedQuantity
-                }
-              ];
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values()
-        ];
-
-        DRVGroupedBiggerThanOneCalculated =
-          DRVGroupedBiggerThanOneCalculated.concat(result);
-      }
-
-      DRVGroupedCalculated = DRVGroupedCalculated.concat(
-        DRVGroupedBiggerThanOneCalculated,
-        DRVGroupedEqualToOneCalculated
-      );
-
-      const DRVBiggerThanOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedBiggerThanOneCalculated
-      );
-      const DRVEqualToOneGroupedSeparatedByDates = DRVSeparateDatesObject(
-        DRVGroupedEqualToOneCalculated
-      );
-
-      const WEXByDRVGrouped = WEXGroupedCalculated.filter(
-        (row) =>
-          !DRVGroupedCalculated.find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedSide === modifiedSide &&
-              row.modifiedRoot === modifiedSymbol &&
-              row.modifiedCallPut === modifiedOption &&
-              row.modifiedExecQty === modifiedQuantity &&
-              row.modifiedAveragePrice === modifiedPrice &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry
-          )
-      );
-
-      // Get WEX matched rows by group WEX V DRV bigger than one groups
-      for (const date of WEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        // Check if file is valid
-        if (
-          !WEXGroupedSeparatedByDates[date] ||
-          !DRVBiggerThanOneGroupedSeparatedByDates[date]
-        )
-          break;
-
-        const WEXMatched = WEXGroupedSeparatedByDates[date].filter((row) =>
-          DRVBiggerThanOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              reconciliationCharge
-            }) => {
-              row.reconciliationCharge = reconciliationCharge;
-              return (
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-              );
-            }
-          )
-        );
-
-        WEXBiggerThanOneGroupsMatched =
-          WEXBiggerThanOneGroupsMatched.concat(WEXMatched);
-      }
-
-      // Return reconciliation charge, total charge and exec qty
-      const WEXReconciliationChargesNVN: INVNReconciliationCharge[] =
-        WEXBiggerThanOneGroupsMatched.map((object) => {
-          return {
-            reconciliationCharge: object.reconciliationCharge,
-            totalCharge: object.modifiedTotalCharge,
-            execQtySum: object.modifiedExecQty
-          };
-        });
-
-      // Get matched N V N rows object
-      const matchedNVN: IReconciliationCharge[] =
-        WEXReconciliationChargesNVN.map(
-          ({ reconciliationCharge, totalCharge, execQtySum }) =>
-            reconciliationCharge!.map(
-              ({ drv_trade_client_account_execution_id, quantity }) => ({
-                drv_trade_floor_broker_id: floorBrokerId,
-                drv_trade_client_account_execution_id:
-                  drv_trade_client_account_execution_id,
-                charge: (totalCharge! * quantity!) / execQtySum!
-              })
-            )
-        ).flat();
-
-      // Get WEX matched rows by group WEX V DRV equal to one groups
-      for (const date of WEXUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        // Check if file is valid
-        if (
-          !WEXGroupedSeparatedByDates[date] ||
-          !DRVEqualToOneGroupedSeparatedByDates[date]
-        )
-          break;
-
-        const WEXMatched = WEXGroupedSeparatedByDates[date].filter((row) =>
-          DRVEqualToOneGroupedSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              drv_trade_client_account_execution_id
-            }) => {
-              row.drv_trade_client_account_execution_id =
-                drv_trade_client_account_execution_id;
-              return (
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-              );
-            }
-          )
-        );
-
-        WEXEqualToOneGroupsMatched =
-          WEXEqualToOneGroupsMatched.concat(WEXMatched);
-      }
-
-      // Get matched N V 1 rows object
-      const matchedNV1: IReconciliationCharge[] =
-        WEXEqualToOneGroupsMatched.map(
-          ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
-            return {
-              drv_trade_floor_broker_id: floorBrokerId,
-              drv_trade_client_account_execution_id,
-              charge: modifiedTotalCharge
-            };
-          }
-        );
-
-      const WEXByDRVGroup = WEXCanceledPairs.filter((row) =>
-        WEXByDRVGrouped.find(
-          ({
-            modifiedDate,
-            modifiedUser,
-            modifiedSide,
-            modifiedSecurity,
-            modifiedRoot,
-            modifiedExpiry,
-            modifiedStrike,
-            modifiedCallPut,
-            modifiedPortfolio,
-            modifiedCommissionType,
-            modifiedCommissionRate
-          }) =>
-            row.modifiedDate === modifiedDate &&
-            row.modifiedUser === modifiedUser &&
-            row.modifiedSide === modifiedSide &&
-            row.modifiedSecurity === modifiedSecurity &&
-            row.modifiedRoot === modifiedRoot &&
-            row.modifiedExpiry === modifiedExpiry &&
-            row.modifiedStrike === modifiedStrike &&
-            row.modifiedCallPut === modifiedCallPut &&
-            row.modifiedPortfolio === modifiedPortfolio &&
-            row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate
-        )
-      );
-
-      const WEXVDRVUniqueDates = WEXUniqueDatesArray(WEXByDRVGroup);
-      const WEXVDRVSeparatedByDates = WEXSeparateDatesObject(WEXByDRVGroup);
-
-      // Group WEX V 1 DRV
-      for (const date of WEXVDRVUniqueDates) {
-        // Check if date is valid
-        if (!date) {
-          ServerGlobal.getInstance().logger.error(
-            "<addDerivatives>: Failed because date is invalid"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "date is invalid"
-          });
-          return;
-        }
-
-        const WEXMatched = WEXVDRVSeparatedByDates[date].filter((row) =>
-          DRVSeparatedByDates[date].find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity,
-              drv_trade_client_account_execution_id
-            }) => {
-              row.drv_trade_client_account_execution_id =
-                drv_trade_client_account_execution_id;
-              return (
-                row.modifiedDate === modifiedDate &&
-                row.modifiedSide === modifiedSide &&
-                row.modifiedRoot === modifiedSymbol &&
-                row.modifiedCallPut === modifiedOption &&
-                row.modifiedExecQty === modifiedQuantity &&
-                row.modifiedAveragePrice === modifiedPrice &&
-                row.modifiedStrike === modifiedStrike &&
-                row.modifiedExpiry === modifiedExpiry
-              );
-            }
-          )
-        );
-
-        WEXNV1Matched = WEXNV1Matched.concat(WEXMatched);
-      }
-
-      // Get matched 1 V 1 rows object
-      const matched1V1: IReconciliationCharge[] = WEXNV1Matched.map(
-        ({ drv_trade_client_account_execution_id, modifiedTotalCharge }) => {
-          return {
-            drv_trade_floor_broker_id: floorBrokerId,
-            drv_trade_client_account_execution_id,
-            charge: modifiedTotalCharge
-          };
-        }
-      );
-
-      const WEXGroupedByDRV = WEXByDRVGroup.filter(
-        (row) =>
-          !DRVModified.find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedSide === modifiedSide &&
-              row.modifiedRoot === modifiedSymbol &&
-              row.modifiedCallPut === modifiedOption &&
-              row.modifiedExecQty === modifiedQuantity &&
-              row.modifiedAveragePrice === modifiedPrice &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry
-          )
-      );
-
-      const WEXGroupedByWEX = WEXByDRVGroup.filter((row) =>
-        WEXGroupedByDRV.find(
-          ({
-            modifiedDate,
-            modifiedUser,
-            modifiedSide,
-            modifiedSecurity,
-            modifiedRoot,
-            modifiedExpiry,
-            modifiedStrike,
-            modifiedCallPut,
-            modifiedPortfolio,
-            modifiedCommissionType,
-            modifiedCommissionRate
-          }) =>
-            row.modifiedDate === modifiedDate &&
-            row.modifiedUser === modifiedUser &&
-            row.modifiedSide === modifiedSide &&
-            row.modifiedSecurity === modifiedSecurity &&
-            row.modifiedRoot === modifiedRoot &&
-            row.modifiedExpiry === modifiedExpiry &&
-            row.modifiedStrike === modifiedStrike &&
-            row.modifiedCallPut === modifiedCallPut &&
-            row.modifiedPortfolio === modifiedPortfolio &&
-            row.modifiedCommissionType === modifiedCommissionType &&
-            row.modifiedCommissionRate === modifiedCommissionRate
-        )
-      );
-
-      const WEXunresolved = WEXGroupedByWEX.filter(
-        (row) =>
-          !DRVModified.find(
-            ({
-              modifiedDate,
-              modifiedSide,
-              modifiedSymbol,
-              modifiedExpiry,
-              modifiedStrike,
-              modifiedOption,
-              modifiedPrice,
-              modifiedQuantity
-            }) =>
-              row.modifiedDate === modifiedDate &&
-              row.modifiedSide === modifiedSide &&
-              row.modifiedRoot === modifiedSymbol &&
-              row.modifiedCallPut === modifiedOption &&
-              row.modifiedExecQty === modifiedQuantity &&
-              row.modifiedAveragePrice === modifiedPrice &&
-              row.modifiedStrike === modifiedStrike &&
-              row.modifiedExpiry === modifiedExpiry
-          )
-      );
-
-      // Concating matched reconciliation_charge
-      reconciliation_charge = reconciliation_charge.concat(
-        matchedNVN,
-        matchedNV1,
-        matched1V1
-      );
-
-      // // POST request to makor-X API
-      // const options = {
-      //   method: "POST",
-      //   uri: `${process.env.MAKOR_X_URL}${process.env.MAKOR_X_API_KEY}`,
-      //   body: {
-      //     reconciliation_charge,
-      //   },
-      //   json: true,
-      // };
-      // rp(options)
-      //   .then(() => {
-      //     ServerGlobal.getInstance().logger.error(
-      //       "<addDerivatives>: Successfully sent reconciliation_charge to makor-x API",
-      //     );
-      //   })
-      //   .catch(() => {
-      //     ServerGlobal.getInstance().logger.error(
-      //       "<addDerivatives>: Falied to send the reconciliation_charge to makor-x API",
-      //     );
-      //   });
-
-      // Total charge
-      const totalCharge = WEXModified.reduce(
-        (n, { modifiedTotalCharge }) => n + modifiedTotalCharge,
-        0
-      );
-
-      // Unmatched unresolved charge
-      const unmatchedUnresolvedCharge = WEXunresolved.reduce(
-        (n, { modifiedTotalCharge }) => n + modifiedTotalCharge!,
-        0
-      );
-
-      // Matched Sum Charge
-      const matchedSumCharge = totalCharge - unmatchedUnresolvedCharge;
-
-      // Unmatched Sum Charge
-      const unmatchedSumCharge = totalCharge - matchedSumCharge;
-
-      // Matched count
-      const matchedCount = WEXModified.length - WEXunresolved.length;
-
-      // matched Sum Percentage
-      const matchedSumPercentage = (matchedCount * 100) / WEXModified.length;
-
-      // unmatched Sum Percentage
-      const unmatchedSumPercentage = (unmatchedSumCharge / totalCharge) * 100;
-
-      // Delete all modified fields
-      WEXunresolved.forEach((element) => {
-        delete element.modifiedDate;
-        delete element.modifiedUser;
-        delete element.modifiedSide;
-        delete element.modifiedExecQty;
-        delete element.modifiedSecurity;
-        delete element.modifiedRoot;
-        delete element.modifiedExpiry;
-        delete element.modifiedStrike;
-        delete element.modifiedCallPut;
-        delete element.modifiedAveragePrice;
-        delete element.modifiedPortfolio;
-        delete element.modifiedCommissionType;
-        delete element.modifiedCommissionRate;
-        delete element.modifiedTotalCharge;
-        delete element.drv_trade_client_account_execution_id;
-        delete element.reconciliationCharge;
-      });
-
-      // Convert JSON to CSV file
-      converter.json2csv(WEXunresolved, (err, csv) => {
-        if (err) {
-          ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "Failed to convert file to csv"
-          });
-          return;
-        }
-
-        if (!csv) {
-          ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv"
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "Failed to convert file to csv"
-          });
-          return;
-        }
-
-        fs.writeFileSync(
-          `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv
-        );
-
-        ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
-        );
-      });
-
-      // Saving the derivative document in DB
-      await Derivative.create({
-        date: formattedCurrentDate,
-        floorBrokerId: floorBrokerId,
-        username: userByID.username,
-        source: `${fileName}-${userByID.username}-${formattedCurrentDate}.csv`,
-        drv: `DRV-${userByID.username}-${formattedCurrentDate}.csv`,
-        totalCount: WEXModified.length,
-        totalCharge: totalCharge,
-        matchedCount: matchedCount,
-        matchSumCharge: matchedSumCharge,
-        matchedSumPercentage: matchedSumPercentage,
-        unmatchedCount: WEXunresolved.length,
-        unmatchedGroupCount: WEXByDRVGrouped.length,
-        unmatchedSumCharge: unmatchedSumCharge,
-        unmatchedSumPercentage: unmatchedSumPercentage,
         unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
