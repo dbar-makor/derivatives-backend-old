@@ -11,13 +11,13 @@ interface IDerivativesAttributes extends IDBAttribute {
   readonly drv: string;
   readonly totalCount: number;
   readonly totalCharge: number;
-  readonly matchedCount: number;
+  readonly matchCount: number;
   readonly matchSumCharge: number;
-  readonly matchedSumPercentage: number;
-  readonly unmatchedCount: number;
-  readonly unmatchedGroupCount: number;
-  readonly unmatchedSumCharge: number;
-  readonly unmatchedSumPercentage: number;
+  readonly matchSumPercentage: number;
+  readonly unmatchCount: number;
+  readonly unmatchGroupCount: number;
+  readonly unmatchSumCharge: number;
+  readonly unmatchSumPercentage: number;
   readonly unresolved: string;
 }
 
@@ -33,13 +33,13 @@ class Derivative
   public readonly drv!: string;
   public readonly totalCount!: number;
   public readonly totalCharge!: number;
-  public readonly matchedCount!: number;
+  public readonly matchCount!: number;
   public readonly matchSumCharge!: number;
-  public readonly matchedSumPercentage!: number;
-  public readonly unmatchedCount!: number;
-  public readonly unmatchedGroupCount!: number;
-  public readonly unmatchedSumCharge!: number;
-  public readonly unmatchedSumPercentage!: number;
+  public readonly matchSumPercentage!: number;
+  public readonly unmatchCount!: number;
+  public readonly unmatchGroupCount!: number;
+  public readonly unmatchSumCharge!: number;
+  public readonly unmatchSumPercentage!: number;
   public readonly unresolved!: string;
 }
 
@@ -50,75 +50,75 @@ Derivative.init(
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     date: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
     floorBrokerId: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
     username: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
     source: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
     drv: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
     totalCount: {
       type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: false
     },
     totalCharge: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
-    matchedCount: {
+    matchCount: {
       type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: false
     },
     matchSumCharge: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
-    matchedSumPercentage: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+    matchSumPercentage: {
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
-    unmatchedCount: {
+    unmatchCount: {
       type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: false
     },
-    unmatchedGroupCount: {
+    unmatchGroupCount: {
       type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: false
     },
-    unmatchedSumCharge: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+    unmatchSumCharge: {
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
-    unmatchedSumPercentage: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
+    unmatchSumPercentage: {
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
     unresolved: {
       type: Sequelize.STRING,
-      allowNull: false,
-    },
+      allowNull: false
+    }
   },
   {
     tableName: "derivatives",
     sequelize: ServerGlobal.getInstance().db,
     createdAt: false,
-    updatedAt: false,
-  },
+    updatedAt: false
+  }
 );
 
 export default Derivative;

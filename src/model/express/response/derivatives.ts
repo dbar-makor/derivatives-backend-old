@@ -12,9 +12,9 @@ type IGetDerivativesResponse = express.Response<
       wex: string;
       drv: string;
       username: string;
-      matchedCount: number;
-      matchedSumPercentage: number;
-      unmatchedCount: number;
+      matchCount: number;
+      matchSumPercentage: number;
+      unmatchCount: number;
       unresolved: string;
     }[];
   }
@@ -27,13 +27,13 @@ type IGetDerivativeResponse = express.Response<
       username: string;
       totalCount: number;
       totalCharge: number;
-      matchedCount: number;
+      matchCount: number;
       matchSumCharge: number;
-      matchedSumPercentage: number;
-      unmatchedCount: number;
-      unmatchedGroupCount: number;
-      unmatchedSumCharge: number;
-      unmatchedSumPercentage: number;
+      matchSumPercentage: number;
+      unmatchCount: number;
+      unmatchGroupCount: number;
+      unmatchSumCharge: number;
+      unmatchSumPercentage: number;
       unresolved: string;
     };
   }

@@ -493,7 +493,6 @@ const addDerivatives = async (
           const reconciliationCharge = DRVGroupedCalculated.splice(match, 1)
             .map((e) => e.reconciliationCharge)
             .flat();
-          log("hey: " + JSON.stringify(reconciliationCharge));
           // object.reconciliationCharge = reconciliationCharge;
           DASHGroupedMatched.push(object);
           DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
@@ -503,12 +502,6 @@ const addDerivatives = async (
       }
 
       const DRVGroupedUnmatched = DRVGroupedCalculated;
-
-      log("drv match: " + DRVGroupedMatched.length);
-      log("dash match: " + DASHGroupedMatched.length);
-
-      log("drv unmatch: " + DRVGroupedUnmatched.length);
-      log("dash unmatch: " + DASHGroupedUnmatched.length);
 
       // Return reconciliation charge, total charge and exec qty
       const DASHReconciliationCharge: INVNReconciliationCharge[] =
@@ -776,16 +769,16 @@ const addDerivatives = async (
       const matchedSumCharge = totalCharge - unmatchedCharge;
 
       // Unmatched Sum Charge
-      const unmatchedSumCharge = totalCharge - matchedSumCharge;
+      const unmatchSumCharge = totalCharge - matchedSumCharge;
 
       // Matched count
-      const matchedCount = DASHModified.length - DASHunresolved.length;
+      const matchCount = DASHModified.length - DASHunresolved.length;
 
       // matched Sum Percentage
-      const matchedSumPercentage = (matchedCount * 100) / DASHModified.length;
+      const matchSumPercentage = (matchCount * 100) / DASHModified.length;
 
       // unmatched Sum Percentage
-      const unmatchedSumPercentage = (unmatchedSumCharge / totalCharge) * 100;
+      const unmatchSumPercentage = (unmatchSumCharge / totalCharge) * 100;
 
       // Delete all modified fields
       DASHunresolved.forEach((element) => {
@@ -853,13 +846,13 @@ const addDerivatives = async (
         drv: `DRV-${userByID.username}-${formattedCurrentDate}.csv`,
         totalCount: DASHModified.length,
         totalCharge: totalCharge,
-        matchedCount: matchedCount,
+        matchCount: matchCount,
         matchSumCharge: matchedSumCharge,
-        matchedSumPercentage: matchedSumPercentage,
-        unmatchedCount: DASHunresolved.length,
-        unmatchedGroupCount: DASHGroupedUnmatched.length,
-        unmatchedSumCharge: unmatchedSumCharge,
-        unmatchedSumPercentage: unmatchedSumPercentage,
+        matchSumPercentage: matchSumPercentage,
+        unmatchCount: DASHunresolved.length,
+        unmatchGroupCount: DASHGroupedUnmatched.length,
+        unmatchSumCharge: unmatchSumCharge,
+        unmatchSumPercentage: unmatchSumPercentage,
         unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
@@ -1438,16 +1431,16 @@ const addDerivatives = async (
       const matchedSumCharge = totalCharge - unmatchedCharge;
 
       // Unmatched Sum Charge
-      const unmatchedSumCharge = totalCharge - matchedSumCharge;
+      const unmatchSumCharge = totalCharge - matchedSumCharge;
 
       // Matched count
-      const matchedCount = BAMLModified.length - BAMLunresolved.length;
+      const matchCount = BAMLModified.length - BAMLunresolved.length;
 
       // matched Sum Percentage
-      const matchedSumPercentage = (matchedCount * 100) / BAMLModified.length;
+      const matchSumPercentage = (matchCount * 100) / BAMLModified.length;
 
       // unmatched Sum Percentage
-      const unmatchedSumPercentage = (unmatchedSumCharge / totalCharge) * 100;
+      const unmatchSumPercentage = (unmatchSumCharge / totalCharge) * 100;
 
       // Delete all modified fields
       BAMLunresolved.forEach((element) => {
@@ -1513,13 +1506,13 @@ const addDerivatives = async (
         drv: `DRV-${userByID.username}-${formattedCurrentDate}.csv`,
         totalCount: BAMLModified.length,
         totalCharge: totalCharge,
-        matchedCount: matchedCount,
+        matchCount: matchCount,
         matchSumCharge: matchedSumCharge,
-        matchedSumPercentage: matchedSumPercentage,
-        unmatchedCount: BAMLunresolved.length,
-        unmatchedGroupCount: BAMLByDRVGrouped.length,
-        unmatchedSumCharge: unmatchedSumCharge,
-        unmatchedSumPercentage: unmatchedSumPercentage,
+        matchSumPercentage: matchSumPercentage,
+        unmatchCount: BAMLunresolved.length,
+        unmatchGroupCount: BAMLByDRVGrouped.length,
+        unmatchSumCharge: unmatchSumCharge,
+        unmatchSumPercentage: unmatchSumPercentage,
         unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
@@ -1534,19 +1527,21 @@ const addDerivatives = async (
 
     const WEXActions = async () => {
       let WEXGroupedMatched: IWEX[] = [];
-      let WEXGroupedUnmatched: IWEX[] = [];
+      let WEXGroupedUnmatchedNVN: IWEX[] = [];
+      let WEXGroupedUnmatchedNV1: IWEX[] = [];
+      let WEXUnresolved: IWEX[] = [];
 
       let DRVGroupedMatched: IDRV[] = [];
       let DRVGroupedUnmatched: IDRV[] = [];
 
       let DRVGroupedCalculated: IDRV[] = [];
       let DRVUniqueCalculated: IDRV[] = [];
+      let DRVUniqueCalculated1V1: IDRV[] = [];
 
       let WEXGroupedCalculated: IWEX[] = [];
       let WEXUniqueCalculated: IWEX[] = [];
 
-      let WEXunresolved: IWEX[] = [];
-      let WEX1V1Matched: IWEX[] = [];
+      let WEXModifiedPairsCancled: IWEX[] = [];
 
       let reconciliation_charge: IReconciliationCharge[] = [];
 
@@ -1564,9 +1559,11 @@ const addDerivatives = async (
         const modifiedPrice = Number(
           Number(removeCommas(element.price!)).toFixed(2)
         );
+        const key = `${modifiedDate}|${modifiedSide}|${modifiedSymbol}|${modifiedStrike}|${modifiedExpiry}|${modifiedOption}|${modifiedPrice}|${modifiedQuantity}`;
 
         return {
           ...element,
+          key,
           modifiedDate,
           modifiedSide,
           modifiedQuantity,
@@ -1608,9 +1605,11 @@ const addDerivatives = async (
         const modifiedTotalCharge = WEXModifiyTotalCharge(
           element["Total Charge"]!
         );
+        const key = `${modifiedDate}|${modifiedSide}|${modifiedRoot}|${modifiedStrike}|${modifiedExpiry}|${modifiedCallPut}|${modifiedAveragePrice}|${modifiedExecQty}`;
 
         return {
           ...element,
+          key,
           modifiedDate,
           modifiedUser,
           modifiedSide,
@@ -1644,22 +1643,91 @@ const addDerivatives = async (
         return;
       }
 
+      // Run over each row cancel inverse pairs
+      for (let i = 0; i < WEXModified.length; i++) {
+        // Run over each row starting from the outer element's position
+        for (let j = i + 1; j < WEXModified.length; j++) {
+          const {
+            modifiedUser: user_i,
+            modifiedDate: date_i,
+            Route: route_i,
+            modifiedSide: side_i,
+            modifiedSecurity: security_i,
+            modifiedRoot: root_i,
+            modifiedExpiry: expiry_i,
+            modifiedStrike: strike_i,
+            modifiedCallPut: callPut_i,
+            modifiedAveragePrice: averagePrice_i,
+            modifiedTotalCharge: totalCharge_i,
+            modifiedPortfolio: portfolio_i,
+            modifiedCommissionType: commissionType_i,
+            modifiedExecQty: execQty_i,
+            removed: removed_i
+          } = WEXModified[i];
+          const {
+            modifiedUser: user_j,
+            modifiedDate: date_j,
+            Route: route_j,
+            modifiedSide: side_j,
+            modifiedSecurity: security_j,
+            modifiedRoot: root_j,
+            modifiedExpiry: expiry_j,
+            modifiedStrike: strike_j,
+            modifiedCallPut: callPut_j,
+            modifiedAveragePrice: averagePrice_j,
+            modifiedTotalCharge: totalCharge_j,
+            modifiedPortfolio: portfolio_j,
+            modifiedCommissionType: commissionType_j,
+            modifiedExecQty: execQty_j,
+            removed: removed_j
+          } = WEXModified[j];
+          if (
+            !removed_i &&
+            !removed_j &&
+            execQty_i === execQty_j! * -1 &&
+            totalCharge_i === totalCharge_j! * -1 &&
+            user_i === user_j &&
+            date_i === date_j &&
+            route_i === route_j &&
+            side_i === side_j &&
+            security_i === security_j &&
+            root_i === root_j &&
+            expiry_i === expiry_j &&
+            strike_i === strike_j &&
+            callPut_i === callPut_j &&
+            averagePrice_i === averagePrice_j &&
+            commissionType_i === commissionType_j &&
+            portfolio_i === portfolio_j
+          ) {
+            WEXModified[i].removed = true;
+            WEXModified[j].removed = true;
+          }
+        }
+
+        WEXModifiedPairsCancled = WEXModified.filter((element) => {
+          return !element.removed;
+        });
+      }
+
       // Grouping WEX by Date, User, Side, Security, Root, Expiry, Strike, CallPut, Portfolio, CommissionType, CommissionRate
-      const WEXGrouped = WEXGroupBy(WEXModified, (element: IWEX) => {
-        return [
-          element.modifiedDate,
-          element.modifiedUser,
-          element.modifiedSide,
-          element.modifiedSecurity,
-          element.modifiedRoot,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedCallPut,
-          element.modifiedPortfolio,
-          element.modifiedCommissionType,
-          element.modifiedCommissionRate
-        ];
-      });
+      const WEXGrouped = WEXGroupBy(
+        WEXModifiedPairsCancled,
+        (element: IWEX) => {
+          return [
+            element.modifiedDate,
+            element.modifiedUser,
+            element.modifiedSide,
+            element.modifiedSecurity,
+            element.modifiedRoot,
+            element.modifiedExpiry,
+            element.modifiedStrike,
+            element.modifiedCallPut,
+            element.modifiedPortfolio,
+            element.modifiedCommissionType,
+            element.modifiedCommissionRate
+          ];
+        }
+      );
 
       // Get WEX group keys
       const WEXGroupedKeys = Object.keys(WEXGrouped);
@@ -1797,7 +1865,6 @@ const addDerivatives = async (
         }
       }
 
-      log(1);
       // ----- N VS N ----- //
 
       // Return DRV grouped calculated keys
@@ -1829,24 +1896,11 @@ const addDerivatives = async (
           modifiedQuantity
       );
 
+      log(DRVGroupedCalculatedKeys);
+
       // Loop through WEX grouped calculated
       for (const object of WEXGroupedCalculated) {
-        const string =
-          object.modifiedDate +
-          "|" +
-          object.modifiedSide +
-          "|" +
-          object.modifiedRoot +
-          "|" +
-          object.modifiedStrike +
-          "|" +
-          object.modifiedExpiry +
-          "|" +
-          object.modifiedCallPut +
-          "|" +
-          object.modifiedAveragePrice +
-          "|" +
-          object.modifiedExecQty;
+        const string = `${object.modifiedDate}|${object.modifiedSide}|${object.modifiedRoot}|${object.modifiedStrike}|${object.modifiedExpiry}|${object.modifiedCallPut}|${object.modifiedAveragePrice}|${object.modifiedExecQty}`;
 
         const match = DRVGroupedCalculatedKeys.indexOf(string);
 
@@ -1860,7 +1914,7 @@ const addDerivatives = async (
           WEXGroupedMatched.push(object);
           DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
         } else {
-          WEXGroupedUnmatched.push(object);
+          WEXGroupedUnmatchedNVN.push(object);
         }
       }
 
@@ -1887,41 +1941,12 @@ const addDerivatives = async (
           modifiedPrice,
           modifiedQuantity
         }) =>
-          modifiedDate +
-          "|" +
-          modifiedSide +
-          "|" +
-          modifiedSymbol +
-          "|" +
-          modifiedStrike +
-          "|" +
-          modifiedExpiry +
-          "|" +
-          modifiedOption +
-          "|" +
-          modifiedPrice +
-          "|" +
-          modifiedQuantity
+          `${modifiedDate}|${modifiedSide}|${modifiedSymbol}|${modifiedStrike}|${modifiedExpiry}|${modifiedOption}|${modifiedPrice}|${modifiedQuantity}`
       );
 
       // Loop through WEX grouped unmatched
-      for (const object of WEXGroupedUnmatched) {
-        const string =
-          object.modifiedDate +
-          "|" +
-          object.modifiedSide +
-          "|" +
-          object.modifiedRoot +
-          "|" +
-          object.modifiedStrike +
-          "|" +
-          object.modifiedExpiry +
-          "|" +
-          object.modifiedCallPut +
-          "|" +
-          object.modifiedAveragePrice +
-          "|" +
-          object.modifiedExecQty;
+      for (const object of WEXGroupedUnmatchedNVN) {
+        const string = `${object.modifiedDate}|${object.modifiedSide}|${object.modifiedRoot}|${object.modifiedStrike}|${object.modifiedExpiry}|${object.modifiedCallPut}|${object.modifiedAveragePrice}|${object.modifiedExecQty}`;
 
         const match = DRVUniqueCalculatedKeys.indexOf(string);
 
@@ -1935,20 +1960,27 @@ const addDerivatives = async (
           WEXGroupedMatched.push(object);
           DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
         } else {
-          WEXGroupedUnmatched.push(object);
+          WEXGroupedUnmatchedNV1.push(object);
         }
       }
 
       // ----- 1 VS 1 ----- //
 
+      // Assign DRV unique calculated to DRV unique unmatched
+      DRVUniqueCalculated1V1 = DRVUniqueCalculated;
+
       // Separate WEX grouped unmatched
-      const WEXUnmatched = separateGroups(WEXGroupedUnmatched);
+      const WEXUnmatchedNVN = separateGroups(WEXGroupedUnmatchedNVN);
+      const WEXUnmatchedNV1 = separateGroups(WEXGroupedUnmatchedNV1);
 
       // Concat wex unmatched to WEX unique calculated
-      WEXUniqueCalculated = WEXUniqueCalculated.concat(WEXUnmatched as IWEX[]);
+      WEXUniqueCalculated = WEXUniqueCalculated.concat(
+        WEXUnmatchedNVN as IWEX[],
+        WEXUnmatchedNV1 as IWEX[]
+      );
 
       // Return DRV unique calculated keys
-      const DRVUniqueCalculatedKeys1V1 = DRVUniqueCalculated.map(
+      const DRVUniqueCalculatedKeys1V1 = DRVUniqueCalculated1V1.map(
         ({
           modifiedDate,
           modifiedSide,
@@ -2004,10 +2036,10 @@ const addDerivatives = async (
 
           object.reconciliationCharge = reconciliationCharge;
 
-          WEXGroupedMatched.push(object);
+          // WEXGroupedMatched.push(object);
           DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
         } else {
-          WEXGroupedUnmatched.push(object);
+          WEXUnresolved.push(object);
         }
       }
 
@@ -2034,39 +2066,47 @@ const addDerivatives = async (
           }
         ).flat();
 
-      log(reconciliationCharge);
-
       // Total charge
-      const totalCharge = WEXModified.reduce(
-        (a, b) => a + (b.modifiedTotalCharge || 0),
-        0
-      );
+      const totalCharge =
+        Math.round(
+          (WEXModified.reduce((a, b) => a + (b.modifiedTotalCharge || 0), 0) +
+            Number.EPSILON) *
+            100
+        ) / 100;
 
       // Unmatched charge
-      const unmatchedCharge = WEXGroupedUnmatched.reduce(
-        (prev, { modifiedTotalCharge }) => prev + modifiedTotalCharge!,
-        0
-      );
+      const unmatchedCharge =
+        Math.round(
+          (WEXUnresolved.reduce((a, b) => a + (b.modifiedTotalCharge || 0), 0) +
+            Number.EPSILON) *
+            100
+        ) / 100;
 
       // Matched Sum Charge
-      const matchedSumCharge = totalCharge - unmatchedCharge;
+      const matchSumCharge =
+        Math.round((totalCharge - unmatchedCharge + Number.EPSILON) * 100) /
+        100;
 
       // Unmatched Sum Charge
-      const unmatchedSumCharge = totalCharge - matchedSumCharge;
+      const unmatchSumCharge =
+        Math.round((totalCharge - matchSumCharge + Number.EPSILON) * 100) / 100;
 
       // Matched count
-      const matchedCount = WEXModified.length - WEXGroupedUnmatched.length;
+      const matchCount = WEXModified.length - WEXUnresolved.length;
 
       // matched Sum Percentage
-      const matchedSumPercentage = (matchedCount * 100) / WEXModified.length;
+      const matchSumPercentage =
+        Math.round(
+          ((matchCount * 100) / WEXModified.length + Number.EPSILON) * 100
+        ) / 100;
 
       // unmatched Sum Percentage
-      const unmatchedSumPercentage = Number(
-        ((unmatchedSumCharge / totalCharge) * 100).toFixed(2)
+      const unmatchSumPercentage = Number(
+        ((unmatchSumCharge / totalCharge) * 100).toFixed(2)
       );
 
       // Delete all modified fields
-      WEXGroupedUnmatched.forEach((element) => {
+      WEXUnresolved.forEach((element) => {
         delete element.modifiedDate;
         delete element.modifiedUser;
         delete element.modifiedSide;
@@ -2086,7 +2126,7 @@ const addDerivatives = async (
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(WEXGroupedUnmatched, (err, csv) => {
+      converter.json2csv(WEXGroupedMatched, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
             `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
@@ -2130,13 +2170,14 @@ const addDerivatives = async (
         drv: `DRV-${userByID.username}-${formattedCurrentDate}.csv`,
         totalCount: WEXModified.length,
         totalCharge,
-        matchedCount,
-        matchSumCharge: matchedSumCharge,
-        matchedSumPercentage: matchedSumPercentage,
-        unmatchedCount: WEXunresolved.length,
-        unmatchedGroupCount: WEXGroupedUnmatched.length,
-        unmatchedSumCharge,
-        unmatchedSumPercentage,
+        matchCount,
+        matchSumCharge,
+        matchSumPercentage,
+        unmatchCount: WEXUnresolved.length,
+        unmatchGroupCount:
+          WEXGroupedUnmatchedNVN.length + WEXGroupedUnmatchedNV1.length,
+        unmatchSumCharge,
+        unmatchSumPercentage,
         unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
@@ -2197,9 +2238,9 @@ const getDerivatives = async (
         wex: derivative.source,
         drv: derivative.drv,
         username: derivative.username,
-        matchedCount: derivative.matchedCount,
-        matchedSumPercentage: derivative.matchedSumPercentage,
-        unmatchedCount: derivative.unmatchedCount,
+        matchCount: derivative.matchCount,
+        matchSumPercentage: derivative.matchSumPercentage,
+        unmatchCount: derivative.unmatchCount,
         unresolved: derivative.unresolved
       }))
     });
@@ -2256,13 +2297,13 @@ const getDerivative = async (
         username: derivative.username,
         totalCount: derivative.totalCount,
         totalCharge: derivative.totalCharge,
-        matchedCount: derivative.matchedCount,
+        matchCount: derivative.matchCount,
         matchSumCharge: derivative.matchSumCharge,
-        matchedSumPercentage: derivative.matchedSumPercentage,
-        unmatchedCount: derivative.unmatchedCount,
-        unmatchedGroupCount: derivative.unmatchedGroupCount,
-        unmatchedSumCharge: derivative.unmatchedSumCharge,
-        unmatchedSumPercentage: derivative.unmatchedSumPercentage,
+        matchSumPercentage: derivative.matchSumPercentage,
+        unmatchCount: derivative.unmatchCount,
+        unmatchGroupCount: derivative.unmatchGroupCount,
+        unmatchSumCharge: derivative.unmatchSumCharge,
+        unmatchSumPercentage: derivative.unmatchSumPercentage,
         unresolved: derivative.unresolved
       }
     });

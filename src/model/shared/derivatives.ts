@@ -33,6 +33,7 @@ export interface IDRV {
     quantity?: number;
   }[];
   groupsSeparated?: IDRV[];
+  key?: string;
 }
 
 export interface IDASH {
@@ -180,6 +181,7 @@ export interface IWEX {
     | undefined
   )[];
   groupsSeparated?: IWEX[];
+  key?: string;
 }
 
 export interface IDRVObject {
