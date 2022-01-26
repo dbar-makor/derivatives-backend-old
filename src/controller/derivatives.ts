@@ -4,6 +4,7 @@ import util from "util";
 import moment from "moment";
 import converter from "json-2-csv";
 import rp from "request-promise";
+import _ from "lodash";
 
 import ServerGlobal from "../server-global";
 
@@ -1543,8 +1544,6 @@ const addDerivatives = async (
 
       let WEXModifiedPairsCancled: IWEX[] = [];
 
-      let reconciliation_charge: IReconciliationCharge[] = [];
-
       // Modifing DRV
       const DRVModified = DRV.map((element) => {
         const modifiedDate = DRVDateFormat(element.date!);
@@ -1865,6 +1864,98 @@ const addDerivatives = async (
         }
       }
 
+      let arr1Match: IWEX[] = [];
+      let arr1Unmatch: IWEX[] = [];
+      let arr2Match: IDRV[] = [];
+      let arr2Unmatch: IDRV[] = [];
+
+      const keys = WEXGroupedCalculated.map((e) => e.key);
+
+      const arr1Map: ReadonlyMap<string, IWEX[] | undefined> = new Map(
+        WEXGroupedCalculated.map(
+          ({
+            modifiedDate,
+            modifiedSide,
+            modifiedRoot,
+            modifiedStrike,
+            modifiedExpiry,
+            modifiedCallPut,
+            modifiedAveragePrice,
+            modifiedExecQty,
+            groupsSeparated
+          }) => [
+            `${modifiedDate}|${modifiedSide}|${modifiedRoot}|${modifiedStrike}|${modifiedExpiry}|${modifiedCallPut}|${modifiedAveragePrice}|${modifiedExecQty}`,
+            groupsSeparated
+          ]
+        )
+      );
+
+      const arr2Map: ReadonlyMap<string, IDRV[] | undefined> = new Map(
+        DRVGroupedCalculated.map(
+          ({
+            modifiedDate,
+            modifiedSide,
+            modifiedSymbol,
+            modifiedStrike,
+            modifiedExpiry,
+            modifiedOption,
+            modifiedPrice,
+            modifiedQuantity,
+            groupsSeparated
+          }) => [
+            `${modifiedDate}|${modifiedSide}|${modifiedSymbol}|${modifiedStrike}|${modifiedExpiry}|${modifiedOption}|${modifiedPrice}|${modifiedQuantity}`,
+            groupsSeparated
+          ]
+        )
+      );
+
+      // const x = _.differenceBy(arr1Map, arr2Map, keys);
+
+      // log(arr1Map);
+      for (const obj in arr1Map) {
+        log(3);
+        log(obj);
+      }
+      // log(1);
+
+      // const isMatch = (a: IWEX, b: IDRV) => Math.random() < 0.5;
+
+      // const getMatches = (arrOne: IWEX[], arrTwo: IDRV[]) => {
+      //   const matches: IWEX[] = [];
+      //   const arrOneUnmatches: IWEX[] = [];
+      //   let arrTwoUnmatches: IDRV[];
+
+      //   // Copying for comfortability's sake
+      //   const arrTwoCopy = [...arrTwo];
+
+      //   arrOne.forEach((item) => {
+      //     // Find a match in array two
+      //     const arrTwoMatchIndex = arrTwoCopy.findIndex((arrTwoItem) =>
+      //       isMatch(item, arrTwoItem)
+      //     );
+      //     if (arrTwoMatchIndex) {
+      //       matches.push(item);
+
+      //       // Remove it from arrTwoCopy, to maintain arrTwoUnmatches
+      //       arrTwoCopy.splice(arrTwoMatchIndex, 1);
+      //     } else {
+      //       // No match = go to arrOneUnmatches
+      //       arrOneUnmatches.push(item);
+      //     }
+      //   });
+
+      //   // Anyone left in arrTwoCopy didn't match anyone in arrOne, so they have no match
+      //   arrTwoUnmatches = arrTwoCopy;
+
+      //   return { matches, arrOneUnmatches, arrTwoUnmatches };
+      // };
+
+      // const x = getMatches(WEXGroupedCalculated, DRVGroupedCalculated);
+
+      // console.log(x.matches.length);
+      // console.log(x.arrOneUnmatches.length);
+      // console.log(x.arrTwoUnmatches.length);
+
       // ----- N VS N ----- //
 
       // Return DRV grouped calculated keys
@@ -1895,8 +1986,6 @@ const addDerivatives = async (
           "|" +
           modifiedQuantity
       );
-
-      log(DRVGroupedCalculatedKeys);
 
       // Loop through WEX grouped calculated
       for (const object of WEXGroupedCalculated) {
