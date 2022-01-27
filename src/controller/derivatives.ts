@@ -217,7 +217,7 @@ const addDerivatives = async (
 
       let DRVGroupedMatched: IDRV[] = [];
 
-      let DRVGroupedCalculated: IDRV[] = [];
+      let targetGroupedCalculated: IDRV[] = [];
       let DRVUniqueCalculated: IDRV[] = [];
 
       let DASHGroupedCalculated: IDASH[] = [];
@@ -438,11 +438,11 @@ const addDerivatives = async (
         if (DRVGrouped[key].length === 1) {
           DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
         } else {
-          DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
+          targetGroupedCalculated = targetGroupedCalculated.concat(result);
         }
       }
 
-      const DRVGroupedCalculatedKey = DRVGroupedCalculated.map(
+      const DRVGroupedCalculatedKey = targetGroupedCalculated.map(
         ({
           modifiedDate,
           modifiedSide,
@@ -491,18 +491,18 @@ const addDerivatives = async (
         const match = DRVGroupedCalculatedKey.indexOf(string);
 
         if (match >= 0) {
-          const reconciliationCharge = DRVGroupedCalculated.splice(match, 1)
+          const reconciliationCharge = targetGroupedCalculated.splice(match, 1)
             .map((e) => e.reconciliationCharge)
             .flat();
           // object.reconciliationCharge = reconciliationCharge;
           DASHGroupedMatched.push(object);
-          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
+          DRVGroupedMatched.push(...targetGroupedCalculated.splice(match, 1));
         } else {
           DASHGroupedUnmatched.push(object);
         }
       }
 
-      const DRVGroupedUnmatched = DRVGroupedCalculated;
+      const DRVGroupedUnmatched = targetGroupedCalculated;
 
       // Return reconciliation charge, total charge and exec qty
       const DASHReconciliationCharge: INVNReconciliationCharge[] =
@@ -865,7 +865,7 @@ const addDerivatives = async (
     };
 
     const BAMLActions = async () => {
-      let DRVGroupedCalculated: IDRV[] = [];
+      let targetGroupedCalculated: IDRV[] = [];
 
       let BAMLGroupedByDRV: IBAML[] = [];
       let BAMLGroupedCalculated: IBAML[] = [];
@@ -1084,14 +1084,14 @@ const addDerivatives = async (
             .values()
         ];
 
-        DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
+        targetGroupedCalculated = targetGroupedCalculated.concat(result);
       }
 
       let BAMLByDRVGroupedMatched: IBAML[] = [];
       let BAMLByDRVGrouped: IBAML[] = [];
 
       const map = new Map(
-        DRVGroupedCalculated.map(
+        targetGroupedCalculated.map(
           ({
             modifiedDate,
             modifiedSide,
@@ -1527,6 +1527,11 @@ const addDerivatives = async (
     */
 
     const WEXActions = async () => {
+      const sourceGroupsMatches: IWEX[] = [];
+      const sourceGroupsUnmatches: IWEX[] = [];
+      const targetMatches: IDRV[] = [];
+      const targetGroupsUnmatches: IDRV[] = [];
+
       let WEXGroupedMatched: IWEX[] = [];
       let WEXGroupedUnmatchedNVN: IWEX[] = [];
       let WEXGroupedUnmatchedNV1: IWEX[] = [];
@@ -1535,11 +1540,11 @@ const addDerivatives = async (
       let DRVGroupedMatched: IDRV[] = [];
       let DRVGroupedUnmatched: IDRV[] = [];
 
-      let DRVGroupedCalculated: IDRV[] = [];
+      let targetGroupedCalculated: IDRV[] = [];
       let DRVUniqueCalculated: IDRV[] = [];
       let DRVUniqueCalculated1V1: IDRV[] = [];
 
-      let WEXGroupedCalculated: IWEX[] = [];
+      let sourceGroupedCalculated: IWEX[] = [];
       let WEXUniqueCalculated: IWEX[] = [];
 
       let WEXModifiedPairsCancled: IWEX[] = [];
@@ -1782,7 +1787,7 @@ const addDerivatives = async (
         if (WEXGrouped[key].length === 1) {
           WEXUniqueCalculated = WEXUniqueCalculated.concat(result);
         } else {
-          WEXGroupedCalculated = WEXGroupedCalculated.concat(result);
+          sourceGroupedCalculated = sourceGroupedCalculated.concat(result);
         }
       }
 
@@ -1860,277 +1865,143 @@ const addDerivatives = async (
         if (DRVGrouped[key].length === 1) {
           DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
         } else {
-          DRVGroupedCalculated = DRVGroupedCalculated.concat(result);
+          targetGroupedCalculated = targetGroupedCalculated.concat(result);
         }
       }
 
-      let arr1Match: IWEX[] = [];
-      let arr1Unmatch: IWEX[] = [];
-      let arr2Match: IDRV[] = [];
-      let arr2Unmatch: IDRV[] = [];
+      //- |-------------------| -//
+      //- |-----  N V N  -----| -//
+      //- |-------------------| -//
 
-      const keys = WEXGroupedCalculated.map((e) => e.key);
+      // Run through each row on source, get source matches, unmatches & target unmatches
+      for (const sourceObject of sourceGroupedCalculated) {
+        // Check for match between source & target
+        const targetObject = targetGroupedCalculated.find((targetObject) => {
+          const isMatch = sourceObject.key === targetObject.key;
+          return isMatch;
+        });
 
-      const arr1Map: ReadonlyMap<string, IWEX[] | undefined> = new Map(
-        WEXGroupedCalculated.map(
-          ({
-            modifiedDate,
-            modifiedSide,
-            modifiedRoot,
-            modifiedStrike,
-            modifiedExpiry,
-            modifiedCallPut,
-            modifiedAveragePrice,
-            modifiedExecQty,
-            groupsSeparated
-          }) => [
-            `${modifiedDate}|${modifiedSide}|${modifiedRoot}|${modifiedStrike}|${modifiedExpiry}|${modifiedCallPut}|${modifiedAveragePrice}|${modifiedExecQty}`,
-            groupsSeparated
-          ]
-        )
-      );
+        if (targetObject) {
+          // Check if match as already been made by id
+          const targetIds = sourceGroupsMatches.map((e) => e.targetId);
+          if (
+            targetIds.includes(
+              targetObject.drv_trade_client_account_execution_id
+            )
+          ) {
+            sourceGroupsUnmatches.push(sourceObject);
+            continue;
+          }
 
-      const arr2Map: ReadonlyMap<string, IDRV[] | undefined> = new Map(
-        DRVGroupedCalculated.map(
-          ({
-            modifiedDate,
-            modifiedSide,
-            modifiedSymbol,
-            modifiedStrike,
-            modifiedExpiry,
-            modifiedOption,
-            modifiedPrice,
-            modifiedQuantity,
-            groupsSeparated
-          }) => [
-            `${modifiedDate}|${modifiedSide}|${modifiedSymbol}|${modifiedStrike}|${modifiedExpiry}|${modifiedOption}|${modifiedPrice}|${modifiedQuantity}`,
-            groupsSeparated
-          ]
-        )
-      );
+          sourceGroupsMatches.push({
+            ...sourceObject,
+            targetId: targetObject.drv_trade_client_account_execution_id
+          });
 
-      // const x = _.differenceBy(arr1Map, arr2Map, keys);
+          // Iterate over target matches to add charge
+          for (const target of targetObject.groupsSeparated!) {
+            const sourceCharge = sourceObject.modifiedTotalCharge!;
+            const sourceQuantity = sourceObject.modifiedExecQty!;
 
-      // log(arr1Map);
-      for (const obj in arr1Map) {
-        log(3);
-        log(obj);
-      }
-      // log(1);
+            const targetWithCharge: IDRV[] = [
+              {
+                ...target,
+                charge:
+                  (Number(target.quantity) * sourceCharge) / sourceQuantity
+              }
+            ];
 
-      // const isMatch = (a: IWEX, b: IDRV) => Math.random() < 0.5;
-
-      // const getMatches = (arrOne: IWEX[], arrTwo: IDRV[]) => {
-      //   const matches: IWEX[] = [];
-      //   const arrOneUnmatches: IWEX[] = [];
-      //   let arrTwoUnmatches: IDRV[];
-
-      //   // Copying for comfortability's sake
-      //   const arrTwoCopy = [...arrTwo];
-
-      //   arrOne.forEach((item) => {
-      //     // Find a match in array two
-      //     const arrTwoMatchIndex = arrTwoCopy.findIndex((arrTwoItem) =>
-      //       isMatch(item, arrTwoItem)
-      //     );
-      //     if (arrTwoMatchIndex) {
-      //       matches.push(item);
-
-      //       // Remove it from arrTwoCopy, to maintain arrTwoUnmatches
-      //       arrTwoCopy.splice(arrTwoMatchIndex, 1);
-      //     } else {
-      //       // No match = go to arrOneUnmatches
-      //       arrOneUnmatches.push(item);
-      //     }
-      //   });
-
-      //   // Anyone left in arrTwoCopy didn't match anyone in arrOne, so they have no match
-      //   arrTwoUnmatches = arrTwoCopy;
-
-      //   return { matches, arrOneUnmatches, arrTwoUnmatches };
-      // };
-
-      // const x = getMatches(WEXGroupedCalculated, DRVGroupedCalculated);
-
-      // console.log(x.matches.length);
-      // console.log(x.arrOneUnmatches.length);
-      // console.log(x.arrTwoUnmatches.length);
-
-      // ----- N VS N ----- //
-
-      // Return DRV grouped calculated keys
-      const DRVGroupedCalculatedKeys = DRVGroupedCalculated.map(
-        ({
-          modifiedDate,
-          modifiedSide,
-          modifiedSymbol,
-          modifiedStrike,
-          modifiedExpiry,
-          modifiedOption,
-          modifiedPrice,
-          modifiedQuantity
-        }) =>
-          modifiedDate +
-          "|" +
-          modifiedSide +
-          "|" +
-          modifiedSymbol +
-          "|" +
-          modifiedStrike +
-          "|" +
-          modifiedExpiry +
-          "|" +
-          modifiedOption +
-          "|" +
-          modifiedPrice +
-          "|" +
-          modifiedQuantity
-      );
-
-      // Loop through WEX grouped calculated
-      for (const object of WEXGroupedCalculated) {
-        const string = `${object.modifiedDate}|${object.modifiedSide}|${object.modifiedRoot}|${object.modifiedStrike}|${object.modifiedExpiry}|${object.modifiedCallPut}|${object.modifiedAveragePrice}|${object.modifiedExecQty}`;
-
-        const match = DRVGroupedCalculatedKeys.indexOf(string);
-
-        if (match >= 0) {
-          const reconciliationCharge = DRVGroupedCalculated.splice(match, 1)
-            .map((e) => e.reconciliationCharge)
-            .flat();
-
-          object.reconciliationCharge = reconciliationCharge;
-
-          WEXGroupedMatched.push(object);
-          DRVGroupedMatched.push(...DRVGroupedCalculated.splice(match, 1));
+            targetMatches.push(...targetWithCharge);
+          }
         } else {
-          WEXGroupedUnmatchedNVN.push(object);
+          sourceGroupsUnmatches.push(sourceObject);
         }
       }
 
-      // ----- N VS 1 ----- //
+      // Run through each row on target, get target unmatches
+      for (const targetObject of targetGroupedCalculated) {
+        const sourceObject = sourceGroupedCalculated.find(
+          (sourceObject) => targetObject.key === sourceObject.key
+        );
 
-      // Assign DRV grouped calculated to DRV grouped unmatched
-      DRVGroupedUnmatched = DRVGroupedCalculated;
+        if (!sourceObject) {
+          targetGroupsUnmatches.push(targetObject);
+        }
+      }
 
-      // Separate DRV grouped unmatched
-      const DRVUnmatched = separateGroups(DRVGroupedUnmatched);
+      //- |-------------------| -//
+      //- |-----  N V 1  -----| -//
+      //- |-------------------| -//
 
-      // Concat DRV unmatched to DRV unique calculated
-      DRVUniqueCalculated = DRVUniqueCalculated.concat(DRVUnmatched as IDRV[]);
+      const targetGroupsSeparated = separateGroups(targetGroupsUnmatches);
 
-      // Return DRV unique calculated keys
-      const DRVUniqueCalculatedKeys = DRVUniqueCalculated.map(
-        ({
-          modifiedDate,
-          modifiedSide,
-          modifiedSymbol,
-          modifiedStrike,
-          modifiedExpiry,
-          modifiedOption,
-          modifiedPrice,
-          modifiedQuantity
-        }) =>
-          `${modifiedDate}|${modifiedSide}|${modifiedSymbol}|${modifiedStrike}|${modifiedExpiry}|${modifiedOption}|${modifiedPrice}|${modifiedQuantity}`
-      );
+      DRVUniqueCalculated.push(...(targetGroupsSeparated as IDRV[]));
 
-      // Loop through WEX grouped unmatched
-      for (const object of WEXGroupedUnmatchedNVN) {
-        const string = `${object.modifiedDate}|${object.modifiedSide}|${object.modifiedRoot}|${object.modifiedStrike}|${object.modifiedExpiry}|${object.modifiedCallPut}|${object.modifiedAveragePrice}|${object.modifiedExecQty}`;
+      log(sourceGroupsUnmatches.length);
 
-        const match = DRVUniqueCalculatedKeys.indexOf(string);
+      // Run through each row on source, get source matches, unmatches & target unmatches
+      for (const sourceObject of sourceGroupsUnmatches) {
+        // Check for match between source & target
+        const targetObject = DRVUniqueCalculated.find((targetObject) => {
+          const isMatch = sourceObject.key === targetObject.key;
+          return isMatch;
+        });
 
-        if (match >= 0) {
-          const reconciliationCharge = DRVUniqueCalculated.splice(match, 1)
-            .map((e) => e.reconciliationCharge)
-            .flat();
+        // log(targetObject);
+        if (targetObject) {
+          // Check if match as already been made by id
+          const targetIds = sourceGroupsMatches.map((e) => e.targetId);
+          if (
+            targetIds.includes(
+              targetObject.drv_trade_client_account_execution_id
+            )
+          ) {
+            sourceGroupsUnmatches.push(sourceObject);
+            continue;
+          }
 
-          object.reconciliationCharge = reconciliationCharge;
+          sourceGroupsMatches.push({
+            ...sourceObject,
+            targetId: targetObject.drv_trade_client_account_execution_id
+          });
 
-          WEXGroupedMatched.push(object);
-          DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
+          // Iterate over target matches to add charge
+          for (const target of targetObject.groupsSeparated!) {
+            const sourceCharge = sourceObject.modifiedTotalCharge!;
+            const sourceQuantity = sourceObject.modifiedExecQty!;
+
+            const targetWithCharge: IDRV[] = [
+              {
+                ...target,
+                charge:
+                  (Number(target.quantity) * sourceCharge) / sourceQuantity
+              }
+            ];
+
+            targetMatches.push(...targetWithCharge);
+          }
         } else {
-          WEXGroupedUnmatchedNV1.push(object);
+          sourceGroupsUnmatches.push(sourceObject);
         }
       }
 
-      // ----- 1 VS 1 ----- //
+      log(7);
 
-      // Assign DRV unique calculated to DRV unique unmatched
-      DRVUniqueCalculated1V1 = DRVUniqueCalculated;
+      // Run through each row on target, get target unmatches
+      for (const targetObject of DRVUniqueCalculated) {
+        const sourceObject = sourceGroupsUnmatches.find(
+          (sourceObject) => targetObject.key === sourceObject.key
+        );
 
-      // Separate WEX grouped unmatched
-      const WEXUnmatchedNVN = separateGroups(WEXGroupedUnmatchedNVN);
-      const WEXUnmatchedNV1 = separateGroups(WEXGroupedUnmatchedNV1);
-
-      // Concat wex unmatched to WEX unique calculated
-      WEXUniqueCalculated = WEXUniqueCalculated.concat(
-        WEXUnmatchedNVN as IWEX[],
-        WEXUnmatchedNV1 as IWEX[]
-      );
-
-      // Return DRV unique calculated keys
-      const DRVUniqueCalculatedKeys1V1 = DRVUniqueCalculated1V1.map(
-        ({
-          modifiedDate,
-          modifiedSide,
-          modifiedSymbol,
-          modifiedStrike,
-          modifiedExpiry,
-          modifiedOption,
-          modifiedPrice,
-          modifiedQuantity
-        }) =>
-          modifiedDate +
-          "|" +
-          modifiedSide +
-          "|" +
-          modifiedSymbol +
-          "|" +
-          modifiedStrike +
-          "|" +
-          modifiedExpiry +
-          "|" +
-          modifiedOption +
-          "|" +
-          modifiedPrice +
-          "|" +
-          modifiedQuantity
-      );
-
-      // Loop through WEX unique calculated
-      for (const object of WEXUniqueCalculated) {
-        const string =
-          object.modifiedDate +
-          "|" +
-          object.modifiedSide +
-          "|" +
-          object.modifiedRoot +
-          "|" +
-          object.modifiedStrike +
-          "|" +
-          object.modifiedExpiry +
-          "|" +
-          object.modifiedCallPut +
-          "|" +
-          object.modifiedAveragePrice +
-          "|" +
-          object.modifiedExecQty;
-
-        const match = DRVUniqueCalculatedKeys1V1.indexOf(string);
-
-        if (match >= 0) {
-          const reconciliationCharge = DRVUniqueCalculated.splice(match, 1)
-            .map((e) => e.reconciliationCharge)
-            .flat();
-
-          object.reconciliationCharge = reconciliationCharge;
-
-          // WEXGroupedMatched.push(object);
-          DRVGroupedMatched.push(...DRVUniqueCalculated.splice(match, 1));
-        } else {
-          WEXUnresolved.push(object);
+        if (!sourceObject) {
+          targetGroupsUnmatches.push(targetObject);
         }
       }
+
+      log(sourceGroupsMatches.length);
+      log(sourceGroupsUnmatches.length);
+      log(targetMatches.length);
+      log(targetGroupsUnmatches.length);
 
       // Return reconciliation charge, total charge and exec qty
       const WEXReconciliationCharges: INVNReconciliationCharge[] =

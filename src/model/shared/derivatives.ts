@@ -26,13 +26,12 @@ export interface IDRV {
   modifiedStrike?: number;
   modifiedOption?: string;
   modifiedPrice?: number;
-  quantitySum?: number;
-  charge?: number;
   reconciliationCharge?: {
     drv_trade_client_account_execution_id?: string;
     quantity?: number;
   }[];
   groupsSeparated?: IDRV[];
+  charge?: number;
   key?: string;
 }
 
@@ -63,7 +62,6 @@ export interface IDASH {
   modifiedBPCR$?: number;
   totalCharge?: number;
   drv_trade_client_account_execution_id?: string;
-  quantitySum?: number;
   reconciliationCharge?: (
     | {
         drv_trade_client_account_execution_id?: string | undefined;
@@ -182,6 +180,7 @@ export interface IWEX {
   )[];
   groupsSeparated?: IWEX[];
   key?: string;
+  targetId?: string;
 }
 
 export interface IDRVObject {
