@@ -218,7 +218,7 @@ const addDerivatives = async (
       let DRVGroupedMatched: IDRV[] = [];
 
       let targetGroupedCalculated: IDRV[] = [];
-      let DRVUniqueCalculated: IDRV[] = [];
+      let targetUniqueCalculated: IDRV[] = [];
 
       let DASHGroupedCalculated: IDASH[] = [];
       let DASHUniqueCalculated: IDASH[] = [];
@@ -436,7 +436,7 @@ const addDerivatives = async (
         ];
 
         if (DRVGrouped[key].length === 1) {
-          DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
+          targetUniqueCalculated = targetUniqueCalculated.concat(result);
         } else {
           targetGroupedCalculated = targetGroupedCalculated.concat(result);
         }
@@ -1528,9 +1528,14 @@ const addDerivatives = async (
 
     const WEXActions = async () => {
       const sourceGroupsMatches: IWEX[] = [];
-      const sourceGroupsUnmatches: IWEX[] = [];
+      const sourceGroupsUnmatchesNVN: IWEX[] = [];
+      const sourceGroupsUnmatchesNV1: IWEX[] = [];
+      const sourceGroupsUnmatches1V1: IWEX[] = [];
+
       const targetMatches: IDRV[] = [];
-      const targetGroupsUnmatches: IDRV[] = [];
+      const targetGroupsUnmatchesNVN: IDRV[] = [];
+      const targetGroupsUnmatchesNV1: IDRV[] = [];
+      const targetGroupsUnmatches1V1: IDRV[] = [];
 
       let WEXGroupedMatched: IWEX[] = [];
       let WEXGroupedUnmatchedNVN: IWEX[] = [];
@@ -1541,7 +1546,7 @@ const addDerivatives = async (
       let DRVGroupedUnmatched: IDRV[] = [];
 
       let targetGroupedCalculated: IDRV[] = [];
-      let DRVUniqueCalculated: IDRV[] = [];
+      let targetUniqueCalculated: IDRV[] = [];
       let DRVUniqueCalculated1V1: IDRV[] = [];
 
       let sourceGroupedCalculated: IWEX[] = [];
@@ -1863,7 +1868,7 @@ const addDerivatives = async (
         ];
 
         if (DRVGrouped[key].length === 1) {
-          DRVUniqueCalculated = DRVUniqueCalculated.concat(result);
+          targetUniqueCalculated = targetUniqueCalculated.concat(result);
         } else {
           targetGroupedCalculated = targetGroupedCalculated.concat(result);
         }
@@ -1889,7 +1894,7 @@ const addDerivatives = async (
               targetObject.drv_trade_client_account_execution_id
             )
           ) {
-            sourceGroupsUnmatches.push(sourceObject);
+            sourceGroupsUnmatchesNVN.push(sourceObject);
             continue;
           }
 
@@ -1914,7 +1919,7 @@ const addDerivatives = async (
             targetMatches.push(...targetWithCharge);
           }
         } else {
-          sourceGroupsUnmatches.push(sourceObject);
+          sourceGroupsUnmatchesNVN.push(sourceObject);
         }
       }
 
@@ -1925,7 +1930,7 @@ const addDerivatives = async (
         );
 
         if (!sourceObject) {
-          targetGroupsUnmatches.push(targetObject);
+          targetGroupsUnmatchesNVN.push(targetObject);
         }
       }
 
@@ -1933,21 +1938,18 @@ const addDerivatives = async (
       //- |-----  N V 1  -----| -//
       //- |-------------------| -//
 
-      const targetGroupsSeparated = separateGroups(targetGroupsUnmatches);
+      const targetUnmatches = separateGroups(targetGroupsUnmatchesNVN);
 
-      DRVUniqueCalculated.push(...(targetGroupsSeparated as IDRV[]));
-
-      log(sourceGroupsUnmatches.length);
+      targetUniqueCalculated.push(...(targetUnmatches as IDRV[]));
 
       // Run through each row on source, get source matches, unmatches & target unmatches
-      for (const sourceObject of sourceGroupsUnmatches) {
+      for (const sourceObject of sourceGroupsUnmatchesNVN) {
         // Check for match between source & target
-        const targetObject = DRVUniqueCalculated.find((targetObject) => {
+        const targetObject = targetUniqueCalculated.find((targetObject) => {
           const isMatch = sourceObject.key === targetObject.key;
           return isMatch;
         });
 
-        // log(targetObject);
         if (targetObject) {
           // Check if match as already been made by id
           const targetIds = sourceGroupsMatches.map((e) => e.targetId);
@@ -1956,7 +1958,7 @@ const addDerivatives = async (
               targetObject.drv_trade_client_account_execution_id
             )
           ) {
-            sourceGroupsUnmatches.push(sourceObject);
+            sourceGroupsUnmatchesNV1.push(sourceObject);
             continue;
           }
 
@@ -1965,43 +1967,144 @@ const addDerivatives = async (
             targetId: targetObject.drv_trade_client_account_execution_id
           });
 
-          // Iterate over target matches to add charge
-          for (const target of targetObject.groupsSeparated!) {
+          // Add charge to target matches
+          if (!targetObject.groupsSeparated) {
             const sourceCharge = sourceObject.modifiedTotalCharge!;
             const sourceQuantity = sourceObject.modifiedExecQty!;
 
             const targetWithCharge: IDRV[] = [
               {
-                ...target,
+                ...targetObject,
                 charge:
-                  (Number(target.quantity) * sourceCharge) / sourceQuantity
+                  (Number(targetObject.quantity) * sourceCharge) /
+                  sourceQuantity
               }
             ];
 
             targetMatches.push(...targetWithCharge);
+          } else {
+            // Iterate over target matches to add charge
+            for (const target of targetObject.groupsSeparated) {
+              const sourceCharge = sourceObject.modifiedTotalCharge!;
+              const sourceQuantity = sourceObject.modifiedExecQty!;
+
+              const targetWithCharge: IDRV[] = [
+                {
+                  ...target,
+                  charge:
+                    (Number(target.quantity) * sourceCharge) / sourceQuantity
+                }
+              ];
+
+              targetMatches.push(...targetWithCharge);
+            }
           }
         } else {
-          sourceGroupsUnmatches.push(sourceObject);
+          sourceGroupsUnmatchesNV1.push(sourceObject);
         }
       }
 
-      log(7);
-
       // Run through each row on target, get target unmatches
-      for (const targetObject of DRVUniqueCalculated) {
-        const sourceObject = sourceGroupsUnmatches.find(
+      for (const targetObject of targetUniqueCalculated) {
+        const sourceObject = sourceGroupsUnmatchesNVN.find(
           (sourceObject) => targetObject.key === sourceObject.key
         );
 
         if (!sourceObject) {
-          targetGroupsUnmatches.push(targetObject);
+          targetGroupsUnmatchesNV1.push(targetObject);
         }
       }
 
-      log(sourceGroupsMatches.length);
-      log(sourceGroupsUnmatches.length);
-      log(targetMatches.length);
-      log(targetGroupsUnmatches.length);
+      //- |-------------------| -//
+      //- |-----  1 V 1  -----| -//
+      //- |-------------------| -//
+
+      WEXUniqueCalculated.push(
+        ...(separateGroups(sourceGroupsUnmatchesNV1) as IWEX[])
+      );
+
+      // Run through each row on source, get source matches, unmatches & target unmatches
+      for (const sourceObject of WEXUniqueCalculated) {
+        // Check for match between source & target
+        const targetObject = targetGroupsUnmatchesNV1.find((targetObject) => {
+          log("src: " + sourceObject.key);
+          log("trg: " + targetObject.key);
+          const isMatch = sourceObject.key === targetObject.key;
+          return isMatch;
+        });
+
+        if (targetObject) {
+          break;
+
+          // // Check if match as already been made by id
+          // const targetIds = sourceGroupsMatches.map((e) => e.targetId);
+          // if (
+          //   targetIds.includes(
+          //     targetObject.drv_trade_client_account_execution_id
+          //   )
+          // ) {
+          //   sourceGroupsUnmatches1V1.push(sourceObject);
+          //   continue;
+          // }
+
+          // sourceGroupsMatches.push({
+          //   ...sourceObject,
+          //   targetId: targetObject.drv_trade_client_account_execution_id
+          // });
+
+          // if (!targetObject.groupsSeparated) {
+          //   // Add charge to target matches
+          //   const sourceCharge = sourceObject.modifiedTotalCharge!;
+          //   const sourceQuantity = sourceObject.modifiedExecQty!;
+
+          //   const targetWithCharge: IDRV[] = [
+          //     {
+          //       ...targetObject,
+          //       charge:
+          //         (Number(targetObject.quantity) * sourceCharge) /
+          //         sourceQuantity
+          //     }
+          //   ];
+
+          //   targetMatches.push(...targetWithCharge);
+          // } else {
+          //   // Iterate over target matches to add charge
+          //   for (const target of targetObject.groupsSeparated) {
+          //     const sourceCharge = sourceObject.modifiedTotalCharge!;
+          //     const sourceQuantity = sourceObject.modifiedExecQty!;
+
+          //     const targetWithCharge: IDRV[] = [
+          //       {
+          //         ...target,
+          //         charge:
+          //           (Number(target.quantity) * sourceCharge) / sourceQuantity
+          //       }
+          //     ];
+
+          //     targetMatches.push(...targetWithCharge);
+          //   }
+          // }
+        } else {
+          sourceGroupsUnmatches1V1.push(sourceObject);
+        }
+      }
+
+      // Run through each row on target, get target unmatches
+      for (const targetObject of targetUniqueCalculated) {
+        const sourceObject = sourceGroupsUnmatches1V1.find(
+          (sourceObject) => targetObject.key === sourceObject.key
+        );
+
+        if (!sourceObject) {
+          targetGroupsUnmatches1V1.push(targetObject);
+        }
+      }
+
+      // const srcMatch = separateGroups(sourceGroupsMatches);
+
+      // log("all src: " + WEXModifiedPairsCancled.length);
+      // log("src unmatched: " + sourceGroupsUnmatches1V1.length);
+      // log("src matched: " + JSON.stringify(srcMatch).length);
 
       // Return reconciliation charge, total charge and exec qty
       const WEXReconciliationCharges: INVNReconciliationCharge[] =
