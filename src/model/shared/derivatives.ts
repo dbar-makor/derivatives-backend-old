@@ -26,10 +26,6 @@ export interface IDRV {
   modifiedStrike?: number;
   modifiedOption?: string;
   modifiedPrice?: number;
-  reconciliationCharge?: {
-    drv_trade_client_account_execution_id?: string;
-    quantity?: number;
-  }[];
   groupsSeparated?: IDRV[];
   charge?: number;
   key?: string;
@@ -62,13 +58,6 @@ export interface IDASH {
   modifiedBPCR$?: number;
   totalCharge?: number;
   drv_trade_client_account_execution_id?: string;
-  reconciliationCharge?: (
-    | {
-        drv_trade_client_account_execution_id?: string | undefined;
-        quantity?: number | undefined;
-      }
-    | undefined
-  )[];
   groupsSeparated?: IDASH[];
 }
 
@@ -125,13 +114,6 @@ export interface IBAML {
   modifiedExBrok?: string;
   modifiedTotalCharges?: number;
   drv_trade_client_account_execution_id?: string;
-  reconciliationCharge?: (
-    | {
-        drv_trade_client_account_execution_id?: string | undefined;
-        quantity?: number | undefined;
-      }
-    | undefined
-  )[];
   groupsSeparated?: IBAML[];
 }
 
@@ -168,16 +150,8 @@ export interface IWEX {
   modifiedCommissionType?: string;
   modifiedCommissionRate?: number;
   modifiedTotalCharge?: number;
-  modifiedQuantity?: number;
   drv_trade_client_account_execution_id?: string;
   removed?: boolean;
-  reconciliationCharge?: (
-    | {
-        drv_trade_client_account_execution_id?: string | undefined;
-        quantity?: number | undefined;
-      }
-    | undefined
-  )[];
   groupsSeparated?: IWEX[];
   key?: string;
   targetId?: string;
@@ -197,22 +171,4 @@ export interface IBAMLObject {
 
 export interface IWEXObject {
   [key: string]: IWEX[];
-}
-
-export interface INVNReconciliationCharge {
-  reconciliationCharge?: (
-    | {
-        drv_trade_client_account_execution_id?: string | undefined;
-        quantity?: number | undefined;
-      }
-    | undefined
-  )[];
-  totalCharge?: number;
-  execQtySum?: number;
-}
-
-export interface IReconciliationCharge {
-  drv_trade_floor_broker_id?: string;
-  drv_trade_client_account_execution_id?: string;
-  charge?: number;
 }
