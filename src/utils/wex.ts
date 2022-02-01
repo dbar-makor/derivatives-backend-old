@@ -35,7 +35,7 @@ export const WEXExpiryFormat = (date: string) => {
 };
 
 // Format WEX date
-export const WEXDateFormat = (date: string) => {
+export const sourceDateFormat = (date: string) => {
   if (!date) {
     return date;
   }
@@ -51,7 +51,7 @@ export const WEXDateFormat = (date: string) => {
 // Grouping WEX array
 export const WEXGroupBy = (
   array: IWEX[],
-  f: (element: IWEX) => (string | number | undefined)[]
+  f: (element: IWEX) => (string | number | undefined)[],
 ) => {
   if (!array) {
     return array;
@@ -83,7 +83,7 @@ export const WEXSeparateDatesObject = (array: IWEX[]) => {
 };
 
 // Modify total charge
-export const WEXModifiyTotalCharge = (totalCharge: string) => {
+export const sourceTotalCharge = (totalCharge: string) => {
   if (!totalCharge) {
     return Number(totalCharge);
   }

@@ -1,7 +1,7 @@
 import { IDRV, IDRVObject } from "../model/shared/derivatives";
 
 // Formatting DRV date
-export const DRVDateFormat = (date: string) => {
+export const targetDateFormat = (date: string) => {
   if (!date) {
     return date;
   }
@@ -24,7 +24,7 @@ export const DRVDateFormat = (date: string) => {
 };
 
 // Modifying DRV expiry to month only
-export const DRVExpiryToMonthOnly = (date: string) => {
+export const targetExpiryMonth = (date: string) => {
   if (!date) {
     return date;
   }
@@ -41,7 +41,7 @@ export const DRVExpiryToMonthOnly = (date: string) => {
 };
 
 // Modifying DRV expiry to year only
-export const DRVExpiryToYearOnly = (date: string) => {
+export const targetExpiryYear = (date: string) => {
   if (!date) {
     return date;
   }
@@ -80,9 +80,9 @@ export const DRVSeparateDatesObject = (array: IDRV[]) => {
 };
 
 // Grouping DRV
-export const DRVGroupBy = (
+export const targetGroupBy = (
   array: IDRV[],
-  f: (element: IDRV) => (string | number | undefined)[]
+  f: (element: IDRV) => (string | number | undefined)[],
 ) => {
   const groups: { [key: string]: IDRV[] } = {};
 
@@ -100,9 +100,9 @@ export const equalToOneGroupsDRV = (object: IDRVObject) => {
     (a, b) =>
       (a = {
         ...a,
-        ...(b[1].length === 1 ? { [b[0]]: b[1] } : {})
+        ...(b[1].length === 1 ? { [b[0]]: b[1] } : {}),
       }),
-    {}
+    {},
   );
   return result;
 };
@@ -112,9 +112,9 @@ export const biggerThanOneGroupsDRV = (object: IDRVObject) => {
     (a, b) =>
       (a = {
         ...a,
-        ...(b[1].length !== 1 ? { [b[0]]: b[1] } : {})
+        ...(b[1].length !== 1 ? { [b[0]]: b[1] } : {}),
       }),
-    {}
+    {},
   );
   return result;
 };
