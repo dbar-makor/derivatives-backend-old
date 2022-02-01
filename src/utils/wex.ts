@@ -49,9 +49,9 @@ export const sourceDateFormat = (date: string) => {
 };
 
 // Grouping WEX array
-export const WEXGroupBy = (
+export const sourceGroupBy = (
   array: IWEX[],
-  f: (element: IWEX) => (string | number | undefined)[],
+  f: (element: IWEX) => (string | number | undefined)[]
 ) => {
   if (!array) {
     return array;

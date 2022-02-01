@@ -1,0 +1,10 @@
+drv_trade_id,drv_trade_client_trader_id,drv_trade_client_account_execution_id,floor_broker,date,side,quantity,component_type,contract_type,symbol,expiry,strike,option,price,client_id,client,trader,modifiedDate,modifiedSide,modifiedQuantity,modifiedSymbol,modifiedExpiry,modifiedExpiryMonthOnly,modifiedExpiryYearOnly,modifiedStrike,modifiedOption,modifiedPrice,charge
+54821,111665,281545,WEX FIX,5/26/2021,sell,98,leg,option,GSAH,7/16/2021,10,call,0.231531,659,milton arbitrage,milton,26/5/2021,s,98,gsah,16/7/2021,7,2021,10,c,0.23,26.109999999999996
+54252,110355,278238,Mando,5/26/2021,sell,102,leg,option,AAP,11/19/2021,165,put,8.165686,195,citibank,jason huang,26/5/2021,s,102,aap,19/11/2021,11,2021,165,p,8.17,5.1
+54823,111669,281556,WEX FIX,5/27/2021,sell,6,leg,option,GSAH,7/16/2021,10,call,0.2667,659,milton arbitrage,milton,27/5/2021,s,6,gsah,16/7/2021,7,2021,10,c,0.27,-1.57
+52393,106175,265689,Mando,05/03/2021,buy,1000,leg,option,EEM,12/15/2023,45,put,4.6,202,csfb ny,Jonathan Calo,3/5/2021,b,1000,eem,15/12/2023,12,2023,45,p,4.6,70
+52502,106407,266290,Mando,05/04/2021,buy,500,leg,option,EEM,12/15/2023,45,put,4.8,251,ubs,nelson zhu,4/5/2021,b,500,eem,15/12/2023,12,2023,45,p,4.8,35
+52534,106482,266494,XFA,05/04/2021,buy,687,leg,option,VIX,6/16/2021,20,put,1.6,251,ubs,harsh mundhra,4/5/2021,b,687,vix,16/6/2021,6,2021,20,p,1.6,48.09
+53376,108313,270980,Mando,5/13/2021,buy,5000,leg,option,XLF,7/16/2021,34,put,0.45,251,ubs,nelson zhu,13/5/2021,b,5000,xlf,16/7/2021,7,2021,34,p,0.45,350
+54159,110138,277699,Mando,5/25/2021,buy,450,leg,option,GDX,1/20/2023,35,put,4.1,251,ubs,nelson zhu,25/5/2021,b,450,gdx,20/1/2023,1,2023,35,p,4.1,31.5
+54323,110485,278524,Mando,5/27/2021,buy,500,leg,option,DLTR,11/19/2021,90,put,3.35,251,ubs,Jerry Kao,27/5/2021,b,500,dltr,19/11/2021,11,2021,90,p,3.35,35

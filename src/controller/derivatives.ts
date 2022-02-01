@@ -19,22 +19,22 @@ import {
   DASHModifiyDollarSign,
   DASHModifiyTotalCharge,
   DASHSeparateDatesObject,
-  DASHUniqueDatesArray,
+  DASHUniqueDatesArray
 } from "../utils/dash";
 import {
   BAMLDateFormat,
   BAMLUniqueDatesArray,
   BAMLSeparateDatesObject,
   BAMLGroupBy,
-  BAMLModifiyTotalCharge,
+  BAMLModifiyTotalCharge
 } from "../utils/baml";
 import {
   WEXSeparateDatesObject,
   WEXUniqueDatesArray,
-  WEXGroupBy,
+  sourceGroupBy,
   sourceDateFormat,
   sourceTotalCharge,
-  WEXExpiryFormat,
+  WEXExpiryFormat
 } from "../utils/wex";
 import {
   targetDateFormat,
@@ -43,30 +43,30 @@ import {
   targetExpiryMonth,
   targetExpiryYear,
   biggerThanOneGroupsDRV,
-  equalToOneGroupsDRV,
+  equalToOneGroupsDRV
 } from "../utils/drv";
 
 import {
   IAddDerivativesRequest,
   IGetDerivativesRequest,
   IGetDerivativeRequest,
-  IDownloadFileRequest,
+  IDownloadFileRequest
 } from "../model/express/request/derivatives";
 import {
   IAddDerivativesResponse,
   IGetDerivativesResponse,
   IGetDerivativeResponse,
-  IDownloadFileResponse,
+  IDownloadFileResponse
 } from "../model/express/response/derivatives";
 
 import { log } from "console";
 
 const addDerivatives = async (
   req: IAddDerivativesRequest,
-  res: IAddDerivativesResponse,
+  res: IAddDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<addDerivatives>: Start processing request`,
+    `<addDerivatives>: Start processing request`
   );
 
   // Find user by ID
@@ -74,19 +74,19 @@ const addDerivatives = async (
 
   if (!userByID) {
     ServerGlobal.getInstance().logger.error(
-      `<editProfile>: Failed to get user details for user id ${req.userId}`,
+      `<editProfile>: Failed to get user details for user id ${req.userId}`
     );
 
     res.status(401).send({
       success: false,
-      message: "Could not find user",
+      message: "Could not find user"
     });
     return;
   }
 
   try {
     const formattedCurrentDate = moment(new Date()).format(
-      "DD-MM-YYYY-HH-mm-ss",
+      "DD-MM-YYYY-HH-mm-ss"
     );
     const floorBrokerId = req.body.floorBrokerId.toString();
 
@@ -101,12 +101,12 @@ const addDerivatives = async (
       fileName = "Broadcort";
     } else {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed because floorBrokerId is invalid",
+        "<addDerivatives>: Failed because floorBrokerId is invalid"
       );
 
       res.status(400).send({
         success: false,
-        message: "invalid floorBrokerId",
+        message: "invalid floorBrokerId"
       });
       return;
     }
@@ -117,12 +117,12 @@ const addDerivatives = async (
     // Validate files
     if (!firstFile.file || !secondFile.file) {
       ServerGlobal.getInstance().logger.error(
-        "<[WEX] addDerivatives>: Failed because files are invalid",
+        "<[WEX] addDerivatives>: Failed because files are invalid"
       );
 
       res.status(400).send({
         success: false,
-        message: "invalid files",
+        message: "invalid files"
       });
       return;
     }
@@ -142,12 +142,12 @@ const addDerivatives = async (
     // Check if sourceBase64 or DRVBase64 are valid
     if (!sourceBase64 || !DRVBase64) {
       ServerGlobal.getInstance().logger.error(
-        "<addDerivatives>: Failed to process sourceBase64/DRVBase64",
+        "<addDerivatives>: Failed to process sourceBase64/DRVBase64"
       );
 
       res.status(400).send({
         success: false,
-        message: "invalid files",
+        message: "invalid files"
       });
       return;
     }
@@ -159,10 +159,10 @@ const addDerivatives = async (
 
     // Writing files to dir
     fs.writeFileSync(sourceFileName, sourceBase64Splited!, {
-      encoding: "base64",
+      encoding: "base64"
     });
     fs.writeFileSync(DRVFileName, DRVBase64Splited!, {
-      encoding: "base64",
+      encoding: "base64"
     });
 
     let source: IWEX[] | IBAML[] | IDASH[] = [];
@@ -190,7 +190,7 @@ const addDerivatives = async (
       });
 
     ServerGlobal.getInstance().logger.info(
-      `<addDerivatives>: Successfully created the files to dir`,
+      `<addDerivatives>: Successfully created the files to dir`
     );
 
     // const util = require("util");
@@ -1524,7 +1524,7 @@ const addDerivatives = async (
       let sourceGrouped: IWEX[] = [];
       let sourceCancledPairs: IWEX[] = [];
       let sourceMatchedPairs: IWEX[] = [];
-      const sourceGroupsMatches: IWEX[] = [];
+      const sourceMatches: IWEX[] = [];
       const sourceGroupsUnmatchesNVN: IWEX[] = [];
       const sourceGroupsUnmatchesNV1: IWEX[] = [];
       const sourceGroupsUnmatches1V1: IWEX[] = [];
@@ -1548,7 +1548,7 @@ const addDerivatives = async (
         const modifiedStrike = Number(removeCommas(element.strike));
         const modifiedOption = element.option?.charAt(0).toLowerCase();
         const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2),
+          Number(removeCommas(element.price!)).toFixed(2)
         );
 
         return {
@@ -1562,7 +1562,7 @@ const addDerivatives = async (
           modifiedExpiryYearOnly,
           modifiedStrike,
           modifiedOption,
-          modifiedPrice,
+          modifiedPrice
         };
       });
 
@@ -1572,19 +1572,19 @@ const addDerivatives = async (
         const modifiedUser = element.User?.toLowerCase();
         const modifiedSide = element.Side?.charAt(0).toLowerCase();
         const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!),
+          removeCommas(element["Exec Qty"]?.toString()!)
         );
         const modifiedSecurity = element.Security?.toLowerCase();
         const modifiedRoot = element.Root?.toLowerCase();
         const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
         const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", "")),
+          removeCommas(element.Strike?.toString().replace("$", ""))
         );
         const modifiedCallPut = element["Call/Put"]?.toLowerCase();
         const modifiedAveragePrice = Number(
           Number(
-            removeCommas(element["Average Price"]?.replace("$", "")),
-          ).toFixed(2),
+            removeCommas(element["Average Price"]?.replace("$", ""))
+          ).toFixed(2)
         );
         const modifiedPortfolio =
           element.Portfolio?.split("-")[0].toLowerCase();
@@ -1608,19 +1608,19 @@ const addDerivatives = async (
           modifiedPortfolio,
           modifiedCommissionType,
           modifiedCommissionRate,
-          modifiedTotalCharge,
+          modifiedTotalCharge
         };
       });
 
       // Check for files validity
       if (!targetModified || !sourceModified) {
         ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because files are invalid",
+          "<addDerivatives>: Failed because files are invalid"
         );
 
         res.status(400).send({
           success: false,
-          message: "invalid files",
+          message: "invalid files"
         });
         return;
       }
@@ -1644,7 +1644,7 @@ const addDerivatives = async (
             modifiedPortfolio: portfolio_i,
             modifiedCommissionType: commissionType_i,
             modifiedExecQty: execQty_i,
-            removed: removed_i,
+            removed: removed_i
           } = sourceModified[i];
           const {
             modifiedUser: user_j,
@@ -1661,7 +1661,7 @@ const addDerivatives = async (
             modifiedPortfolio: portfolio_j,
             modifiedCommissionType: commissionType_j,
             modifiedExecQty: execQty_j,
-            removed: removed_j,
+            removed: removed_j
           } = sourceModified[j];
           if (
             !removed_i &&
@@ -1696,666 +1696,32 @@ const addDerivatives = async (
       }
 
       // Push cancled pairs into source matches
-      sourceGroupsMatches.push(...sourceMatchedPairs);
-
-      // Grouping WEX by Date, User, Side, Security, Root, Expiry, Strike, CallPut, Portfolio, CommissionType, CommissionRate
-      const sourceGroups = WEXGroupBy(sourceCancledPairs, (element: IWEX) => {
-        return [
-          element.modifiedDate,
-          element.modifiedUser,
-          element.modifiedSide,
-          element.modifiedSecurity,
-          element.modifiedRoot,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedCallPut,
-          element.modifiedPortfolio,
-          element.modifiedCommissionType,
-          element.modifiedCommissionRate,
-        ];
-      });
-
-      // Get WEX group keys
-      const sourceGroupKeys = Object.keys(sourceGroups);
-
-      // Sum exec qty, weight average price and sum total charge & build & link reconciliation charge object
-      for (const key of sourceGroupKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IWEX[] = [
-          ...sourceGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.modifiedDate}-${object.modifiedSide}-${object.modifiedSecurity}-${object.modifiedRoot}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedCallPut}-${object.modifiedPortfolio}-${object.modifiedCommissionType}-${object.modifiedCommissionRate}`;
-              const item: IWEX =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedExecQty: 0,
-                  modifiedAveragePrice: 0,
-                  modifiedTotalCharge: 0,
-                  groupsSeparated: [],
-                });
-
-              // Get reconciliation charge fields
-              item.groupsSeparated = [...item.groupsSeparated!, object];
-
-              // Sum qty
-              item.modifiedExecQty =
-                item.modifiedExecQty! + object.modifiedExecQty!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedExecQty! * object.modifiedAveragePrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedExecQty!;
-
-              item.modifiedAveragePrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
-                ) / 100;
-
-              // Sum total charge
-              item.modifiedTotalCharge = Number(
-                (
-                  item.modifiedTotalCharge! + object.modifiedTotalCharge!
-                ).toFixed(2),
-              );
-
-              return array.set(key, item);
-            }, new Map())
-            .values(),
-        ];
-
-        // Add key to result
-        const modifiedResult: IDRV[] = result.map((element) => {
-          const string = `${element.modifiedDate}|${element.modifiedSide}|${element.modifiedRoot}|${element.modifiedStrike}|${element.modifiedExpiry}|${element.modifiedCallPut}|${element.modifiedAveragePrice}|${element.modifiedExecQty}`;
-          return {
-            ...element,
-            key: string,
-          };
-        });
-
-        if (sourceGroups[key].length === 1) {
-          sourceUnique = sourceUnique.concat(modifiedResult);
-        } else {
-          sourceGrouped = sourceGrouped.concat(modifiedResult);
-        }
-      }
-
-      // Grouping DRV by drv_trade_id, floor_broker, date, side, component_type, contract_type, symbol, expiry, strike, option, client_id
-      const targetGroups = targetGroupBy(targetModified, (element: IDRV) => {
-        return [
-          element.drv_trade_id,
-          element.floor_broker,
-          element.modifiedDate,
-          element.modifiedSide,
-          element.component_type,
-          element.contract_type,
-          element.modifiedSymbol,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedOption,
-          element.client_id,
-        ];
-      });
-
-      // Get DRV group keys
-      const targetGroupKeys = Object.keys(targetGroups);
-
-      // Sum quantity, weight average price & build & link reconciliation charge object
-      for (const key of targetGroupKeys) {
-        let weightAverageExecQty = 0;
-        let totalExecQty = 0;
-        const result: IDRV[] = [
-          ...targetGroups[key]
-            .reduce((array, object) => {
-              const key = `${object.drv_trade_id}-${object.floor_broker}-${object.modifiedDate}-${object.modifiedSide}-${object.component_type}-${object.contract_type}-${object.modifiedSymbol}-${object.modifiedExpiry}-${object.modifiedStrike}-${object.modifiedOption}-${object.client_id}`;
-              const item: IDRV =
-                array.get(key) ||
-                Object.assign({}, object, {
-                  modifiedQuantity: 0,
-                  modifiedPrice: 0,
-                  groupsSeparated: [],
-                });
-
-              // Push object fields
-              item.groupsSeparated = [...item.groupsSeparated!, object];
-
-              // Sum qty
-              item.modifiedQuantity =
-                item.modifiedQuantity! + object.modifiedQuantity!;
-
-              // Weight average price
-              const curWeightAverageExecQty =
-                object.modifiedQuantity! * object.modifiedPrice!;
-
-              weightAverageExecQty += curWeightAverageExecQty;
-              totalExecQty += object.modifiedQuantity!;
-
-              item.modifiedPrice =
-                Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
-                ) / 100;
-
-              return array.set(key, item);
-            }, new Map())
-            .values(),
-        ];
-
-        // Add key to result
-        const modifiedResult: IDRV[] = result.map((element) => {
-          const string = `${element.modifiedDate}|${element.modifiedSide}|${element.modifiedSymbol}|${element.modifiedStrike}|${element.modifiedExpiry}|${element.modifiedOption}|${element.modifiedPrice}|${element.modifiedQuantity}`;
-          return {
-            ...element,
-            key: string,
-          };
-        });
-
-        if (targetGroups[key].length === 1) {
-          targetUnique = targetUnique.concat(modifiedResult);
-        } else {
-          targetGrouped = targetGrouped.concat(modifiedResult);
-        }
-      }
-
-      //- |-------------------| -//
-      //- |-----  N V N  -----| -//
-      //- |-------------------| -//
-
-      // Run through each row on source, get source matches, unmatches & target unmatches
-      for (const sourceObject of sourceGrouped) {
-        // Check for match between source & target
-        const targetObject = targetGrouped.find(({ key }) => {
-          const isMatch = sourceObject.key === key;
-          return isMatch;
-        });
-
-        if (targetObject) {
-          // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
-          if (
-            targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
-            )
-          ) {
-            sourceGroupsUnmatchesNVN.push(sourceObject);
-            continue;
-          }
-
-          for (const match of sourceObject.groupsSeparated!) {
-            sourceGroupsMatches.push({
-              ...match,
-              targetId: targetObject.drv_trade_client_account_execution_id,
-            });
-          }
-
-          // Add charge to target matches
-          if (!targetObject.groupsSeparated) {
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-            const targetWithCharge: IDRV = {
-              ...targetObject,
-              charge:
-                (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
-            };
-
-            targetMatches.push(targetWithCharge);
-          } else {
-            // Iterate over target matches to add charge
-            for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-              const targetWithCharge: IDRV = {
-                ...target,
-                charge:
-                  (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
-              };
-
-              targetMatches.push(targetWithCharge);
-            }
-          }
-        } else {
-          sourceGroupsUnmatchesNVN.push(sourceObject);
-        }
-      }
-
-      // Run through each row on target, get target unmatches
-      for (const targetObject of targetGrouped) {
-        const sourceObject = sourceGrouped.find(
-          ({ key }) => key === targetObject.key,
-        );
-
-        if (!sourceObject) {
-          targetGroupsUnmatchesNVN.push(targetObject);
-        }
-      }
-
-      //- |-------------------| -//
-      //- |-----  N V 1  -----| -//
-      //- |-------------------| -//
-
-      // Separate target unmatches and push then into target unique array
-      const targetUnmatches = separateGroups(targetGroupsUnmatchesNVN);
-      targetUnique.push(...(targetUnmatches as IDRV[]));
-
-      // Run through each row on source, get source matches, unmatches & target unmatches
-      for (const sourceObject of sourceGroupsUnmatchesNVN) {
-        // Check for match between source & target
-        const targetObject = targetUnique.find(({ key }) => {
-          const isMatch = sourceObject.key === key;
-          return isMatch;
-        });
-
-        if (targetObject) {
-          // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
-          if (
-            targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
-            )
-          ) {
-            sourceGroupsUnmatchesNV1.push(sourceObject);
-            continue;
-          }
-
-          for (const match of sourceObject.groupsSeparated!) {
-            sourceGroupsMatches.push({
-              ...match,
-              targetId: targetObject.drv_trade_client_account_execution_id,
-            });
-          }
-
-          // Add charge to target matches
-          if (!targetObject.groupsSeparated) {
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-            const targetWithCharge: IDRV = {
-              ...targetObject,
-              charge:
-                (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
-            };
-
-            targetMatches.push(targetWithCharge);
-          } else {
-            // Iterate over target matches to add charge
-            for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-              const targetWithCharge: IDRV = {
-                ...target,
-                charge:
-                  (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
-              };
-
-              targetMatches.push(targetWithCharge);
-            }
-          }
-        } else {
-          sourceGroupsUnmatchesNV1.push(sourceObject);
-        }
-      }
-
-      // Run through each row on target, get target unmatches
-      for (const targetObject of targetUnique) {
-        const sourceObject = sourceGroupsUnmatchesNVN.find(
-          ({ key }) => key === targetObject.key,
-        );
-
-        if (!sourceObject) {
-          targetGroupsUnmatchesNV1.push(targetObject);
-        }
-      }
-
-      //- |-------------------| -//
-      //- |-----  1 V 1  -----| -//
-      //- |-------------------| -//
-
-      sourceUnique.push(
-        ...(separateGroups(sourceGroupsUnmatchesNV1) as IWEX[]),
-      );
-
-      // Run through each row on source, get source matches, unmatches & target unmatches
-      for (const sourceObject of sourceUnique) {
-        // Check for match between source & target
-        const targetObject = targetGroupsUnmatchesNV1.find(({ key }) => {
-          const isMatch = sourceObject.key === key;
-          return isMatch;
-        });
-
-        if (targetObject) {
-          // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
-          if (
-            targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
-            )
-          ) {
-            sourceGroupsUnmatches1V1.push(sourceObject);
-            continue;
-          }
-
-          sourceGroupsMatches.push({
-            ...sourceObject,
-            targetId: targetObject.drv_trade_client_account_execution_id,
-          });
-
-          if (!targetObject.groupsSeparated) {
-            // Add charge to target matches
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-            const targetWithCharge: IDRV = {
-              ...targetObject,
-              charge:
-                (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
-            };
-
-            targetMatches.push(targetWithCharge);
-          } else {
-            // Iterate over target matches to add charge
-            for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
-              const targetWithCharge: IDRV = {
-                ...target,
-                charge:
-                  (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
-              };
-
-              targetMatches.push(targetWithCharge);
-            }
-          }
-        } else {
-          sourceGroupsUnmatches1V1.push(sourceObject);
-        }
-      }
-
-      // Run through each row on target, get target unmatches
-      for (const targetObject of targetUnique) {
-        const sourceObject = sourceGroupsUnmatches1V1.find(
-          ({ key }) => key === targetObject.key,
-        );
-
-        if (!sourceObject) {
-          targetGroupsUnmatches1V1.push(targetObject);
-        }
-      }
-
-      // Total charge
-      const totalCharge =
-        Math.round(
-          (sourceModified.reduce(
-            (a, b) => a + (b.modifiedTotalCharge || 0),
-            0,
-          ) +
-            Number.EPSILON) *
-            100,
-        ) / 100;
-
-      // Unmatched sum charge
-      const unmatchSumCharge =
-        Math.round(
-          (sourceGroupsUnmatches1V1.reduce(
-            (a, b) => a + (b!.modifiedTotalCharge || 0),
-            0,
-          ) +
-            Number.EPSILON) *
-            100,
-        ) / 100;
-
-      // Matched sum Charge
-      const matchSumCharge =
-        Math.round(
-          (sourceGroupsMatches.reduce(
-            (a, b) => a + (b!.modifiedTotalCharge || 0),
-            0,
-          ) +
-            Number.EPSILON) *
-            100,
-        ) / 100;
-
-      // Total count
-      const totalCount = sourceModified.length;
-
-      // Match count
-      const matchCount = sourceGroupsMatches.length;
-
-      // Unmatch count
-      const unmatchCount = sourceGroupsUnmatches1V1.length;
-
-      // Unmatch group count
-      const unmatchGroupCount = sourceGroupsUnmatchesNV1.length;
-
-      // matched Sum Percentage
-      const matchSumPercentage =
-        Math.round(
-          ((matchCount * 100) / sourceModified.length + Number.EPSILON) * 100,
-        ) / 100;
-
-      // unmatched Sum Percentage
-      const unmatchSumPercentage = Number(
-        ((unmatchSumCharge / totalCharge) * 100).toFixed(2),
-      );
-
-      // Delete all modified fields
-      sourceGroupsUnmatches1V1.forEach((element) => {
-        delete element.drv_trade_client_account_execution_id;
-        delete element.modifiedCommissionType;
-        delete element.modifiedCommissionRate;
-        delete element.modifiedTotalCharge;
-        delete element.modifiedAveragePrice;
-        delete element.modifiedPortfolio;
-        delete element.modifiedSecurity;
-        delete element.modifiedExecQty;
-        delete element.modifiedCallPut;
-        delete element.groupsSeparated;
-        delete element.modifiedExpiry;
-        delete element.modifiedStrike;
-        delete element.modifiedDate;
-        delete element.modifiedUser;
-        delete element.modifiedSide;
-        delete element.modifiedRoot;
-        delete element.key;
-      });
-
-      // Convert JSON to CSV file
-      converter.json2csv(sourceGroupsUnmatches1V1, (err, csv) => {
-        if (err) {
-          ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "Failed to convert file to csv",
-          });
-          return;
-        }
-
-        if (!csv) {
-          ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
-          );
-
-          res.status(400).send({
-            success: false,
-            message: "Failed to convert file to csv",
-          });
-          return;
-        }
-
-        fs.writeFileSync(
-          `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv,
-        );
-
-        ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
-        );
-      });
-
-      // Saving the derivative document in DB
-      await Derivative.create({
-        date: formattedCurrentDate,
-        floorBrokerId: floorBrokerId,
-        username: userByID.username,
-        source: `${fileName}-${userByID.username}-${formattedCurrentDate}.csv`,
-        drv: `DRV-${userByID.username}-${formattedCurrentDate}.csv`,
-        totalCount,
-        totalCharge,
-        matchCount,
-        matchSumCharge,
-        matchSumPercentage,
-        unmatchCount,
-        unmatchGroupCount,
-        unmatchSumCharge,
-        unmatchSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-      });
-
-      res.status(200).send({
-        success: true,
-        message: "Successfully added derivative",
-      });
-      return;
-    };
-
-    const BAMLActions = async () => {
-      let sourceUnique: IWEX[] = [];
-      let sourceGrouped: IWEX[] = [];
-      const sourceGroupsMatches: IWEX[] = [];
-      const sourceGroupsUnmatchesNVN: IWEX[] = [];
-      const sourceGroupsUnmatchesNV1: IWEX[] = [];
-      const sourceGroupsUnmatches1V1: IWEX[] = [];
-
-      let targetUnique: IDRV[] = [];
-      let targetGrouped: IDRV[] = [];
-      const targetMatches: IDRV[] = [];
-      const targetGroupsUnmatchesNVN: IDRV[] = [];
-      const targetGroupsUnmatchesNV1: IDRV[] = [];
-      const targetGroupsUnmatches1V1: IDRV[] = [];
-
-      // Modifing target
-      const targetModified: IDRV[] = DRV.map((element) => {
-        const modifiedDate = targetDateFormat(element.date!);
-        const modifiedSide = element.side?.charAt(0).toLowerCase();
-        const modifiedQuantity = Number(removeCommas(element.quantity!));
-        const modifiedSymbol = element.symbol?.toLowerCase();
-        const modifiedExpiry = targetDateFormat(element.expiry!);
-        const modifiedExpiryMonthOnly = targetExpiryMonth(element.expiry!);
-        const modifiedExpiryYearOnly = targetExpiryYear(element.expiry!);
-        const modifiedStrike = Number(removeCommas(element.strike));
-        const modifiedOption = element.option?.charAt(0).toLowerCase();
-        const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2),
-        );
-
-        return {
-          ...element,
-          modifiedDate,
-          modifiedSide,
-          modifiedQuantity,
-          modifiedSymbol,
-          modifiedExpiry,
-          modifiedExpiryMonthOnly,
-          modifiedExpiryYearOnly,
-          modifiedStrike,
-          modifiedOption,
-          modifiedPrice,
-        };
-      });
-
-      // Modifing source
-      const sourceModified: IWEX[] = source.map((element: IWEX) => {
-        const modifiedDate = sourceDateFormat(element.Date!);
-        const modifiedUser = element.User?.toLowerCase();
-        const modifiedSide = element.Side?.charAt(0).toLowerCase();
-        const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!),
-        );
-        const modifiedSecurity = element.Security?.toLowerCase();
-        const modifiedRoot = element.Root?.toLowerCase();
-        const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
-        const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", "")),
-        );
-        const modifiedCallPut = element["Call/Put"]?.toLowerCase();
-        const modifiedAveragePrice = Number(
-          Number(
-            removeCommas(element["Average Price"]?.replace("$", "")),
-          ).toFixed(2),
-        );
-        const modifiedPortfolio =
-          element.Portfolio?.split("-")[0].toLowerCase();
-        const modifiedCommissionType =
-          element["Commission Type"]?.toLowerCase();
-        const modifiedCommissionRate = Number(element["Commission Rate"]);
-        const modifiedTotalCharge = sourceTotalCharge(element["Total Charge"]!);
-
-        return {
-          ...element,
-          modifiedDate,
-          modifiedUser,
-          modifiedSide,
-          modifiedExecQty,
-          modifiedSecurity,
-          modifiedRoot,
-          modifiedExpiry,
-          modifiedStrike,
-          modifiedCallPut,
-          modifiedAveragePrice,
-          modifiedPortfolio,
-          modifiedCommissionType,
-          modifiedCommissionRate,
-          modifiedTotalCharge,
-        };
-      });
-
-      // Check for files validity
-      if (!targetModified || !sourceModified) {
-        ServerGlobal.getInstance().logger.error(
-          "<addDerivatives>: Failed because files are invalid",
-        );
-
-        res.status(400).send({
-          success: false,
-          message: "invalid files",
-        });
-        return;
-      }
+      sourceMatches.push(...sourceMatchedPairs);
 
       // Grouping source by Date, User, Side, Security, Root, Expiry, Strike, CallPut, Portfolio, CommissionType, CommissionRate
-      const sourceGroups = WEXGroupBy(sourceModified, (element: IWEX) => {
-        return [
-          element.modifiedDate,
-          element.modifiedUser,
-          element.modifiedSide,
-          element.modifiedSecurity,
-          element.modifiedRoot,
-          element.modifiedExpiry,
-          element.modifiedStrike,
-          element.modifiedCallPut,
-          element.modifiedPortfolio,
-          element.modifiedCommissionType,
-          element.modifiedCommissionRate,
-        ];
-      });
+      const sourceGroups = sourceGroupBy(
+        sourceCancledPairs,
+        (element: IWEX) => {
+          return [
+            element.modifiedDate,
+            element.modifiedUser,
+            element.modifiedSide,
+            element.modifiedSecurity,
+            element.modifiedRoot,
+            element.modifiedExpiry,
+            element.modifiedStrike,
+            element.modifiedCallPut,
+            element.modifiedPortfolio,
+            element.modifiedCommissionType,
+            element.modifiedCommissionRate
+          ];
+        }
+      );
 
       // Get source group keys
       const sourceGroupKeys = Object.keys(sourceGroups);
 
-      // Sum exec qty, weight average price and sum total charge & build & link reconciliation charge object
+      // Sum exec qty, weight average price and sum total charge & creating groups separated
       for (const key of sourceGroupKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
@@ -2369,7 +1735,7 @@ const addDerivatives = async (
                   modifiedExecQty: 0,
                   modifiedAveragePrice: 0,
                   modifiedTotalCharge: 0,
-                  groupsSeparated: [],
+                  groupsSeparated: []
                 });
 
               // Get reconciliation charge fields
@@ -2388,19 +1754,19 @@ const addDerivatives = async (
 
               item.modifiedAveragePrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               // Sum total charge
               item.modifiedTotalCharge = Number(
                 (
                   item.modifiedTotalCharge! + object.modifiedTotalCharge!
-                ).toFixed(2),
+                ).toFixed(2)
               );
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         // Add key to result
@@ -2408,7 +1774,7 @@ const addDerivatives = async (
           const keyString = `${element.modifiedDate}|${element.modifiedSide}|${element.modifiedRoot}|${element.modifiedStrike}|${element.modifiedExpiry}|${element.modifiedCallPut}|${element.modifiedAveragePrice}|${element.modifiedExecQty}`;
           return {
             ...element,
-            key: keyString,
+            key: keyString
           };
         });
 
@@ -2432,14 +1798,14 @@ const addDerivatives = async (
           element.modifiedExpiry,
           element.modifiedStrike,
           element.modifiedOption,
-          element.client_id,
+          element.client_id
         ];
       });
 
       // Get target group keys
       const targetGroupKeys = Object.keys(targetGroups);
 
-      // Sum quantity, weight average price & build & link reconciliation charge object
+      // Sum quantity, weight average price & creating groups separated
       for (const key of targetGroupKeys) {
         let weightAverageExecQty = 0;
         let totalExecQty = 0;
@@ -2452,7 +1818,7 @@ const addDerivatives = async (
                 Object.assign({}, object, {
                   modifiedQuantity: 0,
                   modifiedPrice: 0,
-                  groupsSeparated: [],
+                  groupsSeparated: []
                 });
 
               // Push object fields
@@ -2471,12 +1837,12 @@ const addDerivatives = async (
 
               item.modifiedPrice =
                 Math.round(
-                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100,
+                  (weightAverageExecQty / totalExecQty + Number.EPSILON) * 100
                 ) / 100;
 
               return array.set(key, item);
             }, new Map())
-            .values(),
+            .values()
         ];
 
         // Add key to result
@@ -2484,7 +1850,7 @@ const addDerivatives = async (
           const string = `${element.modifiedDate}|${element.modifiedSide}|${element.modifiedSymbol}|${element.modifiedStrike}|${element.modifiedExpiry}|${element.modifiedOption}|${element.modifiedPrice}|${element.modifiedQuantity}`;
           return {
             ...element,
-            key: string,
+            key: string
           };
         });
 
@@ -2499,7 +1865,7 @@ const addDerivatives = async (
       //- |-----  N V N  -----| -//
       //- |-------------------| -//
 
-      // Run through each row on source, get source matches, unmatches & target unmatches
+      // Run through each row on source, get source matches, unmatches & target matches & unmatches
       for (const sourceObject of sourceGrouped) {
         // Check for match between source & target
         const targetObject = targetGrouped.find(({ key }) => {
@@ -2509,10 +1875,10 @@ const addDerivatives = async (
 
         if (targetObject) {
           // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
+          const targetIds = sourceMatches.map(({ targetId }) => targetId);
           if (
             targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
+              targetObject.drv_trade_client_account_execution_id
             )
           ) {
             sourceGroupsUnmatchesNVN.push(sourceObject);
@@ -2520,9 +1886,9 @@ const addDerivatives = async (
           }
 
           for (const match of sourceObject.groupsSeparated!) {
-            sourceGroupsMatches.push({
+            sourceMatches.push({
               ...match,
-              targetId: targetObject.drv_trade_client_account_execution_id,
+              targetId: targetObject.drv_trade_client_account_execution_id
             });
           }
 
@@ -2535,7 +1901,7 @@ const addDerivatives = async (
               ...targetObject,
               charge:
                 (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
+                sourceQuantitySum
             };
 
             targetMatches.push(targetWithCharge);
@@ -2549,7 +1915,7 @@ const addDerivatives = async (
                 ...target,
                 charge:
                   (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
+                  sourceQuantitySum
               };
 
               targetMatches.push(targetWithCharge);
@@ -2563,7 +1929,7 @@ const addDerivatives = async (
       // Run through each row on target, get target unmatches
       for (const targetObject of targetGrouped) {
         const sourceObject = sourceGrouped.find(
-          ({ key }) => key === targetObject.key,
+          ({ key }) => key === targetObject.key
         );
 
         if (!sourceObject) {
@@ -2589,10 +1955,10 @@ const addDerivatives = async (
 
         if (targetObject) {
           // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
+          const targetIds = sourceMatches.map(({ targetId }) => targetId);
           if (
             targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
+              targetObject.drv_trade_client_account_execution_id
             )
           ) {
             sourceGroupsUnmatchesNV1.push(sourceObject);
@@ -2600,9 +1966,9 @@ const addDerivatives = async (
           }
 
           for (const match of sourceObject.groupsSeparated!) {
-            sourceGroupsMatches.push({
+            sourceMatches.push({
               ...match,
-              targetId: targetObject.drv_trade_client_account_execution_id,
+              targetId: targetObject.drv_trade_client_account_execution_id
             });
           }
 
@@ -2615,7 +1981,7 @@ const addDerivatives = async (
               ...targetObject,
               charge:
                 (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
+                sourceQuantitySum
             };
 
             targetMatches.push(targetWithCharge);
@@ -2629,7 +1995,7 @@ const addDerivatives = async (
                 ...target,
                 charge:
                   (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
+                  sourceQuantitySum
               };
 
               targetMatches.push(targetWithCharge);
@@ -2643,7 +2009,7 @@ const addDerivatives = async (
       // Run through each row on target, get target unmatches
       for (const targetObject of targetUnique) {
         const sourceObject = sourceGroupsUnmatchesNVN.find(
-          ({ key }) => key === targetObject.key,
+          ({ key }) => key === targetObject.key
         );
 
         if (!sourceObject) {
@@ -2656,7 +2022,7 @@ const addDerivatives = async (
       //- |-------------------| -//
 
       sourceUnique.push(
-        ...(separateGroups(sourceGroupsUnmatchesNV1) as IWEX[]),
+        ...(separateGroups(sourceGroupsUnmatchesNV1) as IWEX[])
       );
 
       // Run through each row on source, get source matches, unmatches & target unmatches
@@ -2669,19 +2035,19 @@ const addDerivatives = async (
 
         if (targetObject) {
           // Check if match as already exist by id
-          const targetIds = sourceGroupsMatches.map(({ targetId }) => targetId);
+          const targetIds = sourceMatches.map(({ targetId }) => targetId);
           if (
             targetIds.includes(
-              targetObject.drv_trade_client_account_execution_id,
+              targetObject.drv_trade_client_account_execution_id
             )
           ) {
             sourceGroupsUnmatches1V1.push(sourceObject);
             continue;
           }
 
-          sourceGroupsMatches.push({
+          sourceMatches.push({
             ...sourceObject,
-            targetId: targetObject.drv_trade_client_account_execution_id,
+            targetId: targetObject.drv_trade_client_account_execution_id
           });
 
           if (!targetObject.groupsSeparated) {
@@ -2693,7 +2059,7 @@ const addDerivatives = async (
               ...targetObject,
               charge:
                 (Number(targetObject.quantity) * sourceTotalCharge) /
-                sourceQuantitySum,
+                sourceQuantitySum
             };
 
             targetMatches.push(targetWithCharge);
@@ -2707,7 +2073,7 @@ const addDerivatives = async (
                 ...target,
                 charge:
                   (Number(target.quantity) * sourceTotalCharge) /
-                  sourceQuantitySum,
+                  sourceQuantitySum
               };
 
               targetMatches.push(targetWithCharge);
@@ -2721,7 +2087,7 @@ const addDerivatives = async (
       // Run through each row on target, get target unmatches
       for (const targetObject of targetUnique) {
         const sourceObject = sourceGroupsUnmatches1V1.find(
-          ({ key }) => key === targetObject.key,
+          ({ key }) => key === targetObject.key
         );
 
         if (!sourceObject) {
@@ -2730,14 +2096,24 @@ const addDerivatives = async (
       }
 
       // Total charge
+      const totalCharge2 =
+        Math.round(
+          (targetMatches.reduce((a, b) => a + (b.charge || 0), 0) +
+            Number.EPSILON) *
+            100
+        ) / 100;
+
+      log(totalCharge2);
+
+      // Total charge
       const totalCharge =
         Math.round(
           (sourceModified.reduce(
             (a, b) => a + (b.modifiedTotalCharge || 0),
-            0,
+            0
           ) +
             Number.EPSILON) *
-            100,
+            100
         ) / 100;
 
       // Unmatched sum charge
@@ -2745,28 +2121,28 @@ const addDerivatives = async (
         Math.round(
           (sourceGroupsUnmatches1V1.reduce(
             (a, b) => a + (b!.modifiedTotalCharge || 0),
-            0,
+            0
           ) +
             Number.EPSILON) *
-            100,
+            100
         ) / 100;
 
       // Matched sum Charge
       const matchSumCharge =
         Math.round(
-          (sourceGroupsMatches.reduce(
+          (sourceMatches.reduce(
             (a, b) => a + (b!.modifiedTotalCharge || 0),
-            0,
+            0
           ) +
             Number.EPSILON) *
-            100,
+            100
         ) / 100;
 
       // Total count
       const totalCount = sourceModified.length;
 
       // Match count
-      const matchCount = sourceGroupsMatches.length;
+      const matchCount = sourceMatches.length;
 
       // Unmatch count
       const unmatchCount = sourceGroupsUnmatches1V1.length;
@@ -2777,12 +2153,12 @@ const addDerivatives = async (
       // matched Sum Percentage
       const matchSumPercentage =
         Math.round(
-          ((matchCount * 100) / sourceModified.length + Number.EPSILON) * 100,
+          ((matchCount * 100) / sourceModified.length + Number.EPSILON) * 100
         ) / 100;
 
       // unmatched Sum Percentage
       const unmatchSumPercentage = Number(
-        ((unmatchSumCharge / totalCharge) * 100).toFixed(2),
+        ((unmatchSumCharge / totalCharge) * 100).toFixed(2)
       );
 
       // Delete all modified fields
@@ -2807,38 +2183,38 @@ const addDerivatives = async (
       });
 
       // Convert JSON to CSV file
-      converter.json2csv(sourceGroupsUnmatches1V1, (err, csv) => {
+      converter.json2csv(targetMatches, (err, csv) => {
         if (err) {
           ServerGlobal.getInstance().logger.info(
-            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`,
+            `<addDerivatives>: Failed to convert file to csv because of error: ${err}`
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         if (!csv) {
           ServerGlobal.getInstance().logger.info(
-            "<addDerivatives>: Failed to convert file to csv",
+            "<addDerivatives>: Failed to convert file to csv"
           );
 
           res.status(400).send({
             success: false,
-            message: "Failed to convert file to csv",
+            message: "Failed to convert file to csv"
           });
           return;
         }
 
         fs.writeFileSync(
           `assets/unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
-          csv,
+          csv
         );
 
         ServerGlobal.getInstance().logger.info(
-          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`,
+          `<addDerivatives>: Successfully created the unresolved-${userByID.username}-${formattedCurrentDate}.csv to dir`
         );
       });
 
@@ -2858,23 +2234,23 @@ const addDerivatives = async (
         unmatchGroupCount,
         unmatchSumCharge,
         unmatchSumPercentage,
-        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`,
+        unresolved: `unresolved-${userByID.username}-${formattedCurrentDate}.csv`
       });
 
       res.status(200).send({
         success: true,
-        message: "Successfully added derivative",
+        message: "Successfully added derivative"
       });
       return;
     };
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`,
+      `<addDerivatives>: Failed to add derivatives data because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -2882,10 +2258,10 @@ const addDerivatives = async (
 
 const getDerivatives = async (
   req: IGetDerivativesRequest,
-  res: IGetDerivativesResponse,
+  res: IGetDerivativesResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivatives>: Start processing request`,
+    `<getDerivatives>: Start processing request`
   );
 
   try {
@@ -2895,18 +2271,18 @@ const getDerivatives = async (
     // Check if derivatives are valid
     if (!derivatives) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivatives>: Failed to get derivatives",
+        "<getDerivatives>: Failed to get derivatives"
       );
 
       res.status(400).send({
         success: false,
-        message: "derivatives are invalid",
+        message: "derivatives are invalid"
       });
       return;
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivatives>: Successfully got the derivatives`,
+      `<getDerivatives>: Successfully got the derivatives`
     );
 
     res.status(200).send({
@@ -2921,18 +2297,18 @@ const getDerivatives = async (
         matchCount: derivative.matchCount,
         matchSumPercentage: derivative.matchSumPercentage,
         unmatchCount: derivative.unmatchCount,
-        unresolved: derivative.unresolved,
-      })),
+        unresolved: derivative.unresolved
+      }))
     });
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -2940,33 +2316,33 @@ const getDerivatives = async (
 
 const getDerivative = async (
   req: IGetDerivativeRequest,
-  res: IGetDerivativeResponse,
+  res: IGetDerivativeResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<getDerivative>: Start processing request`,
+    `<getDerivative>: Start processing request`
   );
 
   try {
     // Get derivative
     const derivative = await Derivative.findOne({
-      order: [["id", "DESC"]],
+      order: [["id", "DESC"]]
     });
 
     // Check if derivatives are valid
     if (!derivative) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get derivatives",
+        "<getDerivative>: Failed to get derivatives"
       );
 
       res.status(400).send({
         success: false,
-        message: "derivatives are invalid",
+        message: "derivatives are invalid"
       });
       return;
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivative>: Successfully got derivative`,
+      `<getDerivative>: Successfully got derivative`
     );
 
     res.status(200).send({
@@ -2984,18 +2360,18 @@ const getDerivative = async (
         unmatchGroupCount: derivative.unmatchGroupCount,
         unmatchSumCharge: derivative.unmatchSumCharge,
         unmatchSumPercentage: derivative.unmatchSumPercentage,
-        unresolved: derivative.unresolved,
-      },
+        unresolved: derivative.unresolved
+      }
     });
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`,
+      `<getDerivatives>: Failed to get derivatives because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
@@ -3003,10 +2379,10 @@ const getDerivative = async (
 
 const downloadFile = async (
   req: IDownloadFileRequest,
-  res: IDownloadFileResponse,
+  res: IDownloadFileResponse
 ) => {
   ServerGlobal.getInstance().logger.info(
-    `<downloadFiles>: Start processing request`,
+    `<downloadFiles>: Start processing request`
   );
 
   try {
@@ -3016,30 +2392,30 @@ const downloadFile = async (
     // Check file path
     if (!filePath) {
       ServerGlobal.getInstance().logger.error(
-        "<getDerivative>: Failed to get file",
+        "<getDerivative>: Failed to get file"
       );
 
       res.status(400).send({
         success: false,
-        message: "file is invalid",
+        message: "file is invalid"
       });
       return;
     }
 
     ServerGlobal.getInstance().logger.info(
-      `<getDerivative>: Successfully downloaded file: ${fileName}`,
+      `<getDerivative>: Successfully downloaded file: ${fileName}`
     );
 
     res.status(200).download(filePath, fileName);
     return;
   } catch (e) {
     ServerGlobal.getInstance().logger.error(
-      `<getDerivatives>: Failed to download files because of server error: ${e}`,
+      `<getDerivatives>: Failed to download files because of server error: ${e}`
     );
 
     res.status(500).send({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
     return;
   }
