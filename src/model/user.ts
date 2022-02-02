@@ -25,22 +25,23 @@ User.init(
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     username: {
       type: Sequelize.STRING,
       allowNull: false,
+      unique: true
     },
     password: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     },
-    createdAt: Sequelize.DATE,
+    createdAt: Sequelize.DATE
   },
   {
     tableName: "users",
     sequelize: ServerGlobal.getInstance().db,
-    updatedAt: false,
+    updatedAt: false
   }
 );
 

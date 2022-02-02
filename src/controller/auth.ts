@@ -17,6 +17,23 @@ const register = async (req: IRegisterRequest, res: IRegisterResponse) => {
     // From now on, the client is allowed to register
     const hashedPassword = await bcrypt.hash(req.body.password, 8);
 
+    const userByUsername = await User.findOne({
+      where: { username: req.body.username }
+    });
+
+    // Checking if username already exist
+    if (userByUsername) {
+      ServerGlobal.getInstance().logger.error(
+        `<register>: Failed to login because the username ${req.body.username} does not match any user`
+      );
+
+      res.status(400).send({
+        success: false,
+        message: "Username already exist"
+      });
+      return;
+    }
+
     // Saving the user document in DB
     const newUser = await User.create({
       username: req.body.username,
@@ -112,8 +129,6 @@ with username ${req.body.username}`
       expiresIn: "7 days"
     });
 
-    newToken = tokenByUserId?.token!;
-
     // Check if token in valid
     if (!tokenByUserId) {
       ServerGlobal.getInstance().logger.error(
@@ -126,6 +141,8 @@ with username ${req.body.username}`
       });
       return;
     }
+
+    tokenByUserId.token = newToken;
 
     // Saving the token document in DB
     await tokenByUserId.save();

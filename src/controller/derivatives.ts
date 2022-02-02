@@ -1540,16 +1540,14 @@ const addDerivatives = async (
       const targetModified: IDRV[] = DRV.map((element) => {
         const modifiedDate = targetDateFormat(element.date!);
         const modifiedSide = element.side?.charAt(0).toLowerCase();
-        const modifiedQuantity = Number(removeCommas(element.quantity!));
+        const modifiedQuantity = removeCommas(element.quantity!);
         const modifiedSymbol = element.symbol?.toLowerCase();
         const modifiedExpiry = targetDateFormat(element.expiry!);
         const modifiedExpiryMonthOnly = targetExpiryMonth(element.expiry!);
         const modifiedExpiryYearOnly = targetExpiryYear(element.expiry!);
-        const modifiedStrike = Number(removeCommas(element.strike));
+        const modifiedStrike = removeCommas(element.strike);
         const modifiedOption = element.option?.charAt(0).toLowerCase();
-        const modifiedPrice = Number(
-          Number(removeCommas(element.price!)).toFixed(2)
-        );
+        const modifiedPrice = Number(removeCommas(element.price!).toFixed(2));
 
         return {
           ...element,
@@ -1571,20 +1569,16 @@ const addDerivatives = async (
         const modifiedDate = sourceDateFormat(element.Date!);
         const modifiedUser = element.User?.toLowerCase();
         const modifiedSide = element.Side?.charAt(0).toLowerCase();
-        const modifiedExecQty = Number(
-          removeCommas(element["Exec Qty"]?.toString()!)
-        );
+        const modifiedExecQty = removeCommas(element["Exec Qty"]);
         const modifiedSecurity = element.Security?.toLowerCase();
         const modifiedRoot = element.Root?.toLowerCase();
         const modifiedExpiry = WEXExpiryFormat(element.Expiry!);
-        const modifiedStrike = Number(
-          removeCommas(element.Strike?.toString().replace("$", ""))
+        const modifiedStrike = removeCommas(
+          element.Strike?.toString().replace("$", "")
         );
         const modifiedCallPut = element["Call/Put"]?.toLowerCase();
         const modifiedAveragePrice = Number(
-          Number(
-            removeCommas(element["Average Price"]?.replace("$", ""))
-          ).toFixed(2)
+          removeCommas(element["Average Price"]?.replace("$", "")).toFixed(2)
         );
         const modifiedPortfolio =
           element.Portfolio?.split("-")[0].toLowerCase();
@@ -1892,11 +1886,14 @@ const addDerivatives = async (
             });
           }
 
+          const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
+          const sourceQuantitySum = sourceObject.modifiedExecQty!;
+          const sourceQuantitySum1 = sourceObject["Exec Qty"]!;
+          log(sourceQuantitySum);
+          log(sourceQuantitySum1);
+
           // Add charge to target matches
           if (!targetObject.groupsSeparated) {
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
             const targetWithCharge: IDRV = {
               ...targetObject,
               charge:
@@ -1908,9 +1905,6 @@ const addDerivatives = async (
           } else {
             // Iterate over target matches to add charge
             for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
               const targetWithCharge: IDRV = {
                 ...target,
                 charge:
@@ -1972,11 +1966,18 @@ const addDerivatives = async (
             });
           }
 
+          const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
+          const sourceQuantitySum = sourceObject.modifiedExecQty!;
+
+          const targetWithCharge: IDRV = {
+            ...targetObject,
+            charge: sourceTotalCharge
+          };
+
+          // log(targetObject.groupsSeparated[0].);
+
           // Add charge to target matches
           if (!targetObject.groupsSeparated) {
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
             const targetWithCharge: IDRV = {
               ...targetObject,
               charge:
@@ -1988,9 +1989,6 @@ const addDerivatives = async (
           } else {
             // Iterate over target matches to add charge
             for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
               const targetWithCharge: IDRV = {
                 ...target,
                 charge:
@@ -2050,11 +2048,10 @@ const addDerivatives = async (
             targetId: targetObject.drv_trade_client_account_execution_id
           });
 
-          if (!targetObject.groupsSeparated) {
-            // Add charge to target matches
-            const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-            const sourceQuantitySum = sourceObject.modifiedExecQty!;
+          const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
+          const sourceQuantitySum = sourceObject.modifiedExecQty!;
 
+          if (!targetObject.groupsSeparated) {
             const targetWithCharge: IDRV = {
               ...targetObject,
               charge:
@@ -2066,9 +2063,6 @@ const addDerivatives = async (
           } else {
             // Iterate over target matches to add charge
             for (const target of targetObject.groupsSeparated) {
-              const sourceTotalCharge = sourceObject.modifiedTotalCharge!;
-              const sourceQuantitySum = sourceObject.modifiedExecQty!;
-
               const targetWithCharge: IDRV = {
                 ...target,
                 charge:

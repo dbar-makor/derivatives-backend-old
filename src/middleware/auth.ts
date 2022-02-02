@@ -35,6 +35,7 @@ const auth = async (
     );
 
     data = jwt.verify(token, process.env.JWT_PWD) as IVerify;
+
     userDocument = await User.findByPk(data.id);
 
     if (!userDocument) {

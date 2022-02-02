@@ -1,0 +1,7 @@
+component_type,drv_trade_id,drv_trade_client_trader_id,drv_trade_client_account_execution_id,floor_broker,date,side,quantity,contract_type,symbol,expiry,strike,option,price,client_id,client,trader,modifiedDate,modifiedSide,modifiedQuantity,modifiedSymbol,modifiedExpiry,modifiedExpiryMonthOnly,modifiedExpiryYearOnly,modifiedStrike,modifiedOption,modifiedPrice,charge
+leg,45783,91689,226329,WEX FIX,02/08/2021,buy,510,option,DBX,4/16/2021,16,put,0.29,195,citibank,eric g he,8/2/2021,b,510,dbx,16/4/2021,4,2021,16,p,0.29,25.5
+leg,46172,92521,228568,WEX FIX,02/12/2021,sell,1675,option,PLTR,8/20/2021,25,put,5.08086,191,bnp ny,Shui Ling Geng,12/2/2021,s,1675,pltr,20/8/2021,8,2021,25,p,5.08,83.75
+leg,46617,93572,233195,Mando,2/18/2021,sell,472,option,GOLD,9/17/2021,20,put,2.35,195,citibank,jason huang,18/2/2021,s,472,gold,17/9/2021,9,2021,20,p,2.35,23.6
+leg,47119,94748,236305,WEX FIX,2/24/2021,sell,595,option,RIDE,10/15/2021,20,put,6.25,191,bnp ny,Shui Ling Geng,24/2/2021,s,595,ride,15/10/2021,10,2021,20,p,6.25,29.75
+leg,47215,94970,236852,Mando,2/25/2021,sell,1200,option,RIDE,10/15/2021,15,put,3.6015,191,bnp ny,Franck Viguie,25/2/2021,s,1200,ride,15/10/2021,10,2021,15,p,3.6,60
+leg,45133,90218,222114,Vantage,02/01/2021,sell,250,option,FTSE100,6/17/2022,6100,put,575.5,333,ubs europe se,adrien israel,1/2/2021,s,250,ftse100,17/6/2022,6,2022,6100,p,575.5,12.5

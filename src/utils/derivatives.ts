@@ -3,7 +3,7 @@ import { IDRV, IDASH, IWEX, IBAML } from "../model/shared/derivatives";
 // Convert string to number and remove commas
 export const removeCommas = (element: string | undefined) => {
   if (!element) {
-    return element;
+    return 0;
   }
 
   const output = parseFloat(element.replace(/,/g, ""));
